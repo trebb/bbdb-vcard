@@ -1,10 +1,9 @@
 * This file contains a few test vcards.
-
+  For the sake of minimality, not all test cases are rfc compliant.
   Text like this one should be ignored by the parser.
 
 
 ** A vcard without any type parameters.
-
 BEGIN:VCARD
 VERSION:3.0
 FN:First1 Last1
@@ -42,7 +41,6 @@ END:VCARD
 
 
 ** The following is made of examples from rfc2426.
-
 BEGIN:VCARD
 VERSION:3.0
 FN:Mr. John Q. Public\, Esq.
@@ -101,9 +99,7 @@ END:VCARD
 
 
 ** Exactly the same as before.
-
    Re-reading it shouldn't duplicate anything but the NOTE.
-
 BEGIN:VCARD
 VERSION:3.0
 FN:Mr. John Q. Public\, Esq.
@@ -161,9 +157,7 @@ END:VCARD
 
 
 
-
 ** More example entries from rfc2426.
-
 BEGIN:VCARD
 VERSION:3.0
 FN:Mr. John Q. Public\, Esq.
@@ -187,14 +181,127 @@ NOTE:A note
 END:VCARD
 
 
-** Prefixes
+
+** Re-use of existing BBDB entries. 
+*** N, ORG, EMAIL
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyA;FirstA
+ORG:OrgA;UnitA
+EMAIL:userA@hostA.example.com
+END:vcard
+
+*** The same again; shouldn't overwrite the previous one.
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyA;FirstA
+ORG:OrgA;UnitA
+EMAIL:userA@hostA.example.com
+END:VCARD
+
+*** Same N, same ORG, different EMAIL which should be added to the previous
+    one.
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyA;FirstA
+ORG:OrgA;UnitA
+EMAIL:personA@example.com
+END:VCARD
+
+*** Same N, same ORG, no EMAIL; shouldn't change anything.
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyA;FirstA
+ORG:OrgA;UnitA
+END:VCARD
+
+*** Same N, same EMAIL, no ORG; shouldn't change anything.
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyA;FirstA
+EMAIL:userA@hostA.example.com
+END:VCARD
+
+*** Same N, same EMAIL, different ORG by which Company of the previous one
+    should be replaced.
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyA;FirstA
+ORG:OrgA;UnitB
+EMAIL:userA@hostA.example.com
+END:VCARD
+
+*** Different N, same EMAIL, same ORG; should go into a fresh entry.
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyA;FirstA
+ORG:OrgA;UnitB
+EMAIL:userA@hostA.example.com
+END:VCARD
+
+
+
+** AKA has various sources; duplicates are discarded.
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyB;FirstB
+A.N:PseudonymB;FirstB
+FN:The FirstB of FamilyB
+A.FN:FirstB1 FamilyB1
+B.FN:FirstB2 FamilyB2
+C.FN:FirstB FamilyB
+NICKNAME:Bee,Effy Bee, FirstB FamilyB
+END:VCARD
+
+
+** Additional ORGs go to Notes, org.
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyC;FirstC
+ORG:OrgC1
+ORG:OrgC2
+END:vcard
+
+*** ... but only if they are unique
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyC;FirstC
+ORG:OrgC1
+ORG:OrgC2
+ORG:OrgC3
+ORG:OrgC3
+ORG:OrgC4
+END:VCARD
+
+
+** Prefixes are discarded.
+X.BEGIN:VCARD
+X.VERSION:3.0
+X.N:FamilyD;FirstD
+X.ORG:OrgD;UnitD
+X.EMAIL:userD@hostD.example.com
+X.END:VCARD
+
+*** Same as before, don't change anything.
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyD;FirstD
+ORG:OrgD;UnitD
+EMAIL:userD@hostD.example.com
+END:VCARD
+
+*** Same as before, don't change anything.
+Y.BEGIN:VCARD
+Y.VERSION:3.0
+Y.N:FamilyD;FirstD
+Y.ORG:OrgD;UnitD
+Y.EMAIL:userD@hostD.example.com
+Y.END:VCARD
 
 ** Case Insensitivity
-
-** Re-use of existing BBDB entries
-
-** Additional Ns go to AKA if they are unique
-
-** FN and NICKNAME go to AKA if unique
-
-** Additional ORGs go to Notes, org if unique
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyA;FirstA
+ORG:OrgA;UnitA
+EMAIL:userA@hostA.example.com
+END:VCARD
