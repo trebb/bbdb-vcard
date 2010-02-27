@@ -2,8 +2,8 @@
 
 ;; Copyright (c) 2010 Bert Burgemeister
 
-;; Author: Bert Burgemeister <trebbu@googlemail.com> Keywords:
-;; calendar mail news
+;; Author: Bert Burgemeister <trebbu@googlemail.com>
+;; Keywords: calendar mail news
 
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
@@ -23,6 +23,87 @@
 
 ;;; Commentary:
 
+;; Vcard type prefixes (A.ADR:..., B.ADR:... etc.) are stripped off
+;; and discarded.
+
+;; For vcard types that have more or less direct counterparts in BBDB,
+;; labels and parameters are translated and structured values
+;; (lastname; firstname; additional names; prefixes etc.) are
+;; converted appropriately with the risk of some (hopefully
+;; unessential) information loss.
+
+;; All other vcard types are stored unaltered in the BBDB notes alist,
+;; e.g. 
+;;  `TZ;VALUE=text:-05:00'
+;; is stored as
+;;  `(TZ\;VALUE=text . "-05:00")'.
+
+;; An existing BBDB entry is extended by new information from a vcard
+;; 
+;;   if name and company and an email address match
+;;   or if name and company match
+;;   or if name and and an email address match.
+;; 
+;; Otherwise, a fresh BBDB entry is created.
+
+"
+|-------------+----------------+-----------------------|
+| Vcard       | Vcard          | BBDB                  |
+| Type        | Parameters     | Storage               |
+|             |                |                       |
+|-------------+----------------+-----------------------|
+| FN          |                | AKAs                  |
+| N           |                | First entry:          |
+|             |                | Firstname             |
+|             |                | Lastname              |
+|             |                | Rest:                 |
+|             |                | AKAs                  |
+|             |                |                       |
+| NICKNAME    |                | AKAs                  |
+| PHOTO       |                | Notes<photo           |
+| BDAY        |                | Notes<anniversary     |
+| ADR         | ;TYPE=x,HOME,y | Addresses<Home        |
+|             | ;TYPE=x,WORK,y | Addresses<Office      |
+|             | ;TYPE=x,y,z    | Addresses<x,y,z       |
+|             | (none)         | Addresses<Office      |
+|             |                |                       |
+|             |                |                       |
+| LABEL       |                | Notes<label           |
+| TEL         | ;TYPE=x,HOME,y | Phones<Home           |
+|             | ;TYPE=x,WORK,y | Phones<Office         |
+|             | ;TYPE=x,CELL,y | Phones<Mobile         |
+|             | ;TYPE=x,y,z    | Phones<x,y,z          |
+|             | (none)         | Phones<Office         |
+| EMAIL       | ;TYPE=x,y,z    | Net-addresses         |
+| MAILER      |                | Notes<mailer          |
+| TZ          |                | Notes<tz              |
+| GEO         |                | Notes<geo             |
+| TITLE       |                | Notes<title           |
+| ROLE        |                | Notes<role            |
+| LOGO        |                | Notes<logo            |
+| AGENT       |                | Notes<agent           |
+|             |                |                       |
+| ORG         |                | First entry:          |
+|             |                | Company               |
+|             |                | Rest:                 |
+|             |                | Notes<org             |
+|             |                |                       |
+|             |                |                       |
+| CATEGORIES  |                | Notes<categories      |
+| NOTE        |                | Notes<note            |
+| PRODID      |                | Notes<prodid          |
+| REV         |                | Notes<rev             |
+| SORT-STRING |                | Notes<sort-string     |
+| SOUND       |                | Notes<sound           |
+| UID         |                | Notes<uid             |
+| URL         |                | Notes<www             |
+| VERSION     |                | -                     |
+| CLASS       |                | Notes<class           |
+| KEY         |                | Notes<key             |
+| X-foo       |                | Notes<x-foo           |
+| anyJunK     | ;a=x;b=y       | Notes<anyjunk;a=x;b=y |
+|-------------+----------------+-----------------------|
+"
 
 ;;; Code:
 
@@ -55,16 +136,14 @@ be altered."
   "Apply VCARD-PROCESSOR successively to each vcard in string VCARDS"
   (with-temp-buffer
     (insert vcards)
-    (print (buffer-string) (get-buffer-create "foo"))
-    (goto-char (point-min))
-    (while (re-search-forward "\n\\( \\|\t\\)" nil t)
-      (replace-match "")) ; Unfold folded lines.
     (goto-char (point-min))
     ;; Change CR into CRLF if necessary.
     (while (re-search-forward "[^]\\(\n\\)" nil t)
       (replace-match "\n" nil nil nil 1))
     (goto-char (point-min))
-    (print (buffer-string) (get-buffer "foo"))
+    (while (re-search-forward "\n\\( \\|\t\\)" nil t)
+      (replace-match "")) ; Unfold folded lines.
+    (goto-char (point-min))
     (while (re-search-forward
             "^BEGIN:VCARD\\([\n[:print:][:cntrl:]]*?\\)\\(^END:VCARD\\)"
             nil t)
@@ -107,7 +186,8 @@ in BBDB. Extend existing BBDB entries where possible."
                        (cdr (assoc "value" (car (bbdb-vcard-entries-of-type "NICKNAME"))))
                        "," t))
            ;; Company suitable for storing in BBDB:
-           (org (cdr (assoc "value" (car (bbdb-vcard-entries-of-type "ORG" t)))))
+           (org (bbdb-vcard-convert-org
+                 (cdr (assoc "value" (car (bbdb-vcard-entries-of-type "ORG" t))))))
            ;; Company to search for in BBDB now:
            (org-to-search-for org) ; sorry
            ;; Email suitable for storing in BBDB:
@@ -120,13 +200,12 @@ in BBDB. Extend existing BBDB entries where possible."
                                           "\\)")))
            ;; Phone numbers
            (tels (mapcar (lambda (element)
-                           (vector (bbdb-vcard-translate (cdr (assoc "type" element)))
-                                   (cdr (assoc "value" element))))
+                           (vector (bbdb-vcard-translate (or (cdr (assoc "type" element)) ""))
+                                                         (cdr (assoc "value" element))))
                          (bbdb-vcard-entries-of-type "TEL")))
            ;; Addresses
            (adrs (mapcar (lambda (element)
-                           (vector (bbdb-vcard-translate (cdr (assoc "type"
-                                                                     element)))
+                           (vector (bbdb-vcard-translate (or (cdr (assoc "type" element)) ""))
                                    ;; Postbox, Extended, Streets
                                    (remove-if (lambda (x) (zerop (length x)))
                                               (subseq (cdr (assoc "value" element)) 0 3))
@@ -136,7 +215,7 @@ in BBDB. Extend existing BBDB entries where possible."
                                    (elt (cdr (assoc "value" element)) 6))) ; Country
                          (bbdb-vcard-entries-of-type "ADR")))
            (url (cdr (assoc "value" (car (bbdb-vcard-entries-of-type "URL" t)))))
-           (vcard-notes (print (bbdb-vcard-entries-of-type "NOTE") (get-buffer-create "foo")))
+           (vcard-notes (bbdb-vcard-entries-of-type "NOTE"))
            (bday (cdr (assoc "value" (car (bbdb-vcard-entries-of-type "BDAY" t)))))
            ;; The BBDB record to change:
            (bbdb-record (or
@@ -204,7 +283,7 @@ in BBDB. Extend existing BBDB entries where possible."
       ;; prepare bbdb's notes:
       (when url (push (cons 'www url) bbdb-raw-notes))
       (when vcard-notes
-        ;; Put vcard notes under key 'notes or, if key 'notes already
+        ;; Put vcard NOTEs under key 'notes or, if key 'notes already
         ;; exists, under key 'vcard-notes.
         (push (cons (if (assoc 'notes bbdb-raw-notes)
                         'vcard-notes
@@ -214,14 +293,13 @@ in BBDB. Extend existing BBDB entries where possible."
                                vcard-notes
                                ";\n"))
               bbdb-raw-notes))
-                                        ;      (print bday (get-buffer-create "foo"))
       (when bday
         (push (cons 'anniversary (concat bday " birthday"))
               bbdb-raw-notes))
       (while (setq other-vcard-type (bbdb-vcard-other-entry))
-        (unless (and bbdb-vcard-skip
-                     (string-match bbdb-vcard-skip
-                                   (symbol-name (car other-vcard-type))))
+        (when (and bbdb-vcard-skip
+                   (string-match bbdb-vcard-skip
+                                 (symbol-name (car other-vcard-type))))
           (push other-vcard-type bbdb-raw-notes)))
       (bbdb-record-set-raw-notes
        bbdb-record
@@ -242,6 +320,12 @@ in BBDB. Extend existing BBDB entries where possible."
           (concat (nth 0 vcard-name)    ; family name
                   (when (nth 4 vcard-name) " ")
                   (nth 4 raw-name)))))  ; honorific suffixes
+
+(defun bbdb-vcard-convert-org (vcard-org)
+  "Convert VCARD-ORG (type ORG), which may be a list, into a string."
+  (if (stringp vcard-org)    ; unstructured ORG, probably non-standard
+      vcard-org              ; Company, unit 1, unit 2...
+    (mapconcat 'identity vcard-org "\n")))
 
 (defun bbdb-vcard-entries-of-type (type &optional one-is-enough-p)
   "From current buffer containing a single vcard, read and delete the entries
@@ -288,25 +372,23 @@ is nil."
         string-elements))))
 
 (defcustom bbdb-vcard-translation-table
-  '(("Mobile" . "CELL")
-    ("Mobile" . "CAR")
-    ("Office" . "WORK")
-    ("Office" . "WORK,PREF")
-    ("Home" . "HOME")
-    ("Home" . "HOME,PREF"))
+  '(("CELL\\|CAR" . "Mobile")
+    ("WORK" . "Office")
+    ("^$" . "Office"))                   ; parameterless ADR or TEL
   "Alist with translations of location labels for addresses and phone
-numbers. Cells are (BBDB-LABEL . VCARD-LABEL). Vcard labels must be all
-uppercase."
+numbers. Cells are (VCARD-LABEL-REGEXP . BBDB-LABEL). One entry should map
+a default BBDB label to the empty string (`\"^$\"') which corresponds
+to unlabelled vcard entries."
   :group 'bbdb-vcard
-  :type '(alist :key-type string :value-type string))
+  :type '(alist :key-type (choice regexp (const :tag "Empty (as default)" "^$")) :value-type string))
 
 (defun bbdb-vcard-translate (vcard-label)
   "Translate VCARD-LABEL into its bbdb counterpart as
 defined in `bbdb-vcard-translation-table'."
   (upcase-initials
-   (or (car (rassoc (upcase vcard-label) bbdb-vcard-translation-table))
+   (or (assoc-default vcard-label bbdb-vcard-translation-table 'string-match)
        vcard-label)))
 
 (provide 'bbdb-vcard)
 
-;;; XXX.el ends here    
+;;; bbdb-vcard.el ends here    
