@@ -157,9 +157,9 @@
 ;;;; User Variables
 
 (defcustom bbdb-vcard-skip
-  ""
-  "Regexp describing vcard entry types are to be discarded.
-Example: `\"X-GSM-\"'."
+  "X-GSM-"
+  "Regexp describing vcard entry types that are to be discarded.
+Example: `X-GSM-\\|X-HTN'."
   :group 'bbdb-vcard
   :type 'regexp)
 
