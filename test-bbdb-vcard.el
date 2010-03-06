@@ -180,7 +180,7 @@ END:VCARD
 North American Division
 Marketing"
   (["Office" "+1-213-555-1234"])
-  (["Dom,Home,Postal,Parcel"
+  (["Home"
     ("123 Main Street")
     "Any Town"
     "CA"
@@ -280,7 +280,7 @@ END:VCARD
 North American Division
 Marketing"
   (["Office" "+1-213-555-1234"])
-  (["Dom,Home,Postal,Parcel"
+  (["Home"
     ("123 Main Street")
     "Any Town"
     "CA"

@@ -167,7 +167,8 @@ Example: `X-GSM-\\|X-HTN'."
 (defcustom bbdb-vcard-translation-table
   '(("CELL\\|CAR" . "Mobile")
     ("WORK" . "Office")
-    ("^$" . "Office"))    ; acts as a default for parameterless ADR or TEL
+    ("HOME" . "Home")  ; translates e.g. "dom,home,postal,parcel" to Home
+    ("^$" . "Office")) ; acts as a default for parameterless ADR or TEL
   "Alist with translations of location labels for addresses and phone
 numbers.  Cells are (VCARD-LABEL-REGEXP . BBDB-LABEL). One entry should map
 a default BBDB label to the empty string (`\"^$\"') which corresponds
