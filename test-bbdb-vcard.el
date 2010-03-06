@@ -1,13 +1,18 @@
-;;  For the sake of minimality, not all test cases are rfc compliant.
+;;; Tests for the vcard import from bbdb-vcard.el
 ;;
-;;  You should probably save your production bbdb file.
+;; Before proceeding, you should probably save your production bbdb file.
+;;
+;; To run the tests, eval this file.
+;; In case of failure, find test results in buffer `bbdb-vcard-test-result'.
+;;
+;; For the sake of minimality, not all test cases are rfc compliant.
+
 
 (defun bbdb-vcard-test (vcard bbdb-entry
                               search-name &optional search-company search-net)
   "Import VCARD and search for it in bbdb by SEARCH-NAME, SEARCH-COMPANY,
 SEARCH-NET.  If search result disagrees with BBDB-ENTRY, talk about it in
-buffer bbdb-vcard-test.  In BBDB-ENTRY, both timestamp and creation-date
-should be `2010-03-04'"
+buffer bbdb-vcard-test-result."
   (bbdb-vcard-iterate-vcards vcard 'bbdb-vcard-process-vcard)
   (let ((bbdb-search-result (car (bbdb-search (bbdb-records) search-name))))
     (setf (cdr(assoc 'creation-date (elt bbdb-search-result 7))) "2010-03-04"
@@ -17,12 +22,13 @@ should be `2010-03-04'"
     (unless
         (equal (subseq bbdb-search-result 0 8)
                (subseq bbdb-entry 0 8))
-      (princ "\nTest failed:\n" (get-buffer-create "bbdb-vcard-test"))
-      (prin1 vcard (get-buffer-create "bbdb-vcard-test"))
-      (princ "\nwas stored as\n" (get-buffer-create "bbdb-vcard-test"))
-      (prin1 (subseq bbdb-search-result 0 8) (get-buffer-create "bbdb-vcard-test"))
-      (princ "\nbut was expected as\n" (get-buffer-create "bbdb-vcard-test"))
-      (prin1 bbdb-entry (get-buffer-create "bbdb-vcard-test")))))
+      (princ "\nTest failed:\n" (get-buffer-create "bbdb-vcard-test-result"))
+      (prin1 vcard (get-buffer-create "bbdb-vcard-test-result"))
+      (princ "\nwas stored as\n" (get-buffer-create "bbdb-vcard-test-result"))
+      (prin1 (subseq bbdb-search-result 0 8)
+             (get-buffer-create "bbdb-vcard-test-result"))
+      (princ "\nbut was expected as\n" (get-buffer-create "bbdb-vcard-test-result"))
+      (prin1 bbdb-entry (get-buffer-create "bbdb-vcard-test-result")))))
 
 
 ;;; Try not to mess up our real BBDB:
@@ -32,7 +38,8 @@ should be `2010-03-04'"
 (when (get-buffer "test-bbdb") (kill-buffer "test-bbdb"))
 (setq bbdb-file "/tmp/test-bbdb")
 (when (file-exists-p bbdb-file) (delete-file bbdb-file))
-(when (get-buffer "bbdb-vcard-test") (kill-buffer "bbdb-vcard-test"))
+(when (get-buffer "bbdb-vcard-test-result") (kill-buffer "bbdb-vcard-test-result"))
+
 
 
 ;;; The Tests
@@ -679,3 +686,31 @@ UnitE"
   ("userE@hostE.example.com")
   ((creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
  "FirstE FamilyE")
+
+
+(bbdb-vcard-test
+ "
+** Non-ASCII Content
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+FN:Franz Rübezahl
+N:Rübezahl;Franz
+NICKNAME:Fränzchen,Rübe
+ADR:Postschließfach 17;Zimmer Zwölf;Einbahnstraße;Ödstadt;;75480;
+ORG:Rübe AG
+END:VCARD
+"
+ ["Franz" "Rübezahl"
+  ("Franz Rübezahl" "Fränzchen" "Rübe")
+  "Rübe AG"
+  nil
+  (["Office"
+    ("Postschließfach 17" "Zimmer Zwölf" "Einbahnstraße")
+    "Ödstadt"
+    ""
+    "75480"
+    ""])
+  nil
+  ((creation-date . "2010-03-06") (timestamp . "2010-03-06")) ]
+ "Rübe")
