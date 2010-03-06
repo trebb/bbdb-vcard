@@ -34,7 +34,9 @@ should be `2010-03-04'"
 (when (file-exists-p bbdb-file) (delete-file bbdb-file))
 (when (get-buffer "bbdb-vcard-test") (kill-buffer "bbdb-vcard-test"))
 
+
 ;;; The Tests
+
 
 (bbdb-vcard-test
  "
@@ -74,9 +76,42 @@ KEY:The Key No 1
 X-foo:extended type 1
 END:VCARD
 "
- ["First1" "Last1" ("First1 Last1" "Firsty1") "Company1
+ ["First1" "Last1"
+  ("First1 Last1" "Firsty1")
+  "Company1
 Unit1
-Subunit1" nil (["Office" ("Box111" "Room 111" "First Street,First Corner") "Cityone" "First State" "11111" "Country"]) ("first1@provider1") ((x-foo . "extended type 1") (key . "The Key No 1") (class . "CONFIDENTIAL") (uid . "111-111-111-111") (sound . "Audible1") (sort-string . "aaa000") (rev . "1995-10-31T22:27:10Z") (prodid . "-//ONLINE DIRECTORY//NONSGML Version 1//EN") (categories . "category1") (agent . "CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com") (logo . "encoded logo #1") (role . "Programmer") (title . "Director, Research and Development") (geo . "37.386013;-122.082932") (tz . "+01:00") (mailer . "Wanderlust1") (tel=home . "+11111111") (label . "Label 1") (photo . "The Alphabet:abcdefghijklmnopqrstuvwsyz") (anniversary . "1999-12-05 birthday") (notes . "This vcard uses every type defined in rfc2426.") (www . "first1@host1.org") (creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
+Subunit1"
+  nil
+  (["Office"
+    ("Box111" "Room 111" "First Street,First Corner")
+    "Cityone"
+    "First State"
+    "11111"
+    "Country"])
+  ("first1@provider1")
+  ((x-foo . "extended type 1")
+   (key . "The Key No 1")
+   (class . "CONFIDENTIAL")
+   (uid . "111-111-111-111")
+   (sound . "Audible1")
+   (sort-string . "aaa000")
+   (rev . "1995-10-31T22:27:10Z")
+   (prodid . "-//ONLINE DIRECTORY//NONSGML Version 1//EN")
+   (categories . "category1")
+   (agent . "CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com")
+   (logo . "encoded logo #1")
+   (role . "Programmer")
+   (title . "Director, Research and Development")
+   (geo . "37.386013;-122.082932")
+   (tz . "+01:00")
+   (mailer . "Wanderlust1")
+   (tel=home . "+11111111")
+   (label . "Label 1")
+   (photo . "The Alphabet:abcdefghijklmnopqrstuvwsyz")
+   (anniversary . "1999-12-05 birthday")
+   (notes . "This vcard uses every type defined in rfc2426.")
+   (www . "first1@host1.org")
+   (creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
  "First1 Last1")
 
 
@@ -139,9 +174,43 @@ KEY;ENCODING=b:MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQA
  UZHPYVUaSgVttImOHZIKi4hlPXBOhcUQ==
 END:VCARD
 "
- ["Dr. John Philip Paul" "Stevenson Jr. M.D. A.C.P." ("Mr. John Q. Public, Esq." "Robbie") "ABC, Inc.
+ ["Dr. John Philip Paul" "Stevenson Jr. M.D. A.C.P."
+  ("Mr. John Q. Public, Esq." "Robbie")
+  "ABC, Inc.
 North American Division
-Marketing" (["Office" "+1-213-555-1234"]) (["Dom,Home,Postal,Parcel" ("123 Main Street") "Any Town" "CA" "91921-1234" nil]) ("jdoe@isp.net" "jqpublic@xyz.dom1.com") ((key\;encoding=b . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0ZW1zMRwwGgYDVQQDExNyb290Y2EubmV0c2NhcGUuY29tMB4XDTk3MDYwNjE5NDc1OVoXDTk3MTIwMzE5NDc1OVowgYkxCzAJBgNVBAYTAlVTMSYwJAYDVQQKEx1OZXRzY2FwZSBDb21tdW5pY2F0aW9ucyBDb3JwLjEYMBYGA1UEAxMPVGltb3RoeSBBIEhvd2VzMSEwHwYJKoZIhvcNAQkBFhJob3dlc0BuZXRzY2FwZS5jb20xFTATBgoJkiaJk/IsZAEBEwVob3dlczBcMA0GCSqGSIb3DQEBAQUAA0sAMEgCQQC0JZf6wkg8pLMXHHCUvMfL5H6zjSk4vTTXZpYyrdN2dXcoX49LKiOmgeJSzoiFKHtLOIboyludF90CgqcxtwKnAgMBAAGjNjA0MBEGCWCGSAGG+EIBAQQEAwIAoDAfBgNVHSMEGDAWgBT84FToB/GV3jr3mcau+hUMbsQukjANBgkqhkiG9w0BAQQFAAOBgQBexv7o7mi3PLXadkmNP9LcIPmx93HGp0Kgyx1jIVMyNgsemeAwBM+MSlhMfcpbTrONwNjZYW8vJDSoi//yrZlVt9bJbs7MNYZVsyF1unsqaln4/vy6Uawfg8VUMk1U7jt8LYpo4YULU7UZHPYVUaSgVttImOHZIKi4hlPXBOhcUQ==") (class . "PUBLIC") (uid . "19950401-080045-40000F192713-0052") (sound\;type=basic\;encoding=b . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0") (rev . "1995-10-31T22:27:10Z") (prodid . "-//ONLINE DIRECTORY//NONSGML Version 1//EN") (categories . "TRAVEL AGENT") (agent\;value=uri . "CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com") (logo\;encoding=b\;type=jpeg . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0") (role . "Programmer") (title . "Director, Research and Development") (geo . "37.386013;-122.082932") (tz . "-05:00") (mailer . "PigeonMail 2.1") (label\;type=dom\,home\,postal\,parcel . "Mr.John Q. Public, Esq.") (photo\;value=uri . "http://www.abc.com/pub/photos/jqpublic.gif") (anniversary . "1996-04-15 birthday") (notes . "This fax number is operational 0800 to 1715 EST, Mon-Fri.") (www . "http://www.swbyps.restaurant.french/~chezchic.html") (creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
+Marketing"
+  (["Office" "+1-213-555-1234"])
+  (["Dom,Home,Postal,Parcel"
+    ("123 Main Street")
+    "Any Town"
+    "CA"
+    "91921-1234"
+    nil])
+  ("jdoe@isp.net" "jqpublic@xyz.dom1.com")
+  ((key\;encoding=b
+    . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0ZW1zMRwwGgYDVQQDExNyb290Y2EubmV0c2NhcGUuY29tMB4XDTk3MDYwNjE5NDc1OVoXDTk3MTIwMzE5NDc1OVowgYkxCzAJBgNVBAYTAlVTMSYwJAYDVQQKEx1OZXRzY2FwZSBDb21tdW5pY2F0aW9ucyBDb3JwLjEYMBYGA1UEAxMPVGltb3RoeSBBIEhvd2VzMSEwHwYJKoZIhvcNAQkBFhJob3dlc0BuZXRzY2FwZS5jb20xFTATBgoJkiaJk/IsZAEBEwVob3dlczBcMA0GCSqGSIb3DQEBAQUAA0sAMEgCQQC0JZf6wkg8pLMXHHCUvMfL5H6zjSk4vTTXZpYyrdN2dXcoX49LKiOmgeJSzoiFKHtLOIboyludF90CgqcxtwKnAgMBAAGjNjA0MBEGCWCGSAGG+EIBAQQEAwIAoDAfBgNVHSMEGDAWgBT84FToB/GV3jr3mcau+hUMbsQukjANBgkqhkiG9w0BAQQFAAOBgQBexv7o7mi3PLXadkmNP9LcIPmx93HGp0Kgyx1jIVMyNgsemeAwBM+MSlhMfcpbTrONwNjZYW8vJDSoi//yrZlVt9bJbs7MNYZVsyF1unsqaln4/vy6Uawfg8VUMk1U7jt8LYpo4YULU7UZHPYVUaSgVttImOHZIKi4hlPXBOhcUQ==")
+   (class . "PUBLIC")
+   (uid . "19950401-080045-40000F192713-0052")
+   (sound\;type=basic\;encoding=b
+    . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0")
+   (rev . "1995-10-31T22:27:10Z")
+   (prodid . "-//ONLINE DIRECTORY//NONSGML Version 1//EN")
+   (categories . "TRAVEL AGENT")
+   (agent\;value=uri
+    . "CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com")
+   (logo\;encoding=b\;type=jpeg
+    . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0")
+   (role . "Programmer")
+   (title . "Director, Research and Development")
+   (geo . "37.386013;-122.082932")
+   (tz . "-05:00")
+   (mailer . "PigeonMail 2.1")
+   (label\;type=dom\,home\,postal\,parcel . "Mr.John Q. Public, Esq.")
+   (photo\;value=uri . "http://www.abc.com/pub/photos/jqpublic.gif")
+   (anniversary . "1996-04-15 birthday")
+   (notes . "This fax number is operational 0800 to 1715 EST, Mon-Fri.")
+   (www . "http://www.swbyps.restaurant.french/~chezchic.html")
+   (creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
  "John")
 
 
@@ -205,9 +274,43 @@ KEY;ENCODING=b:MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQA
  UZHPYVUaSgVttImOHZIKi4hlPXBOhcUQ==
 END:VCARD
 "
- ["Dr. John Philip Paul" "Stevenson Jr. M.D. A.C.P." ("Mr. John Q. Public, Esq." "Robbie") "ABC, Inc.
+ ["Dr. John Philip Paul" "Stevenson Jr. M.D. A.C.P."
+  ("Mr. John Q. Public, Esq." "Robbie")
+  "ABC, Inc.
 North American Division
-Marketing" (["Office" "+1-213-555-1234"]) (["Dom,Home,Postal,Parcel" ("123 Main Street") "Any Town" "CA" "91921-1234" nil]) ("jdoe@isp.net" "jqpublic@xyz.dom1.com") ((key\;encoding=b . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0ZW1zMRwwGgYDVQQDExNyb290Y2EubmV0c2NhcGUuY29tMB4XDTk3MDYwNjE5NDc1OVoXDTk3MTIwMzE5NDc1OVowgYkxCzAJBgNVBAYTAlVTMSYwJAYDVQQKEx1OZXRzY2FwZSBDb21tdW5pY2F0aW9ucyBDb3JwLjEYMBYGA1UEAxMPVGltb3RoeSBBIEhvd2VzMSEwHwYJKoZIhvcNAQkBFhJob3dlc0BuZXRzY2FwZS5jb20xFTATBgoJkiaJk/IsZAEBEwVob3dlczBcMA0GCSqGSIb3DQEBAQUAA0sAMEgCQQC0JZf6wkg8pLMXHHCUvMfL5H6zjSk4vTTXZpYyrdN2dXcoX49LKiOmgeJSzoiFKHtLOIboyludF90CgqcxtwKnAgMBAAGjNjA0MBEGCWCGSAGG+EIBAQQEAwIAoDAfBgNVHSMEGDAWgBT84FToB/GV3jr3mcau+hUMbsQukjANBgkqhkiG9w0BAQQFAAOBgQBexv7o7mi3PLXadkmNP9LcIPmx93HGp0Kgyx1jIVMyNgsemeAwBM+MSlhMfcpbTrONwNjZYW8vJDSoi//yrZlVt9bJbs7MNYZVsyF1unsqaln4/vy6Uawfg8VUMk1U7jt8LYpo4YULU7UZHPYVUaSgVttImOHZIKi4hlPXBOhcUQ==") (class . "PUBLIC") (uid . "19950401-080045-40000F192713-0052") (sound\;type=basic\;encoding=b . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0") (rev . "1995-10-31T22:27:10Z") (prodid . "-//ONLINE DIRECTORY//NONSGML Version 1//EN") (categories . "TRAVEL AGENT") (agent\;value=uri . "CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com") (logo\;encoding=b\;type=jpeg . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0") (role . "Programmer") (title . "Director, Research and Development") (geo . "37.386013;-122.082932") (tz . "-05:00") (mailer . "PigeonMail 2.1") (label\;type=dom\,home\,postal\,parcel . "Mr.John Q. Public, Esq.") (photo\;value=uri . "http://www.abc.com/pub/photos/jqpublic.gif") (anniversary . "1996-04-15 birthday") (vcard-notes . "This fax number is operational 0800 to 1715 EST, Mon-Fri.") (www . "http://www.swbyps.restaurant.french/~chezchic.html") (notes . "This fax number is operational 0800 to 1715 EST, Mon-Fri.") (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
+Marketing"
+  (["Office" "+1-213-555-1234"])
+  (["Dom,Home,Postal,Parcel"
+    ("123 Main Street")
+    "Any Town"
+    "CA"
+    "91921-1234"
+    nil])
+  ("jdoe@isp.net" "jqpublic@xyz.dom1.com")
+  ((key\;encoding=b
+    . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0ZW1zMRwwGgYDVQQDExNyb290Y2EubmV0c2NhcGUuY29tMB4XDTk3MDYwNjE5NDc1OVoXDTk3MTIwMzE5NDc1OVowgYkxCzAJBgNVBAYTAlVTMSYwJAYDVQQKEx1OZXRzY2FwZSBDb21tdW5pY2F0aW9ucyBDb3JwLjEYMBYGA1UEAxMPVGltb3RoeSBBIEhvd2VzMSEwHwYJKoZIhvcNAQkBFhJob3dlc0BuZXRzY2FwZS5jb20xFTATBgoJkiaJk/IsZAEBEwVob3dlczBcMA0GCSqGSIb3DQEBAQUAA0sAMEgCQQC0JZf6wkg8pLMXHHCUvMfL5H6zjSk4vTTXZpYyrdN2dXcoX49LKiOmgeJSzoiFKHtLOIboyludF90CgqcxtwKnAgMBAAGjNjA0MBEGCWCGSAGG+EIBAQQEAwIAoDAfBgNVHSMEGDAWgBT84FToB/GV3jr3mcau+hUMbsQukjANBgkqhkiG9w0BAQQFAAOBgQBexv7o7mi3PLXadkmNP9LcIPmx93HGp0Kgyx1jIVMyNgsemeAwBM+MSlhMfcpbTrONwNjZYW8vJDSoi//yrZlVt9bJbs7MNYZVsyF1unsqaln4/vy6Uawfg8VUMk1U7jt8LYpo4YULU7UZHPYVUaSgVttImOHZIKi4hlPXBOhcUQ==")
+   (class . "PUBLIC")
+   (uid . "19950401-080045-40000F192713-0052")
+   (sound\;type=basic\;encoding=b
+    . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0")
+   (rev . "1995-10-31T22:27:10Z")
+   (prodid . "-//ONLINE DIRECTORY//NONSGML Version 1//EN")
+   (categories . "TRAVEL AGENT")
+   (agent\;value=uri . "CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com")
+   (logo\;encoding=b\;type=jpeg
+    . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0")
+   (role . "Programmer")
+   (title . "Director, Research and Development")
+   (geo . "37.386013;-122.082932")
+   (tz . "-05:00")
+   (mailer . "PigeonMail 2.1")
+   (label\;type=dom\,home\,postal\,parcel . "Mr.John Q. Public, Esq.")
+   (photo\;value=uri . "http://www.abc.com/pub/photos/jqpublic.gif")
+   (anniversary . "1996-04-15 birthday")
+   (vcard-notes . "This fax number is operational 0800 to 1715 EST, Mon-Fri.")
+   (www . "http://www.swbyps.restaurant.french/~chezchic.html")
+   (notes . "This fax number is operational 0800 to 1715 EST, Mon-Fri.")
+   (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
  "John")
 
 
@@ -237,7 +340,19 @@ CLASS:PRIVATE
 NOTE:A note
 END:VCARD
 "
- ["Mr. John Quinlan" "Public Esq." ("Mr. John Q. Public, Esq." "Susan Thomas" "Jim" "Jimmie") nil (["Office" "+1-919-555-1234"]) nil ("sthomas@host.com" "jane_doe@abc.com") ((agent . "BEGIN:VCARD") (logo\;value=uri . "http://www.abc.com/pub/logos/abccorp.jpg") (tz\;value=text . "-05:00; EST; Raleigh/North America") (photo\;encoding=b\;type=jpeg . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0") (anniversary . "1987-09-27T08:30:00-06:00 birthday") (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
+ ["Mr. John Quinlan" "Public Esq."
+  ("Mr. John Q. Public, Esq." "Susan Thomas" "Jim" "Jimmie")
+  nil
+  (["Office" "+1-919-555-1234"])
+  nil
+  ("sthomas@host.com" "jane_doe@abc.com")
+  ((agent . "BEGIN:VCARD")
+   (logo\;value=uri . "http://www.abc.com/pub/logos/abccorp.jpg")
+   (tz\;value=text . "-05:00; EST; Raleigh/North America")
+   (photo\;encoding=b\;type=jpeg
+    . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0")
+   (anniversary . "1987-09-27T08:30:00-06:00 birthday")
+   (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
  "Public")
 
 
@@ -254,9 +369,16 @@ ORG:OrgA;UnitA
 EMAIL:userA@hostA.example.com
 END:vcard
 "
- ["FirstA" "FamilyA" nil "OrgA
-UnitA" nil nil ("userA@hostA.example.com") ((creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
+ ["FirstA" "FamilyA"
+  nil
+  "OrgA
+UnitA"
+  nil
+  nil
+  ("userA@hostA.example.com")
+  ((creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
  "FirstA FamilyA")
+
 
 (bbdb-vcard-test
  "
@@ -269,9 +391,16 @@ ORG:OrgA;UnitA
 EMAIL:userA@hostA.example.com
 END:VCARD
 "
- ["FirstA" "FamilyA" nil "OrgA
-UnitA" nil nil ("userA@hostA.example.com") ((creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
+ ["FirstA" "FamilyA"
+  nil
+  "OrgA
+UnitA"
+  nil
+  nil
+  ("userA@hostA.example.com")
+  ((creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
  "FirstA FamilyA")
+
 
 (bbdb-vcard-test
  "
@@ -285,9 +414,16 @@ ORG:OrgA;UnitA
 EMAIL:personA@example.com
 END:VCARD
 "
- ["FirstA" "FamilyA" nil "OrgA
-UnitA" nil nil ("userA@hostA.example.com" "personA@example.com") ((creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
+ ["FirstA" "FamilyA"
+  nil
+  "OrgA
+UnitA"
+  nil
+  nil
+  ("userA@hostA.example.com" "personA@example.com")
+  ((creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
  "FirstA FamilyA")
+
 
 (bbdb-vcard-test
  "
@@ -299,9 +435,16 @@ N:FamilyA;FirstA
 ORG:OrgA;UnitA
 END:VCARD
 "
- ["FirstA" "FamilyA" nil "OrgA
-UnitA" nil nil ("userA@hostA.example.com" "personA@example.com") ((creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
+ ["FirstA" "FamilyA"
+  nil
+  "OrgA
+UnitA"
+  nil
+  nil
+  ("userA@hostA.example.com" "personA@example.com")
+  ((creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
  "FirstA FamilyA")
+
 
 (bbdb-vcard-test
  "
@@ -313,9 +456,16 @@ N:FamilyA;FirstA
 EMAIL:userA@hostA.example.com
 END:VCARD
 "
- ["FirstA" "FamilyA" nil "OrgA
-UnitA" nil nil ("userA@hostA.example.com" "personA@example.com") ((creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
+ ["FirstA" "FamilyA"
+  nil
+  "OrgA
+UnitA"
+  nil
+  nil
+  ("userA@hostA.example.com" "personA@example.com")
+  ((creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
  "FirstA FamilyA")
+
 
 (bbdb-vcard-test
  "
@@ -329,9 +479,16 @@ ORG:OrgA;UnitB
 EMAIL:userA@hostA.example.com
 END:VCARD
 "
- ["FirstA" "FamilyA" nil "OrgA
-UnitB" nil nil ("userA@hostA.example.com" "personA@example.com") ((creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
+ ["FirstA" "FamilyA"
+  nil
+  "OrgA
+UnitB"
+  nil
+  nil
+  ("userA@hostA.example.com" "personA@example.com")
+  ((creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
  "FirstA FamilyA")
+
 
 (bbdb-vcard-test
  "
@@ -344,8 +501,14 @@ ORG:OrgA;UnitB
 EMAIL:userA@hostA.example.com
 END:VCARD
 "
- ["FirstA1" "FamilyA1" nil "OrgA
-UnitB" nil nil ("userA@hostA.example.com") ((creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
+ ["FirstA1" "FamilyA1"
+  nil
+  "OrgA
+UnitB"
+  nil
+  nil
+  ("userA@hostA.example.com")
+  ((creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
  "FirstA1 FamilyA1")
 
 
@@ -365,8 +528,21 @@ C.FN:FirstB FamilyB
 NICKNAME:Bee,Effy Bee,FirstB FamilyB
 END:VCARD
 "
- ["FirstB" "FamilyB" ("The FirstB of FamilyB" "FirstB1 FamilyB1" "FirstB2 FamilyB2" "FirstB PseudonymB" "Bee" "Effy Bee" "FirstB FamilyB") nil nil nil nil ((creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
+ ["FirstB" "FamilyB"
+  ("The FirstB of FamilyB"
+   "FirstB1 FamilyB1"
+   "FirstB2 FamilyB2"
+   "FirstB PseudonymB"
+   "Bee"
+   "Effy Bee"
+   "FirstB FamilyB")
+  nil
+  nil
+  nil
+  nil
+  ((creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
  "FirstB FamilyB")
+
 
 (bbdb-vcard-test
  "
@@ -379,8 +555,16 @@ ORG:OrgC1
 ORG:OrgC2
 END:vcard
 "
- ["FirstC" "FamilyC" nil "OrgC1" nil nil nil ((org . "OrgC2") (creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
+ ["FirstC" "FamilyC"
+  nil
+  "OrgC1"
+  nil
+  nil
+  nil
+  ((org . "OrgC2")
+   (creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
  "FirstC FamilyC")
+
 
 (bbdb-vcard-test
  "
@@ -396,7 +580,16 @@ ORG:OrgC3
 ORG:OrgC4
 END:VCARD
 "
- ["FirstC" "FamilyC" nil "OrgC1" nil nil nil ((org . "OrgC4") (org . "OrgC3") (org . "OrgC2") (creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
+ ["FirstC" "FamilyC"
+  nil
+  "OrgC1"
+  nil
+  nil
+  nil
+  ((org . "OrgC4")
+   (org . "OrgC3")
+   (org . "OrgC2")
+   (creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
  "FirstC FamilyC")
 
 
@@ -411,9 +604,16 @@ X.ORG:OrgD;UnitD
 X.EMAIL:userD@hostD.example.com
 X.END:VCARD
 "
- ["FirstD" "FamilyD" nil "OrgD
-UnitD" nil nil ("userD@hostD.example.com") ((creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
+ ["FirstD" "FamilyD"
+  nil
+  "OrgD
+UnitD"
+  nil
+  nil
+  ("userD@hostD.example.com")
+  ((creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
  "FirstD FamilyD")
+
 
 (bbdb-vcard-test
  "
@@ -426,9 +626,16 @@ ORG:OrgD;UnitD
 EMAIL:userD@hostD.example.com
 END:VCARD
 "
- ["FirstD" "FamilyD" nil "OrgD
-UnitD" nil nil ("userD@hostD.example.com") ((creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
+ ["FirstD" "FamilyD"
+  nil
+  "OrgD
+UnitD"
+  nil
+  nil
+  ("userD@hostD.example.com")
+  ((creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
  "FirstD FamilyD")
+
 
 (bbdb-vcard-test
  "
@@ -441,9 +648,16 @@ Y.ORG:OrgD;UnitD
 Y.EMAIL:userD@hostD.example.com
 Y.END:VCARD
 "
- ["FirstD" "FamilyD" nil "OrgD
-UnitD" nil nil ("userD@hostD.example.com") ((creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
+ ["FirstD" "FamilyD"
+  nil
+  "OrgD
+UnitD"
+  nil
+  nil
+  ("userD@hostD.example.com")
+  ((creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
  "FirstD FamilyD")
+
 
 (bbdb-vcard-test
  "
@@ -456,6 +670,12 @@ Org:OrgE;UnitE
 email:userE@hostE.example.com
 end:vcard
 "
- ["FirstE" "FamilyE" nil "OrgE
-UnitE" nil nil ("userE@hostE.example.com") ((creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
+ ["FirstE" "FamilyE"
+  nil
+  "OrgE
+UnitE"
+  nil
+  nil
+  ("userE@hostE.example.com")
+  ((creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
  "FirstE FamilyE")
