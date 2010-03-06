@@ -26,7 +26,7 @@
 ;; Purpose
 ;; -------
 ;; 
-;; Import of data from VCARDs as defined in RFC2425 and RFC2426 into
+;; Data import from VCARDs as defined in RFC2425 and RFC2426 into
 ;; The Insidious Big Brother Database (BBDB).
 ;; 
 ;; Usage
@@ -52,6 +52,9 @@
 ;;
 ;; Otherwise, a fresh BBDB entry is created.
 ;;
+;; When `bbdb-vcard-try-merge' is set to nil, there is always a fresh
+;; entry created.
+;;
 ;; In case (c), if the vcard has ORG defined, this ORG would overwrite
 ;; an existing Company in BBDB.
 ;;
@@ -76,7 +79,6 @@
 ;;
 ;; Handling of the individual types defined in RFC2426 (assuming
 ;; default label translation and no vcard type exclusion):
-;;
 ;; "
 ;; |-------------+----------------+------------------------|
 ;; | TYPE FROM   | VCARD          | STORAGE IN BBDB        |
@@ -430,7 +432,7 @@ ESCAPED-STRINGS may be a string or a sequence of strings."
     (let ((vcard-name
            (mapcar (lambda (x) (replace-regexp-in-string
                                 "[^\\\\]\\(,\\)" " " x nil nil 1))
-                   vcard-name)))               ; flatten comma-separated substructure
+                   vcard-name))) ; flatten comma-separated substructure
       (list (concat (nth 3 vcard-name)  ; honorific prefixes
                     (when (nth 3 vcard-name) " ")
                     (nth 1 vcard-name)  ; given name

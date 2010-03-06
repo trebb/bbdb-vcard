@@ -1,0 +1,12 @@
+bbdb-vcard.el
+=============
+
+bbdb-vcard.el imports VCARDs as defined in RFC2425 and RFC2426 into
+The Insidious Big Brother Database (BBDB). There are already a few
+similar libraries to which this one is unrelated.
+
+On a file, a buffer or a region containing one or more vcards, use
+`bbdb-vcard-import-file', `bbdb-vcard-import-buffer', or
+`bbdb-vcard-import-region' respectively to import them into BBDB.
+
+Refer to the Commentary in file bbdb-vcard.el for further information.
