@@ -15,10 +15,10 @@ SEARCH-NET.  If search result disagrees with BBDB-ENTRY, talk about it in
 buffer bbdb-vcard-test-result."
   (bbdb-vcard-iterate-vcards vcard 'bbdb-vcard-process-vcard)
   (let ((bbdb-search-result (car (bbdb-search (bbdb-records) search-name))))
-    (setf (cdr(assoc 'creation-date (elt bbdb-search-result 7))) "2010-03-04"
-          (cdr(assoc 'timestamp (elt bbdb-search-result 7))) "2010-03-04"
-          (cdr(assoc 'creation-date (elt bbdb-entry 7))) "2010-03-04"
-          (cdr(assoc 'timestamp (elt bbdb-entry 7))) "2010-03-04")
+    (setf (cdr (assoc 'creation-date (elt bbdb-search-result 7))) "2010-03-04"
+          (cdr (assoc 'timestamp (elt bbdb-search-result 7))) "2010-03-04"
+          (cdr (assoc 'creation-date (elt bbdb-entry 7))) "2010-03-04"
+          (cdr (assoc 'timestamp (elt bbdb-entry 7))) "2010-03-04")
     (unless
         (equal (subseq bbdb-search-result 0 8)
                (subseq bbdb-entry 0 8))
@@ -90,7 +90,7 @@ Unit1
 Subunit1"
   nil
   (["Office"
-    ("Box111" "Room 111" "First Street,First Corner")
+    ("Box111" "Room 111" "First Street, First Corner")
     "Cityone"
     "First State"
     "11111"
@@ -714,3 +714,51 @@ END:VCARD
   nil
   ((creation-date . "2010-03-06") (timestamp . "2010-03-06")) ]
  "Rübe")
+
+
+(bbdb-vcard-test
+ "
+*** Multiple, structured ADR
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyF;FirstF
+ORG:OrgF;UnitF
+ADR;TYPE=dom,home,postal,parcel:Box111,LHS;Room 111,or not;First Street,First Corner;Cityone;First State;11111,22222;Country
+ADR;TYPE=intl,work,postal,parcel:Box222,RHS;Room 22,or something;Second Street,First Corner;Citytwo;Second State;222,33333;Country
+ADR;TYPE=dom,work,postal,parcel:;;Second Street,First Corner;Citytwo;;222,33333;
+ADR;TYPE=intl;TYPE=home;TYPE=parcel:;;Third Street,First Corner;Citythree;;222,33333;
+END:VCARD
+"
+ ["FirstF" "FamilyF"
+  nil
+  "OrgF
+UnitF"
+  nil
+  (["Home"
+    ("Third Street, First Corner")
+    "Citythree"
+    ""
+    "222, 33333"
+    ""]
+   ["Office"
+    ("Second Street, First Corner")
+    "Citytwo"
+    ""
+    "222, 33333"
+    ""]
+   ["Office"
+    ("Box222, RHS" "Room 22, or something" "Second Street, First Corner")
+    "Citytwo"
+    "Second State"
+    "222, 33333"
+    "Country"]
+   ["Home"
+    ("Box111, LHS" "Room 111, or not" "First Street, First Corner")
+    "Cityone"
+    "First State"
+    "11111, 22222"
+    "Country"])
+  nil
+  ((creation-date . "2010-03-06") (timestamp . "2010-03-06")) ]
+ "FirstF FamilyF")

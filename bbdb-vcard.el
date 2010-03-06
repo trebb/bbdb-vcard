@@ -80,72 +80,79 @@
 ;; Handling of the individual types defined in RFC2426 (assuming
 ;; default label translation and no vcard type exclusion):
 ;; "
-;; |-------------+----------------+------------------------|
-;; | TYPE FROM   | VCARD          | STORAGE IN BBDB        |
-;; | VCARD       | PARAMETERS     |                        |
-;; |             |                |                        |
-;; |-------------+----------------+------------------------|
-;; | VERSION     |                | -                      |
-;; |-------------+----------------+------------------------|
-;; | N           |                | First entry:           |
-;; |             |                | Firstname              |
-;; |             |                | Lastname               |
-;; |             |                |                        |
-;; |             |                | Rest:                  |
-;; |             |                | AKAs (append)          |
-;; |-------------+----------------+------------------------|
-;; | FN          |                | AKAs (append)          |
-;; | NICKNAME    |                | AKAs (append)          |
-;; |-------------+----------------+------------------------|
-;; | ORG         |                | First entry:           |
-;; |             |                | Company                |
-;; |             |                |                        |
-;; |             |                | Rest:                  |
-;; |             |                | Notes<org              |
-;; |             |                | (repeatedly)           |
-;; |-------------+----------------+------------------------|
-;; | ADR         | ;TYPE=x,HOME,y | Addresses<Home         |
-;; |             | ;TYPE=x,WORK,y | Addresses<Office       |
-;; |             | ;TYPE=x,y,z    | Addresses<x,y,z        |
-;; |             | (none)         | Addresses<Office       |
-;; |-------------+----------------+------------------------|
-;; | TEL         | ;TYPE=x,HOME,y | Phones<Home (append)   |
-;; |             | ;TYPE=x,WORK,y | Phones<Office (append) |
-;; |             | ;TYPE=x,CELL,y | Phones<Mobile (append) |
-;; |             | ;TYPE=x,y,z    | Phones<x,y,z (append)  |
-;; |             | (none)         | Phones<Office (append) |
-;; |-------------+----------------+------------------------|
-;; | EMAIL       | ;TYPE=x,y,z    | Net-Addresses (append) |
-;; | URL         |                | Notes<www              |
-;; | BDAY        |                | Notes<anniversary      |
-;; |-------------+----------------+------------------------|
-;; | NOTE        |                | First time:            |
-;; |             |                | Notes<notes            |
-;; |             |                |                        |
-;; |             |                | Later:                 |
-;; |             |                | Notes<vcard-notes      |
-;; |-------------+----------------+------------------------|
-;; | CATEGORIES  |                | Notes<categories       |
-;; | SORT-STRING |                | Notes<sort-string      |
-;; | KEY         |                | Notes<key              |
-;; | GEO         |                | Notes<geo              |
-;; | TZ          |                | Notes<tz               |
-;; | PHOTO       |                | Notes<photo            |
-;; | LABEL       |                | Notes<label            |
-;; | LOGO        |                | Notes<logo             |
-;; | SOUND       |                | Notes<sound            |
-;; | TITLE       |                | Notes<title            |
-;; | ROLE        |                | Notes<role             |
-;; | AGENT       |                | Notes<agent            |
-;; | MAILER      |                | Notes<mailer           |
-;; | UID         |                | Notes<uid              |
-;; | PRODID      |                | Notes<prodid           |
-;; | CLASS       |                | Notes<class            |
-;; | X-foo       |                | Notes<x-foo            |
-;; | REV         |                | Notes<rev              |
-;; |-------------+----------------+------------------------|
-;; | anyJunK     | ;a=x;b=y       | Notes<anyjunk;a=x;b=y  |
-;; |-------------+----------------+------------------------|
+;; |-------------+-------------------+------------------------|
+;; | TYPE FROM   | VCARD             | STORAGE IN BBDB        |
+;; | VCARD       | PARAMETERS        |                        |
+;; |             |                   |                        |
+;; |-------------+-------------------+------------------------|
+;; | VERSION     |                   | -                      |
+;; |-------------+-------------------+------------------------|
+;; | N           |                   | First entry:           |
+;; |             |                   | Firstname              |
+;; |             |                   | Lastname               |
+;; |             |                   |                        |
+;; |             |                   | Rest:                  |
+;; |             |                   | AKAs (append)          |
+;; |-------------+-------------------+------------------------|
+;; | FN          |                   | AKAs (append)          |
+;; | NICKNAME    |                   | AKAs (append)          |
+;; |-------------+-------------------+------------------------|
+;; | ORG         |                   | First entry:           |
+;; |             |                   | Company                |
+;; |             |                   |                        |
+;; |             |                   | Rest:                  |
+;; |             |                   | Notes<org              |
+;; |             |                   | (repeatedly)           |
+;; |-------------+-------------------+------------------------|
+;; | ADR         | ;TYPE=x,HOME,y    | Addresses<Home         |
+;; |             | ;TYPE=x;TYPE=HOME | Addresses<Home         |
+;; |             | ;TYPE=x,WORK,y    | Addresses<Office       |
+;; |             | ;TYPE=x;TYPE=WORK | Addresses<Office       |
+;; |             | ;TYPE=x,y,z       | Addresses<x,y,z        |
+;; |             | ;TYPE=x;TYPE=y    | Addresses<x,y          |
+;; |             | (none)            | Addresses<Office       |
+;; |-------------+-------------------+------------------------|
+;; | TEL         | ;TYPE=x,HOME,y    | Phones<Home (append)   |
+;; |             | ;TYPE=x;TYPE=HOME | Phones<Home (append)   |
+;; |             | ;TYPE=x,WORK,y    | Phones<Office (append) |
+;; |             | ;TYPE=x;TYPE=WORK | Phones<Office (append) |
+;; |             | ;TYPE=x,CELL,y    | Phones<Mobile (append) |
+;; |             | ;TYPE=x;TYPE=CELL | Phones<Mobile (append) |
+;; |             | ;TYPE=x,y,z       | Phones<x,y,z (append)  |
+;; |             | ;TYPE=x;TYPE=y    | Phones<x,y (append)    |
+;; |             | (none)            | Phones<Office (append) |
+;; |-------------+-------------------+------------------------|
+;; | EMAIL       | ;TYPE=x,y,z       | Net-Addresses (append) |
+;; | URL         |                   | Notes<www              |
+;; | BDAY        |                   | Notes<anniversary      |
+;; |-------------+-------------------+------------------------|
+;; | NOTE        |                   | First time:            |
+;; |             |                   | Notes<notes            |
+;; |             |                   |                        |
+;; |             |                   | Later:                 |
+;; |             |                   | Notes<vcard-notes      |
+;; |-------------+-------------------+------------------------|
+;; | CATEGORIES  |                   | Notes<categories       |
+;; | SORT-STRING |                   | Notes<sort-string      |
+;; | KEY         |                   | Notes<key              |
+;; | GEO         |                   | Notes<geo              |
+;; | TZ          |                   | Notes<tz               |
+;; | PHOTO       |                   | Notes<photo            |
+;; | LABEL       |                   | Notes<label            |
+;; | LOGO        |                   | Notes<logo             |
+;; | SOUND       |                   | Notes<sound            |
+;; | TITLE       |                   | Notes<title            |
+;; | ROLE        |                   | Notes<role             |
+;; | AGENT       |                   | Notes<agent            |
+;; | MAILER      |                   | Notes<mailer           |
+;; | UID         |                   | Notes<uid              |
+;; | PRODID      |                   | Notes<prodid           |
+;; | CLASS       |                   | Notes<class            |
+;; | X-foo       |                   | Notes<x-foo            |
+;; | REV         |                   | Notes<rev              |
+;; |-------------+-------------------+------------------------|
+;; | anyJunK     | ;a=x;b=y          | Notes<anyjunk;a=x;b=y  |
+;; |-------------+-------------------+------------------------|
 ;; "
 
 ;;; Code:
@@ -255,14 +262,14 @@ in BBDB.  Extend existing BBDB entries where possible."
            ;; Additional names from prefixed types like A.N, B.N etc.:
            (other-names
             (mapcar
-             (lambda (element)
+             (lambda (n)
                (mapconcat 'identity (bbdb-vcard-convert-name
-                                     (cdr (assoc "value" element)))
+                                     (cdr (assoc "value" n)))
                           " "))
              (bbdb-vcard-entries-of-type "N")))
            (vcard-formatted-names
             (bbdb-vcard-unescape-strings
-             (mapcar (lambda (element) (cdr (assoc "value" element)))
+             (mapcar (lambda (fn) (cdr (assoc "value" fn)))
                      (bbdb-vcard-entries-of-type "FN"))))
            (vcard-nicknames
             (bbdb-vcard-unescape-strings
@@ -280,7 +287,7 @@ in BBDB.  Extend existing BBDB entries where possible."
            (org-to-search-for vcard-org)      ; sorry
            ;; Email suitable for storing in BBDB:
            (vcard-email
-            (mapcar (lambda (element) (cdr (assoc "value" element)))
+            (mapcar (lambda (email) (cdr (assoc "value" email)))
                     (bbdb-vcard-entries-of-type "EMAIL")))
            ;; Email to search for in BBDB now:
            (email-to-search-for
@@ -289,25 +296,15 @@ in BBDB.  Extend existing BBDB entries where possible."
                                 "\\)")))
            ;; Phone numbers
            (vcard-tels
-            (mapcar (lambda (element)
+            (mapcar (lambda (tel)
                       (vector (bbdb-vcard-translate
-                               (or (cdr (assoc "type" element)) ""))
-                              (cdr (assoc "value" element))))
+                               (or (cdr (assoc "type" tel)) ""))
+                              (cdr (assoc "value" tel))))
                     (bbdb-vcard-entries-of-type "TEL")))
            ;; Addresses
            (vcard-adrs
-            (mapcar
-             (lambda (element)
-               (vector (bbdb-vcard-translate
-                        (or (cdr (assoc "type" element)) ""))
-                       ;; Postbox, Extended, Streets
-                       (remove-if (lambda (x) (zerop (length x)))
-                                  (subseq (cdr (assoc "value" element)) 0 3))
-                       (elt (cdr (assoc "value" element)) 3)   ; City
-                       (elt (cdr (assoc "value" element)) 4)   ; State
-                       (elt (cdr (assoc "value" element)) 5)   ; Zip
-                       (elt (cdr (assoc "value" element)) 6))) ; Country
-             (bbdb-vcard-entries-of-type "ADR")))
+            (mapcar 'bbdb-vcard-convert-adr
+                    (bbdb-vcard-entries-of-type "ADR")))
            (vcard-url
             (cdr (assoc "value" (car (bbdb-vcard-entries-of-type "URL" t)))))
            (vcard-notes (bbdb-vcard-entries-of-type "NOTE"))
@@ -423,15 +420,16 @@ ESCAPED-STRINGS may be a string or a sequence of strings."
         (unescape escaped-strings)
       (mapcar 'unescape
           escaped-strings))))
-  
 
 (defun bbdb-vcard-convert-name (vcard-name)
   "Convert VCARD-NAME (type N) into (FIRSTNAME LASTNAME)."
   (if (stringp vcard-name)              ; unstructured N
       (bbdb-divide-name vcard-name)
     (let ((vcard-name
-           (mapcar (lambda (x) (replace-regexp-in-string
-                                "[^\\\\]\\(,\\)" " " x nil nil 1))
+           (mapcar (lambda (x)
+                     (mapconcat 'identity
+                                (bbdb-vcard-split-structured-text x "," t)
+                                " "))
                    vcard-name))) ; flatten comma-separated substructure
       (list (concat (nth 3 vcard-name)  ; honorific prefixes
                     (when (nth 3 vcard-name) " ")
@@ -448,6 +446,25 @@ ESCAPED-STRINGS may be a string or a sequence of strings."
           (stringp vcard-org)) ; unstructured, probably non-standard ORG
       vcard-org                ; Company, unit 1, unit 2...
     (mapconcat 'identity vcard-org "\n")))
+
+(defun bbdb-vcard-convert-adr (vcard-adr)
+  "Convert VCARD-ADR (element of type ADR) into
+(TYPE STREETS CITY STATE ZIP COUNTRY)."
+  (let ((adr-type (or (cdr (assoc "type" vcard-adr)) ""))
+        (adr-value (mapcar      ; flatten comma-separated substructure
+                    (lambda (x)
+                      (mapconcat 'identity
+                                 (bbdb-vcard-split-structured-text x "," t)
+                                 ", "))
+                    (cdr (assoc "value" vcard-adr)))))
+    (vector (bbdb-vcard-translate adr-type)
+            ;; Postbox, Extended, Streets
+            (remove-if (lambda (x) (zerop (length x)))
+                       (subseq adr-value 0 3))
+            (elt adr-value 3)           ; City
+            (elt adr-value 4)           ; State
+            (elt adr-value 5)           ; Zip
+            (elt adr-value 6))))        ; Country
 
 (defun bbdb-vcard-entries-of-type (type &optional one-is-enough-p)
   "From current buffer containing a single vcard, read and delete the entries
@@ -468,12 +485,20 @@ TYPE."
                            (match-string 4) ";")) parameters)
       (while (re-search-forward "\\([^;:=]+\\)=\\([^;:]+\\)"
                                 (line-end-position) t)
-        (push (cons (downcase (match-string 1))
-                    (downcase (match-string 2))) parameters))
+        (let* ((parameter-key (downcase (match-string 1)))
+               (parameter-value (downcase (match-string 2)))
+               (parameter-sibling (assoc parameter-key parameters)))
+          (if parameter-sibling         ; i.e., pair with equal key
+              ;; collect vcard parameter list `;a=x;a=y;a=z'
+              ;; into vcard value list `;a=x,y,z'; becoming ("a" . "x,y,z")
+              (setf (cdr parameter-sibling)
+                    (concat (cdr parameter-sibling) "," parameter-value))
+            ;; vcard parameter pair `;key=value;' with new key
+            (push (cons parameter-key parameter-value) parameters))))
       (push parameters values)
       (delete-region (line-end-position 0) (line-end-position))
       (when one-is-enough-p (setq read-enough t)))
-    values))
+    (print values)))
 
 (defun bbdb-vcard-other-entry ()
   "From current buffer containing a single vcard, read and delete the topmost
