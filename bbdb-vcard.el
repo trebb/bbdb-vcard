@@ -423,14 +423,16 @@ stripped off.) Extend existing BBDB entries where possible."
                 "\n" "; " (or (bbdb-record-company bbdb-record) "-"))))))
 
 (defun bbdb-vcard-unescape-strings (escaped-strings)
-  "Unescape escaped commas and semi-colons in ESCAPED-STRINGS.
+  "Unescape escaped newlines, commas and semi-colons in ESCAPED-STRINGS.
 ESCAPED-STRINGS may be a string or a sequence of strings."
   (flet ((unescape (x) (replace-regexp-in-string
-                        "\\([\\\\]\\)\\(,\\|;\\)" "" x nil nil 1)))
+                        "\\([\\\\]\\)\\([,;\\]\\)" ""
+                        (replace-regexp-in-string "\\\\n" "\n" x)
+                        nil nil 1)))
     (if (stringp escaped-strings)
         (unescape escaped-strings)
       (mapcar 'unescape
-          escaped-strings))))
+              escaped-strings))))
 
 (defun bbdb-vcard-convert-name (vcard-name)
   "Convert VCARD-NAME (type N) into (FIRSTNAME LASTNAME)."
@@ -514,13 +516,13 @@ ONE-IS-ENOUGH-P is t, read and delete only the first entry of TYPE."
 
 (defun bbdb-vcard-other-entry ()
   "From current buffer read and delete the topmost vcard entry.
-Buffer is supposed to contai a single vcard.  Return (TYPE . ENTRY)."
+Buffer is supposed to contain a single vcard.  Return (TYPE . ENTRY)."
   (goto-char (point-min))
   (when (re-search-forward "^\\([[:graph:]]*?\\):\\(.*\\)$" nil t)
     (let ((type (match-string 1))
           (value (match-string 2)))
       (delete-region (match-beginning 0) (match-end 0))
-      (cons (intern (downcase type)) value))))
+      (cons (intern (downcase type)) (bbdb-vcard-unescape-strings value)))))
 
 (defun bbdb-vcard-split-structured-text
   (text separator &optional return-always-list-p)

@@ -8,6 +8,8 @@
 ;; For the sake of minimality, not all test cases are rfc compliant.
 
 
+(require 'bbdb-vcard)
+
 (defun bbdb-vcard-test (vcard bbdb-entry
                               search-name &optional search-company search-net)
   "Import VCARD and search for it in bbdb by SEARCH-NAME, SEARCH-COMPANY,
@@ -65,7 +67,7 @@ EMAIL:first1@provider1
 MAILER:Wanderlust1
 TZ:+01:00
 GEO:37.386013;-122.082932
-TITLE:Director\, Research and Development
+TITLE:Director\\, Research and Development
 ROLE:Programmer
 LOGO:encoded logo #1
 AGENT:CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com
@@ -83,42 +85,42 @@ KEY:The Key No 1
 X-foo:extended type 1
 END:VCARD
 "
- ["First1" "Last1"
-  ("First1 Last1" "Firsty1")
-  "Company1
+["First1" "Last1"
+ ("First1 Last1" "Firsty1")
+ "Company1
 Unit1
 Subunit1"
-  nil
-  (["Office"
-    ("Box111" "Room 111" "First Street, First Corner")
-    "Cityone"
-    "First State"
-    "11111"
-    "Country"])
-  ("first1@provider1")
-  ((x-foo . "extended type 1")
-   (key . "The Key No 1")
-   (class . "CONFIDENTIAL")
-   (uid . "111-111-111-111")
-   (sound . "Audible1")
-   (sort-string . "aaa000")
-   (rev . "1995-10-31T22:27:10Z")
-   (prodid . "-//ONLINE DIRECTORY//NONSGML Version 1//EN")
-   (categories . "category1")
-   (agent . "CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com")
-   (logo . "encoded logo #1")
-   (role . "Programmer")
-   (title . "Director, Research and Development")
-   (geo . "37.386013;-122.082932")
-   (tz . "+01:00")
-   (mailer . "Wanderlust1")
-   (tel=home . "+11111111")
-   (label . "Label 1")
-   (photo . "The Alphabet:abcdefghijklmnopqrstuvwsyz")
-   (anniversary . "1999-12-05 birthday")
-   (notes . "This vcard uses every type defined in rfc2426.")
-   (www . "first1@host1.org")
-   (creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
+ nil
+ (["Office"
+   ("Box111" "Room 111" "First Street, First Corner")
+   "Cityone"
+   "First State"
+   "11111"
+   "Country"])
+ ("first1@provider1")
+ ((x-foo . "extended type 1")
+  (key . "The Key No 1")
+  (class . "CONFIDENTIAL")
+  (uid . "111-111-111-111")
+  (sound . "Audible1")
+  (sort-string . "aaa000")
+  (rev . "1995-10-31T22:27:10Z")
+  (prodid . "-//ONLINE DIRECTORY//NONSGML Version 1//EN")
+  (categories . "category1")
+  (agent . "CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com")
+  (logo . "encoded logo #1")
+  (role . "Programmer")
+  (title . "Director, Research and Development")
+  (geo . "37.386013;-122.082932")
+  (tz . "+01:00")
+  (mailer . "Wanderlust1")
+  (tel=home . "+11111111")
+  (label . "Label 1")
+  (photo . "The Alphabet:abcdefghijklmnopqrstuvwsyz")
+  (anniversary . "1999-12-05 birthday")
+  (notes . "This vcard uses every type defined in rfc2426.")
+  (www . "first1@host1.org")
+  (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
  "First1 Last1")
 
 
@@ -128,7 +130,7 @@ Subunit1"
 ------------------------------------------------------------
 BEGIN:VCARD
 VERSION:3.0
-FN:Mr. John Q. Public\, Esq.
+FN:Mr. John Q. Public\\, Esq.
 N:Stevenson;John;Philip,Paul;Dr.;Jr.,M.D.,A.C.P.
 NICKNAME:Robbie
 PHOTO;VALUE=uri:http://www.abc.com/pub/photos
@@ -136,126 +138,26 @@ PHOTO;VALUE=uri:http://www.abc.com/pub/photos
 BDAY:1996-04-15
 ADR;TYPE=dom,home,postal,parcel:;;123 Main
   Street;Any Town;CA;91921-1234
-LABEL;TYPE=dom,home,postal,parcel:Mr.John Q. Public\, Esq.\n
- Mail Drop: TNE QB\n123 Main Street\nAny Town\, CA  91921-1234
- \nU.S.A.
+LABEL;TYPE=dom,home,postal,parcel:Mr.John Q. Public\\, Esq.\\n
+ Mail Drop: TNE QB\\n123 Main Street\\nAny Town\\, CA  91921-1234
+ \\nU.S.A.
 TEL;TYPE=work,voice,pref,msg:+1-213-555-1234
 EMAIL;TYPE=internet:jqpublic@xyz.dom1.com
 EMAIL;TYPE=internet:jdoe@isp.net
 MAILER:PigeonMail 2.1
 TZ:-05:00
 GEO:37.386013;-122.082932
-TITLE:Director\, Research and Development
+TITLE:Director\\, Research and Development
 ROLE:Programmer
 LOGO;ENCODING=b;TYPE=JPEG:MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcN
  AQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bm
  ljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0
 AGENT;VALUE=uri:
  CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com
-ORG:ABC\, Inc.;North American Division;Marketing
+ORG:ABC\\, Inc.;North American Division;Marketing
 CATEGORIES:TRAVEL AGENT
 NOTE:This fax number is operational 0800 to 1715
-  EST\, Mon-Fri.
-PRODID:-//ONLINE DIRECTORY//NONSGML Version 1//EN
-REV:1995-10-31T22:27:10Z
-SOUND;TYPE=BASIC;ENCODING=b:MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcN
- AQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bm
- ljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0
-UID:19950401-080045-40000F192713-0052
-URL:http://www.swbyps.restaurant.french/~chezchic.html
-CLASS:PUBLIC
-KEY;ENCODING=b:MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQA
- wdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENbW11bmljYX
- Rpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0
- ZW1zMRwwGgYDVQQDExNyb290Y2EubmV0c2NhcGUuY29tMB4XDTk3MDYwNj
- E5NDc1OVoXDTk3MTIwMzE5NDc1OVowgYkxCzAJBgNVBAYTAlVTMSYwJAYD
- VQQKEx1OZXRzY2FwZSBDb21tdW5pY2F0aW9ucyBDb3JwLjEYMBYGA1UEAx
- MPVGltb3RoeSBBIEhvd2VzMSEwHwYJKoZIhvcNAQkBFhJob3dlc0BuZXRz
- Y2FwZS5jb20xFTATBgoJkiaJk/IsZAEBEwVob3dlczBcMA0GCSqGSIb3DQ
- EBAQUAA0sAMEgCQQC0JZf6wkg8pLMXHHCUvMfL5H6zjSk4vTTXZpYyrdN2
- dXcoX49LKiOmgeJSzoiFKHtLOIboyludF90CgqcxtwKnAgMBAAGjNjA0MB
- EGCWCGSAGG+EIBAQQEAwIAoDAfBgNVHSMEGDAWgBT84FToB/GV3jr3mcau
- +hUMbsQukjANBgkqhkiG9w0BAQQFAAOBgQBexv7o7mi3PLXadkmNP9LcIP
- mx93HGp0Kgyx1jIVMyNgsemeAwBM+MSlhMfcpbTrONwNjZYW8vJDSoi//y
- rZlVt9bJbs7MNYZVsyF1unsqaln4/vy6Uawfg8VUMk1U7jt8LYpo4YULU7
- UZHPYVUaSgVttImOHZIKi4hlPXBOhcUQ==
-END:VCARD
-"
- ["Dr. John Philip Paul" "Stevenson Jr. M.D. A.C.P."
-  ("Mr. John Q. Public, Esq." "Robbie")
-  "ABC, Inc.
-North American Division
-Marketing"
-  (["Office" "+1-213-555-1234"])
-  (["Home"
-    ("123 Main Street")
-    "Any Town"
-    "CA"
-    "91921-1234"
-    nil])
-  ("jdoe@isp.net" "jqpublic@xyz.dom1.com")
-  ((key\;encoding=b
-    . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0ZW1zMRwwGgYDVQQDExNyb290Y2EubmV0c2NhcGUuY29tMB4XDTk3MDYwNjE5NDc1OVoXDTk3MTIwMzE5NDc1OVowgYkxCzAJBgNVBAYTAlVTMSYwJAYDVQQKEx1OZXRzY2FwZSBDb21tdW5pY2F0aW9ucyBDb3JwLjEYMBYGA1UEAxMPVGltb3RoeSBBIEhvd2VzMSEwHwYJKoZIhvcNAQkBFhJob3dlc0BuZXRzY2FwZS5jb20xFTATBgoJkiaJk/IsZAEBEwVob3dlczBcMA0GCSqGSIb3DQEBAQUAA0sAMEgCQQC0JZf6wkg8pLMXHHCUvMfL5H6zjSk4vTTXZpYyrdN2dXcoX49LKiOmgeJSzoiFKHtLOIboyludF90CgqcxtwKnAgMBAAGjNjA0MBEGCWCGSAGG+EIBAQQEAwIAoDAfBgNVHSMEGDAWgBT84FToB/GV3jr3mcau+hUMbsQukjANBgkqhkiG9w0BAQQFAAOBgQBexv7o7mi3PLXadkmNP9LcIPmx93HGp0Kgyx1jIVMyNgsemeAwBM+MSlhMfcpbTrONwNjZYW8vJDSoi//yrZlVt9bJbs7MNYZVsyF1unsqaln4/vy6Uawfg8VUMk1U7jt8LYpo4YULU7UZHPYVUaSgVttImOHZIKi4hlPXBOhcUQ==")
-   (class . "PUBLIC")
-   (uid . "19950401-080045-40000F192713-0052")
-   (sound\;type=basic\;encoding=b
-    . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0")
-   (rev . "1995-10-31T22:27:10Z")
-   (prodid . "-//ONLINE DIRECTORY//NONSGML Version 1//EN")
-   (categories . "TRAVEL AGENT")
-   (agent\;value=uri
-    . "CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com")
-   (logo\;encoding=b\;type=jpeg
-    . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0")
-   (role . "Programmer")
-   (title . "Director, Research and Development")
-   (geo . "37.386013;-122.082932")
-   (tz . "-05:00")
-   (mailer . "PigeonMail 2.1")
-   (label\;type=dom\,home\,postal\,parcel . "Mr.John Q. Public, Esq.")
-   (photo\;value=uri . "http://www.abc.com/pub/photos/jqpublic.gif")
-   (anniversary . "1996-04-15 birthday")
-   (notes . "This fax number is operational 0800 to 1715 EST, Mon-Fri.")
-   (www . "http://www.swbyps.restaurant.french/~chezchic.html")
-   (creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
- "John")
-
-
-(bbdb-vcard-test
- "
-** Exactly the same as before.
-   Re-reading it shouldn't duplicate anything but the NOTE.
-------------------------------------------------------------
-BEGIN:VCARD
-VERSION:3.0
-FN:Mr. John Q. Public\, Esq.
-N:Stevenson;John;Philip,Paul;Dr.;Jr.,M.D.,A.C.P.
-NICKNAME:Robbie
-PHOTO;VALUE=uri:http://www.abc.com/pub/photos
- /jqpublic.gif
-BDAY:1996-04-15
-ADR;TYPE=dom,home,postal,parcel:;;123 Main
-  Street;Any Town;CA;91921-1234
-LABEL;TYPE=dom,home,postal,parcel:Mr.John Q. Public\, Esq.\n
- Mail Drop: TNE QB\n123 Main Street\nAny Town\, CA  91921-1234
- \nU.S.A.
-TEL;TYPE=work,voice,pref,msg:+1-213-555-1234
-EMAIL;TYPE=internet:jqpublic@xyz.dom1.com
-EMAIL;TYPE=internet:jdoe@isp.net
-MAILER:PigeonMail 2.1
-TZ:-05:00
-GEO:37.386013;-122.082932
-TITLE:Director\, Research and Development
-ROLE:Programmer
-LOGO;ENCODING=b;TYPE=JPEG:MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcN
- AQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bm
- ljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0
-AGENT;VALUE=uri:
- CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com
-ORG:ABC\, Inc.;North American Division;Marketing
-CATEGORIES:TRAVEL AGENT
-NOTE:This fax number is operational 0800 to 1715
-  EST\, Mon-Fri.
+  EST\\, Mon-Fri.
 PRODID:-//ONLINE DIRECTORY//NONSGML Version 1//EN
 REV:1995-10-31T22:27:10Z
 SOUND;TYPE=BASIC;ENCODING=b:MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcN
@@ -311,7 +213,108 @@ Marketing"
    (geo . "37.386013;-122.082932")
    (tz . "-05:00")
    (mailer . "PigeonMail 2.1")
-   (label\;type=dom\,home\,postal\,parcel . "Mr.John Q. Public, Esq.")
+   (label\;type=dom\,home\,postal\,parcel
+    . "Mr.John Q. Public, Esq.\nMail Drop: TNE QB\n123 Main Street\nAny Town, CA  91921-1234\nU.S.A.")
+   (photo\;value=uri . "http://www.abc.com/pub/photos/jqpublic.gif")
+   (anniversary . "1996-04-15 birthday")
+   (notes . "This fax number is operational 0800 to 1715 EST, Mon-Fri.")
+   (www . "http://www.swbyps.restaurant.french/~chezchic.html")
+   (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
+ "John")
+
+
+(bbdb-vcard-test
+ "
+** Exactly the same as before.
+   Re-reading it shouldn't duplicate anything but the NOTE.
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+FN:Mr. John Q. Public\\, Esq.
+N:Stevenson;John;Philip,Paul;Dr.;Jr.,M.D.,A.C.P.
+NICKNAME:Robbie
+PHOTO;VALUE=uri:http://www.abc.com/pub/photos
+ /jqpublic.gif
+BDAY:1996-04-15
+ADR;TYPE=dom,home,postal,parcel:;;123 Main
+  Street;Any Town;CA;91921-1234
+LABEL;TYPE=dom,home,postal,parcel:Mr.John Q. Public\\, Esq.\\n
+ Mail Drop: TNE QB\\n123 Main Street\\nAny Town\\, CA  91921-1234
+ \\nU.S.A.
+TEL;TYPE=work,voice,pref,msg:+1-213-555-1234
+EMAIL;TYPE=internet:jqpublic@xyz.dom1.com
+EMAIL;TYPE=internet:jdoe@isp.net
+MAILER:PigeonMail 2.1
+TZ:-05:00
+GEO:37.386013;-122.082932
+TITLE:Director\\, Research and Development
+ROLE:Programmer
+LOGO;ENCODING=b;TYPE=JPEG:MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcN
+ AQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bm
+ ljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0
+AGENT;VALUE=uri:
+ CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com
+ORG:ABC\\, Inc.;North American Division;Marketing
+CATEGORIES:TRAVEL AGENT
+NOTE:This fax number is operational 0800 to 1715
+  EST\\, Mon-Fri.
+PRODID:-//ONLINE DIRECTORY//NONSGML Version 1//EN
+REV:1995-10-31T22:27:10Z
+SOUND;TYPE=BASIC;ENCODING=b:MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcN
+ AQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bm
+ ljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0
+UID:19950401-080045-40000F192713-0052
+URL:http://www.swbyps.restaurant.french/~chezchic.html
+CLASS:PUBLIC
+KEY;ENCODING=b:MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQA
+ wdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENbW11bmljYX
+ Rpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0
+ ZW1zMRwwGgYDVQQDExNyb290Y2EubmV0c2NhcGUuY29tMB4XDTk3MDYwNj
+ E5NDc1OVoXDTk3MTIwMzE5NDc1OVowgYkxCzAJBgNVBAYTAlVTMSYwJAYD
+ VQQKEx1OZXRzY2FwZSBDb21tdW5pY2F0aW9ucyBDb3JwLjEYMBYGA1UEAx
+ MPVGltb3RoeSBBIEhvd2VzMSEwHwYJKoZIhvcNAQkBFhJob3dlc0BuZXRz
+ Y2FwZS5jb20xFTATBgoJkiaJk/IsZAEBEwVob3dlczBcMA0GCSqGSIb3DQ
+ EBAQUAA0sAMEgCQQC0JZf6wkg8pLMXHHCUvMfL5H6zjSk4vTTXZpYyrdN2
+ dXcoX49LKiOmgeJSzoiFKHtLOIboyludF90CgqcxtwKnAgMBAAGjNjA0MB
+ EGCWCGSAGG+EIBAQQEAwIAoDAfBgNVHSMEGDAWgBT84FToB/GV3jr3mcau
+ +hUMbsQukjANBgkqhkiG9w0BAQQFAAOBgQBexv7o7mi3PLXadkmNP9LcIP
+ mx93HGp0Kgyx1jIVMyNgsemeAwBM+MSlhMfcpbTrONwNjZYW8vJDSoi//y
+ rZlVt9bJbs7MNYZVsyF1unsqaln4/vy6Uawfg8VUMk1U7jt8LYpo4YULU7
+ UZHPYVUaSgVttImOHZIKi4hlPXBOhcUQ==
+END:VCARD
+"
+ ["Dr. John Philip Paul" "Stevenson Jr. M.D. A.C.P."
+  ("Mr. John Q. Public, Esq." "Robbie")
+  "ABC, Inc.
+North American Division
+Marketing"
+  (["Office" "+1-213-555-1234"])
+  (["Home"
+    ("123 Main Street")
+    "Any Town"
+    "CA"
+    "91921-1234"
+    nil])
+  ("jdoe@isp.net" "jqpublic@xyz.dom1.com")
+  ((key\;encoding=b
+    . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0ZW1zMRwwGgYDVQQDExNyb290Y2EubmV0c2NhcGUuY29tMB4XDTk3MDYwNjE5NDc1OVoXDTk3MTIwMzE5NDc1OVowgYkxCzAJBgNVBAYTAlVTMSYwJAYDVQQKEx1OZXRzY2FwZSBDb21tdW5pY2F0aW9ucyBDb3JwLjEYMBYGA1UEAxMPVGltb3RoeSBBIEhvd2VzMSEwHwYJKoZIhvcNAQkBFhJob3dlc0BuZXRzY2FwZS5jb20xFTATBgoJkiaJk/IsZAEBEwVob3dlczBcMA0GCSqGSIb3DQEBAQUAA0sAMEgCQQC0JZf6wkg8pLMXHHCUvMfL5H6zjSk4vTTXZpYyrdN2dXcoX49LKiOmgeJSzoiFKHtLOIboyludF90CgqcxtwKnAgMBAAGjNjA0MBEGCWCGSAGG+EIBAQQEAwIAoDAfBgNVHSMEGDAWgBT84FToB/GV3jr3mcau+hUMbsQukjANBgkqhkiG9w0BAQQFAAOBgQBexv7o7mi3PLXadkmNP9LcIPmx93HGp0Kgyx1jIVMyNgsemeAwBM+MSlhMfcpbTrONwNjZYW8vJDSoi//yrZlVt9bJbs7MNYZVsyF1unsqaln4/vy6Uawfg8VUMk1U7jt8LYpo4YULU7UZHPYVUaSgVttImOHZIKi4hlPXBOhcUQ==")
+   (class . "PUBLIC")
+   (uid . "19950401-080045-40000F192713-0052")
+   (sound\;type=basic\;encoding=b
+    . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0")
+   (rev . "1995-10-31T22:27:10Z")
+   (prodid . "-//ONLINE DIRECTORY//NONSGML Version 1//EN")
+   (categories . "TRAVEL AGENT")
+   (agent\;value=uri . "CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com")
+   (logo\;encoding=b\;type=jpeg
+    . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0")
+   (role . "Programmer")
+   (title . "Director, Research and Development")
+   (geo . "37.386013;-122.082932")
+   (tz . "-05:00")
+   (mailer . "PigeonMail 2.1")
+   (label\;type=dom\,home\,postal\,parcel
+    . "Mr.John Q. Public, Esq.\nMail Drop: TNE QB\n123 Main Street\nAny Town, CA  91921-1234\nU.S.A.")
    (photo\;value=uri . "http://www.abc.com/pub/photos/jqpublic.gif")
    (anniversary . "1996-04-15 birthday")
    (vcard-notes . "This fax number is operational 0800 to 1715 EST, Mon-Fri.")
@@ -327,7 +330,7 @@ Marketing"
 ------------------------------------------------------------
 BEGIN:VCARD
 VERSION:3.0
-FN:Mr. John Q. Public\, Esq.
+FN:Mr. John Q. Public\\, Esq.
 N:Public;John;Quinlan;Mr.;Esq.
 NICKNAME:Jim,Jimmie
 PHOTO;ENCODING=b;TYPE=JPEG:MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcN
@@ -337,8 +340,8 @@ BDAY:1987-09-27T08:30:00-06:00
 EMAIL;TYPE=internet,pref:jane_doe@abc.com
 TZ;VALUE=text:-05:00; EST; Raleigh/North America
 LOGO;VALUE=uri:http://www.abc.com/pub/logos/abccorp.jpg
-AGENT:BEGIN:VCARD\nFN:Susan Thomas\nTEL:+1-919-555-
- 1234\nEMAIL\;INTERNET:sthomas@host.com\nEND:VCARD\n
+AGENT:BEGIN:VCARD\\nFN:Susan Thomas\\nTEL:+1-919-555-
+ 1234\\nEMAIL\\;INTERNET:sthomas@host.com\\nEND:VCARD\\n
 CATEGORIES:INTERNET,IETF,INDUSTRY,INFORMATION TECHNOLOGY
 REV:1997-11-15
 SOUND;TYPE=BASIC;VALUE=uri:CID:JOHNQPUBLIC.part8.
@@ -348,20 +351,26 @@ NOTE:A note
 END:VCARD
 "
  ["Mr. John Quinlan" "Public Esq."
-  ("Mr. John Q. Public, Esq." "Susan Thomas" "Jim" "Jimmie")
+  ("Mr. John Q. Public, Esq." "Jim" "Jimmie")
   nil
-  (["Office" "+1-919-555-1234"])
   nil
-  ("sthomas@host.com" "jane_doe@abc.com")
-  ((agent . "BEGIN:VCARD")
+  nil
+  ("jane_doe@abc.com")
+  ((class . "PRIVATE")
+   (sound\;type=basic\;value=uri
+    . "CID:JOHNQPUBLIC.part8.19960229T080000.xyzMail@host1.com")
+   (rev . "1997-11-15")
+   (categories . "INTERNET,IETF,INDUSTRY,INFORMATION TECHNOLOGY")
+   (agent
+    . "BEGIN:VCARD\nFN:Susan Thomas\nTEL:+1-919-555-1234\nEMAIL;INTERNET:sthomas@host.com\nEND:VCARD\n")
    (logo\;value=uri . "http://www.abc.com/pub/logos/abccorp.jpg")
    (tz\;value=text . "-05:00; EST; Raleigh/North America")
    (photo\;encoding=b\;type=jpeg
     . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0")
    (anniversary . "1987-09-27T08:30:00-06:00 birthday")
+   (notes . "A note")
    (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
  "Public")
-
 
 
 (bbdb-vcard-test 
