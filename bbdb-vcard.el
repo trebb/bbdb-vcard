@@ -236,14 +236,14 @@ Existing BBDB entries may be altered."
     (goto-char (point-min))
     ;; Change CR into CRLF if necessary, dealing with inconsitent line
     ;; endings.
-    (while (re-search-forward "[^]\\(\n\\)" nil t)
-      (replace-match "\n" nil nil nil 1))
+    (while (re-search-forward "[^\r]\\(\n\\)" nil t)
+      (replace-match "\r\n" nil nil nil 1))
     (goto-char (point-min))
-    (while (re-search-forward "\n\\( \\|\t\\)" nil t)
+    (while (re-search-forward "\r\n\\( \\|\t\\)" nil t)
       (replace-match "")) ; Unfold folded lines.
     (goto-char (point-min))
     (while (re-search-forward
-            "^\\([[:alnum:]-]*\\.\\)?*BEGIN:VCARD\\([\n[:print:][:cntrl:]]*?\\)\\(^\\([[:alnum:]-]*\\.\\)?END:VCARD\\)"
+            "^\\([[:alnum:]-]*\\.\\)?*BEGIN:VCARD\\([\r\n[:print:][:cntrl:]]*?\\)\\(^\\([[:alnum:]-]*\\.\\)?END:VCARD\\)"
             nil t)
       (funcall vcard-processor (match-string 2)))))
 
@@ -491,7 +491,7 @@ ONE-IS-ENOUGH-P is t, read and delete only the first entry of TYPE."
          (not read-enough)
          (re-search-forward
           (concat
-           "^\\([[:alnum:]-]*\\.\\)?\\(" type "\\)\\(;.*\\)?:\\(.*\\)$")
+           "^\\([[:alnum:]-]*\\.\\)?\\(" type "\\)\\(;.*\\)?:\\(.*\\)\r$")
           nil t))
       (goto-char (match-end 2))
       (setq parameters nil)
@@ -518,7 +518,7 @@ ONE-IS-ENOUGH-P is t, read and delete only the first entry of TYPE."
   "From current buffer read and delete the topmost vcard entry.
 Buffer is supposed to contain a single vcard.  Return (TYPE . ENTRY)."
   (goto-char (point-min))
-  (when (re-search-forward "^\\([[:graph:]]*?\\):\\(.*\\)$" nil t)
+  (when (re-search-forward "^\\([[:graph:]]*?\\):\\(.*\\)\r$" nil t)
     (let ((type (match-string 1))
           (value (match-string 2)))
       (delete-region (match-beginning 0) (match-end 0))
@@ -533,9 +533,9 @@ is nil."
     (let ((string-elements
            (split-string
             (replace-regexp-in-string
-             (concat "\\\\" separator) (concat "\\\\" separator)
-             (replace-regexp-in-string separator (concat "" separator) text))
-            (concat "" separator))))
+             (concat "\\\\\r" separator) (concat "\\\\" separator)
+             (replace-regexp-in-string separator (concat "\r" separator) text))
+            (concat "\r" separator))))
       (if (and (null return-always-list-p)
                (= 1 (length string-elements)))
           (car string-elements)
