@@ -41,6 +41,11 @@
 ;; Installation
 ;; ------------
 ;;
+;; Put this file into your `load-path' and add the following line to
+;; your Emacs initialization file:
+;;
+;;   (require 'bbdb-vcard)
+;;
 ;; Implementation
 ;; --------------
 ;;
@@ -155,6 +160,11 @@
 ;; |-------------+-------------------+------------------------|
 ;; "
 
+
+;;; History:
+;; 
+
+
 ;;; Code:
 
 (require 'bbdb)
@@ -178,10 +188,11 @@ Example: `X-GSM-\\|X-HTN'."
     ("WORK" . "Office")
     ("HOME" . "Home")  ; translates e.g. "dom,home,postal,parcel" to Home
     ("^$" . "Office")) ; acts as a default for parameterless ADR or TEL
-  "Alist with translations of location labels for addresses and phone
-numbers.  Cells are (VCARD-LABEL-REGEXP . BBDB-LABEL). One entry should map
-a default BBDB label to the empty string (`\"^$\"') which corresponds
-to unlabelled vcard entries."
+  "Label translation.
+Alist with translations of location labels for addresses and phone
+numbers.  Cells are (VCARD-LABEL-REGEXP . BBDB-LABEL).  One entry
+should map a default BBDB label to the empty string (`\"^$\"') which
+corresponds to unlabelled vcard entries."
   :group 'bbdb-vcard
   :type '(alist :key-type
                 (choice regexp (const :tag "Empty (as default)" "^$"))
@@ -189,38 +200,37 @@ to unlabelled vcard entries."
 
 (defcustom bbdb-vcard-try-merge
   t
-  "Wheather or not newly read vcards should be merged with existing
-bbdb entries where possible.  Nil means create a fresh bbdb entry each
-time a vcard is read."
+  "Try to merge vcards into existing BBDB entries.
+Nil means create a fresh bbdb entry each time a vcard is read."
   :group 'bbdb-vcard
   :type 'boolean)
 
 ;;;; User Functions
 
 (defun bbdb-vcard-import-region (begin end)
-  "Import the vcards between point and mark into BBDB.  Existing BBDB
-entries may be altered."
+  "Import the vcards between BEGIN and END into BBDB.
+Existing BBDB entries may be altered."
   (interactive "d \nm")
   (bbdb-vcard-iterate-vcards (buffer-substring-no-properties begin end)
                              'bbdb-vcard-process-vcard))
 
 (defun bbdb-vcard-import-buffer (vcard-buffer)
-  "Import vcards from VCARD-BUFFER into BBDB.  Existing BBDB entries may
-be altered."
+  "Import vcards from VCARD-BUFFER into BBDB.
+Existing BBDB entries may be altered."
   (interactive "bVcard buffer: ")
   (set-buffer vcard-buffer)
   (bbdb-vcard-import-region (point-min) (point-max)))
 
 (defun bbdb-vcard-import-file (vcard-file)
-  "Import vcards from VCARD-FILE into BBDB.  Existing BBDB entries may
-be altered."
+  "Import vcards from VCARD-FILE into BBDB.
+Existing BBDB entries may be altered."
   (interactive "fVcard file: ")
   (with-temp-buffer
     (insert-file-contents vcard-file)
     (bbdb-vcard-import-region (point-min) (point-max))))
 
 (defun bbdb-vcard-iterate-vcards (vcards vcard-processor)
-  "Apply VCARD-PROCESSOR successively to each vcard in string VCARDS"
+  "Apply VCARD-PROCESSOR successively to each vcard in string VCARDS."
   (with-temp-buffer
     (insert vcards)
     (goto-char (point-min))
@@ -238,8 +248,9 @@ be altered."
       (funcall vcard-processor (match-string 2)))))
 
 (defun bbdb-vcard-process-vcard (entry)
-  "Store the vcard ENTRY (BEGIN:VCARD and END:VCARD delimiters stripped off)
-in BBDB.  Extend existing BBDB entries where possible."
+  "Store the vcard ENTRY in BBDB.
+\(ENTRY is expected to have BEGIN:VCARD and END:VCARD delimiters
+stripped off.) Extend existing BBDB entries where possible."
   (with-temp-buffer
     (insert entry)
     (unless
@@ -408,7 +419,7 @@ in BBDB.  Extend existing BBDB entries where possible."
                record-freshness-info
                (bbdb-record-firstname bbdb-record)
                (bbdb-record-lastname bbdb-record)
-               (replace-regexp-in-string 
+               (replace-regexp-in-string
                 "\n" "; " (or (bbdb-record-company bbdb-record) "-"))))))
 
 (defun bbdb-vcard-unescape-strings (escaped-strings)
@@ -448,8 +459,9 @@ ESCAPED-STRINGS may be a string or a sequence of strings."
     (mapconcat 'identity vcard-org "\n")))
 
 (defun bbdb-vcard-convert-adr (vcard-adr)
-  "Convert VCARD-ADR (element of type ADR) into
-(TYPE STREETS CITY STATE ZIP COUNTRY)."
+  "Convert VCARD-ADR into BBDB format.
+Turn an vcard element of type ADR into (TYPE STREETS CITY STATE ZIP
+COUNTRY)."
   (let ((adr-type (or (cdr (assoc "type" vcard-adr)) ""))
         (adr-value (mapcar      ; flatten comma-separated substructure
                     (lambda (x)
@@ -467,9 +479,9 @@ ESCAPED-STRINGS may be a string or a sequence of strings."
             (elt adr-value 6))))        ; Country
 
 (defun bbdb-vcard-entries-of-type (type &optional one-is-enough-p)
-  "From current buffer containing a single vcard, read and delete the entries
-of TYPE.  If ONE-IS-ENOUGH-P is t, read and delete only the first entry of
-TYPE."
+  "From current buffer read and delete the vcard entries of TYPE.
+The current buffer is supposed to contain a single vcard.  If
+ONE-IS-ENOUGH-P is t, read and delete only the first entry of TYPE."
   (goto-char (point-min))
   (let (values parameters read-enough)
     (while
@@ -501,8 +513,8 @@ TYPE."
     (print values)))
 
 (defun bbdb-vcard-other-entry ()
-  "From current buffer containing a single vcard, read and delete the topmost
-entry.  Return (TYPE . ENTRY)."
+  "From current buffer read and delete the topmost vcard entry.
+Buffer is supposed to contai a single vcard.  Return (TYPE . ENTRY)."
   (goto-char (point-min))
   (when (re-search-forward "^\\([[:graph:]]*?\\):\\(.*\\)$" nil t)
     (let ((type (match-string 1))
@@ -528,12 +540,12 @@ is nil."
         string-elements))))
 
 (defun bbdb-vcard-translate (vcard-label)
-  "Translate VCARD-LABEL into its bbdb counterpart as
-defined in `bbdb-vcard-translation-table'."
+  "Translate VCARD-LABEL into its bbdb counterpart.
+Translations are defined in `bbdb-vcard-translation-table'."
   (upcase-initials
    (or (assoc-default vcard-label bbdb-vcard-translation-table 'string-match)
        vcard-label)))
 
 (provide 'bbdb-vcard)
 
-;;; bbdb-vcard.el ends here    
+;;; bbdb-vcard.el ends here
