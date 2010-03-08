@@ -771,3 +771,54 @@ UnitF"
   nil
   ((creation-date . "2010-03-06") (timestamp . "2010-03-06")) ]
  "FirstF FamilyF")
+
+
+(bbdb-vcard-test
+ "
+*** Skip types from bbdb-vcard-skip
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyH;FirstH
+ORG:OrgH;UnitH
+EMAIL:userH@hostH.example.com
+X-GSM-FOO:Blah
+X-GSM-BAR:Blahblah
+END:VCARD
+"
+ ["FirstH" "FamilyH"
+  nil
+  "OrgH
+UnitH"
+  nil
+  nil
+  ("userH@hostH.example.com")
+  ((creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
+ "FirstH FamilyH")
+
+
+(bbdb-vcard-test
+ "
+*** Skip empty types.
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyG;FirstG
+ORG:OrgG;UnitG
+EMAIL:userG@hostG.example.com
+ROLE:
+TITLE:
+GEO:
+END:VCARD
+"
+ ["FirstG" "FamilyG"
+  nil
+  "OrgG
+UnitG"
+  nil
+  nil
+  ("userG@hostG.example.com")
+  ((creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
+ "FirstG FamilyG")
+
+

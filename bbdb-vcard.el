@@ -74,10 +74,9 @@
 ;; and TEL, translation is defined in bbdb-vcard-translation-table.
 ;;
 ;; All remaining vcard types that don't match the regexp in
-;; `bbdb-vcard-skip' are stored unaltered in the BBDB Notes alist
-;; where, for instance, `TZ;VALUE=text:-05:00' is stored as
-;; `(tz\;value=text . "-05:00")'.
-;;
+;; `bbdb-vcard-skip' and that have a non-empty value are stored
+;; unaltered in the BBDB Notes alist where, for instance,
+;; `TZ;VALUE=text:-05:00' is stored as `(tz\;value=text . "-05:00")'.
 ;; From the BBDB data fields AKA, Phones, Addresses, Net Addresses,
 ;; and Notes, duplicates are removed, respectively.
 ;;
@@ -179,9 +178,16 @@
 (defcustom bbdb-vcard-skip
   "X-GSM-"
   "Regexp describing vcard entry types that are to be discarded.
-Example: `X-GSM-\\|X-HTN'."
+Example: `X-GSM-\\|X-MS-'."
   :group 'bbdb-vcard
   :type 'regexp)
+
+(defcustom bbdb-vcard-skip-valueless
+  t
+  "Skip vcard entry types with an empty value.
+Nil means insert empty types into BBDB."
+  :group 'bbdb-vcard
+  :type 'boolean)
 
 (defcustom bbdb-vcard-translation-table
   '(("CELL\\|CAR" . "Mobile")
@@ -405,9 +411,11 @@ stripped off.) Extend existing BBDB entries where possible."
         (push (cons 'anniversary (concat vcard-bday " birthday"))
               bbdb-raw-notes))          ; for consumption by org-mode
       (while (setq other-vcard-type (bbdb-vcard-other-entry))
-        (unless (and bbdb-vcard-skip
-                     (string-match bbdb-vcard-skip
-                                   (symbol-name (car other-vcard-type))))
+        (unless (or (and bbdb-vcard-skip
+                         (string-match bbdb-vcard-skip
+                                       (symbol-name (car other-vcard-type))))
+                    (and bbdb-vcard-skip-valueless
+                         (zerop (length (cdr other-vcard-type)))))
           (push other-vcard-type bbdb-raw-notes)))
       (bbdb-record-set-raw-notes
        bbdb-record
@@ -526,7 +534,7 @@ Buffer is supposed to contain a single vcard.  Return (TYPE . ENTRY)."
 
 (defun bbdb-vcard-split-structured-text
   (text separator &optional return-always-list-p)
-  "Split TEXT at unescaped occurences of SEPARATOR; return parts in a list.
+  "Split TEXT at unescaped occurrences of SEPARATOR; return parts in a list.
 Return text unchanged if there aren't any separators and RETURN-ALWAYS-LIST-P
 is nil."
   (when text
