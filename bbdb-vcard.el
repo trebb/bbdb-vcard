@@ -301,7 +301,7 @@ stripped off.) Extend existing BBDB entries where possible."
               (cdr (assoc "value"
                           (car (bbdb-vcard-entries-of-type "ORG" t)))))))
            ;; Company to search for in BBDB now:
-           (org-to-search-for vcard-org)      ; sorry
+           (org-to-search-for vcard-org) ; sorry
            ;; Email suitable for storing in BBDB:
            (vcard-email
             (mapcar (lambda (email) (cdr (assoc "value" email)))
@@ -309,8 +309,8 @@ stripped off.) Extend existing BBDB entries where possible."
            ;; Email to search for in BBDB now:
            (email-to-search-for
             (when vcard-email (concat "\\("
-                                (mapconcat 'identity vcard-email "\\)\\|\\(")
-                                "\\)")))
+                                      (mapconcat 'identity vcard-email "\\)\\|\\(")
+                                      "\\)")))
            ;; Phone numbers
            (vcard-tels
             (mapcar (lambda (tel)
@@ -380,12 +380,15 @@ stripped off.) Extend existing BBDB entries where possible."
       (when name ; which should be the case as N is mandatory in vcard
         (bbdb-record-set-firstname bbdb-record (car name))
         (bbdb-record-set-lastname bbdb-record (cadr name)))
-      (bbdb-record-set-aka bbdb-record
-                           (reduce (lambda (x y) (union x y :test 'string=))
-                                   (list vcard-nicknames
-                                         other-names
-                                         vcard-formatted-names
-                                         bbdb-akas)))
+      (bbdb-record-set-aka
+       bbdb-record
+       (remove (concat (bbdb-record-firstname bbdb-record)
+                       " " (bbdb-record-lastname bbdb-record))
+               (reduce (lambda (x y) (union x y :test 'string=))
+                       (list vcard-nicknames
+                             other-names
+                             vcard-formatted-names
+                             bbdb-akas))))
       (when vcard-org (bbdb-record-set-company bbdb-record vcard-org))
       (bbdb-record-set-net bbdb-record
                            (union vcard-email bbdb-nets :test 'string=))

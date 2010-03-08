@@ -86,7 +86,7 @@ X-foo:extended type 1
 END:VCARD
 "
 ["First1" "Last1"
- ("First1 Last1" "Firsty1")
+ ("Firsty1")
  "Company1
 Unit1
 Subunit1"
@@ -550,8 +550,7 @@ END:VCARD
    "FirstB2 FamilyB2"
    "FirstB PseudonymB"
    "Bee"
-   "Effy Bee"
-   "FirstB FamilyB")
+   "Effy Bee")
   nil
   nil
   nil
@@ -711,7 +710,7 @@ ORG:Rübe AG
 END:VCARD
 "
  ["Franz" "Rübezahl"
-  ("Franz Rübezahl" "Fränzchen" "Rübe")
+  ("Fränzchen" "Rübe")
   "Rübe AG"
   nil
   (["Office"
