@@ -226,7 +226,7 @@ Marketing"
 (bbdb-vcard-test
  "
 ** Exactly the same as before.
-   Re-reading it shouldn't duplicate anything but the NOTE.
+   Re-reading it shouldn't duplicate anything.unless (= (point-max) (point-min)b
 ------------------------------------------------------------
 BEGIN:VCARD
 VERSION:3.0
@@ -317,7 +317,6 @@ Marketing"
     . "Mr.John Q. Public, Esq.\nMail Drop: TNE QB\n123 Main Street\nAny Town, CA  91921-1234\nU.S.A.")
    (photo\;value=uri . "http://www.abc.com/pub/photos/jqpublic.gif")
    (anniversary . "1996-04-15 birthday")
-   (vcard-notes . "This fax number is operational 0800 to 1715 EST, Mon-Fri.")
    (www . "http://www.swbyps.restaurant.french/~chezchic.html")
    (notes . "This fax number is operational 0800 to 1715 EST, Mon-Fri.")
    (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
@@ -819,5 +818,73 @@ UnitG"
   ("userG@hostG.example.com")
   ((creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
  "FirstG FamilyG")
+
+
+(bbdb-vcard-test
+ "
+** Merging of vcard NOTEs
+*** A vcard with two NOTEs.
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyI;FirstI
+ORG:OrgI
+NOTE:Note No. 1a
+NOTE:Note No. 1b
+END:VCARD
+"
+ ["FirstI" "FamilyI"
+  nil
+  "OrgI"
+  nil
+  nil
+  nil
+  ((notes . "Note No. 1a;\nNote No. 1b")
+   (creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
+ "FirstI FamilyI")
+
+
+(bbdb-vcard-test
+ "
+*** Same as before, but a different NOTE.
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyI;FirstI
+ORG:OrgI
+NOTE:Note No. 2
+END:VCARD
+"
+ ["FirstI" "FamilyI"
+  nil
+  "OrgI"
+  nil
+  nil
+  nil
+  ((notes . "Note No. 1a;\nNote No. 1b;\nNote No. 2")
+   (creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
+ "FirstI FamilyI")
+
+
+(bbdb-vcard-test
+ "
+*** Same as before, but a NOTE we've seen already
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyI;FirstI
+ORG:OrgI
+NOTE:Note No. 1b
+END:VCARD
+"
+ ["FirstI" "FamilyI"
+  nil
+  "OrgI"
+  nil
+  nil
+  nil
+  ((notes . "Note No. 1a;\nNote No. 1b;\nNote No. 2")
+   (creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
+ "FirstI FamilyI")
 
 

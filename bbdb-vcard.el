@@ -26,8 +26,8 @@
 ;; Purpose
 ;; -------
 ;; 
-;; Data import from VCARDs as defined in RFC2425 and RFC2426 into
-;; The Insidious Big Brother Database (BBDB).
+;; Data import from VCARDs version 3.0 as defined in RFC2425 and
+;; RFC2426 into The Insidious Big Brother Database (BBDB).
 ;; 
 ;; Usage
 ;; -----
@@ -129,13 +129,7 @@
 ;; | EMAIL       | ;TYPE=x,y,z       | Net-Addresses (append) |
 ;; | URL         |                   | Notes<www              |
 ;; | BDAY        |                   | Notes<anniversary      |
-;; |-------------+-------------------+------------------------|
-;; | NOTE        |                   | First time:            |
-;; |             |                   | Notes<notes            |
-;; |             |                   |                        |
-;; |             |                   | Later:                 |
-;; |             |                   | Notes<vcard-notes      |
-;; |-------------+-------------------+------------------------|
+;; | NOTE        |                   | Notes<notes (append)   |
 ;; | CATEGORIES  |                   | Notes<categories       |
 ;; | SORT-STRING |                   | Notes<sort-string      |
 ;; | KEY         |                   | Notes<key              |
@@ -399,17 +393,16 @@ stripped off.) Extend existing BBDB entries where possible."
       ;; prepare bbdb's notes:
       (when vcard-url (push (cons 'www vcard-url) bbdb-raw-notes))
       (when vcard-notes
-        ;; Put vcard NOTEs under key 'notes or, if key 'notes already
-        ;; exists, under key 'vcard-notes.
-        (push (cons (if (assoc 'notes bbdb-raw-notes)
-                        'vcard-notes
-                      'notes)
-                    (bbdb-vcard-unescape-strings
-                     (mapconcat (lambda (element)
-                                  (cdr (assoc "value" element)))
-                                vcard-notes
-                                ";\n")))
-              bbdb-raw-notes))
+        ;; Put vcard NOTEs under key 'notes (append if necessary)
+        (unless (assoc 'notes bbdb-raw-notes)
+          (push (cons 'notes "") bbdb-raw-notes))
+        (setf (cdr (assoc 'notes bbdb-raw-notes))
+              (bbdb-vcard-merge-notes
+               (cdr (assoc 'notes bbdb-raw-notes))
+               (bbdb-vcard-unescape-strings
+                (mapconcat (lambda (element) (cdr (assoc "value" element)))
+                           (nreverse vcard-notes)
+                           ";\n")))))
       (when vcard-bday
         (push (cons 'anniversary (concat vcard-bday " birthday"))
               bbdb-raw-notes))          ; for consumption by org-mode
@@ -425,7 +418,6 @@ stripped off.) Extend existing BBDB entries where possible."
        (remove-duplicates bbdb-raw-notes :test 'equal :from-end t))
       (bbdb-change-record bbdb-record t)
       ;; Tell the user what we've done.
-      ;; (princ bbdb-record)
       (message "%s %s %s -- %s"
                record-freshness-info
                (bbdb-record-firstname bbdb-record)
@@ -490,6 +482,18 @@ COUNTRY)."
             (elt adr-value 4)           ; State
             (elt adr-value 5)           ; Zip
             (elt adr-value 6))))        ; Country
+
+(defun bbdb-vcard-merge-notes (bbdb-notes vcard-notes)
+  "Merge string VCARD-NOTES into string BBDB-NOTES.
+If VCARD-NOTES is already in BBDB-NOTES, return BBDB-NOTES.  Otherwise
+append VCARD-NOTES."
+  (with-temp-buffer
+    (insert bbdb-notes)
+    (unless (search-backward vcard-notes nil t)
+      (goto-char (point-max))
+      (unless (zerop (buffer-size)) (insert ";\n"))
+      (insert vcard-notes))
+    (buffer-string)))
 
 (defun bbdb-vcard-entries-of-type (type &optional one-is-enough-p)
   "From current buffer read and delete the vcard entries of TYPE.
