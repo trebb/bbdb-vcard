@@ -527,7 +527,7 @@ ONE-IS-ENOUGH-P is t, read and delete only the first entry of TYPE."
       (push parameters values)
       (delete-region (line-end-position 0) (line-end-position))
       (when one-is-enough-p (setq read-enough t)))
-    (print values)))
+    values))
 
 (defun bbdb-vcard-other-entry ()
   "From current buffer read and delete the topmost vcard entry.
