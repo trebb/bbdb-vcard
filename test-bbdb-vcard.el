@@ -339,7 +339,7 @@ BDAY:1987-09-27T08:30:00-06:00
 EMAIL;TYPE=internet,pref:jane_doe@abc.com
 TZ;VALUE=text:-05:00; EST; Raleigh/North America
 LOGO;VALUE=uri:http://www.abc.com/pub/logos/abccorp.jpg
-AGENT:BEGIN:VCARD\\nFN:Susan Thomas\\nTEL:+1-919-555-
+AGENT:BEGIN:VCARD\\nVERSION:3.0\\nFN:Susan Thomas\\nTEL:+1-919-555-
  1234\\nEMAIL\\;INTERNET:sthomas@host.com\\nEND:VCARD\\n
 CATEGORIES:INTERNET,IETF,INDUSTRY,INFORMATION TECHNOLOGY
 REV:1997-11-15
@@ -361,7 +361,7 @@ END:VCARD
    (rev . "1997-11-15")
    (categories . "INTERNET,IETF,INDUSTRY,INFORMATION TECHNOLOGY")
    (agent
-    . "BEGIN:VCARD\nFN:Susan Thomas\nTEL:+1-919-555-1234\nEMAIL;INTERNET:sthomas@host.com\nEND:VCARD\n")
+    . "BEGIN:VCARD\nVERSION:3.0\nFN:Susan Thomas\nTEL:+1-919-555-1234\nEMAIL;INTERNET:sthomas@host.com\nEND:VCARD\n")
    (logo\;value=uri . "http://www.abc.com/pub/logos/abccorp.jpg")
    (tz\;value=text . "-05:00; EST; Raleigh/North America")
    (photo\;encoding=b\;type=jpeg
@@ -887,4 +887,95 @@ END:VCARD
    (creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
  "FirstI FamilyI")
 
+
+(bbdb-vcard-test
+ "
+** A vcard with two other vcards inside; we check the outer one
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+FN:OuterfirstA OuterlastA
+N:OuterlastA OuterfirstA
+AGENT:BEGIN:VCARD\\nVERSION:3.0\\nN:InnerlastA\\;InnerfirstA\\nFN:InnerfirstA InnerlastA\\nTEL:+1-919-555-
+ 1234\\nEMAIL\\;INTERNET:InnerA@hostA.com\\nEND:VCARD\\n
+B.AGENT:BEGIN:VCARD\\nVERSION:3.0\\nN:InnerlastB\\;InnerfirstB\\nFN:InnerfirstB InnerlastB\\nTEL:+1-919-555-
+ 1234\\nEMAIL\\;INTERNET:InnerB@hostB.com\\nEND:VCARD\\n
+NOTE:A note
+END:VCARD
+"
+ ["OuterlastA" "OuterfirstA"
+  ("OuterfirstA OuterlastA")
+  nil
+  nil
+  nil
+  nil
+  ((b\.agent . "BEGIN:VCARD
+VERSION:3.0
+N:InnerlastB;InnerfirstB
+FN:InnerfirstB InnerlastB
+TEL:+1-919-555-1234
+EMAIL;INTERNET:InnerB@hostB.com
+END:VCARD
+")
+   (agent . "BEGIN:VCARD
+VERSION:3.0
+N:InnerlastA;InnerfirstA
+FN:InnerfirstA InnerlastA
+TEL:+1-919-555-1234
+EMAIL;INTERNET:InnerA@hostA.com
+END:VCARD
+")
+   (notes . "A note")
+   (creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
+ "OuterfirstA OuterlastA")
+
+
+(bbdb-vcard-test
+ "
+** A vcard with two other vcards inside; we check the first inner one
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+FN:OuterfirstA OuterlastA
+N:OuterlastA OuterfirstA
+AGENT:BEGIN:VCARD\\nVERSION:3.0\\nN:InnerlastA\\;InnerfirstA\\nFN:InnerfirstA InnerlastA\\nTEL:+1-919-555-
+ 1234\\nEMAIL\\;INTERNET:InnerA@hostA.com\\nEND:VCARD\\n
+B.AGENT:BEGIN:VCARD\\nVERSION:3.0\\nN:InnerlastB\\;InnerfirstB\\nFN:InnerfirstB InnerlastB\\nTEL:+1-919-555-
+ 1234\\nEMAIL\\;INTERNET:InnerB@hostB.com\\nEND:VCARD\\n
+NOTE:A note
+END:VCARD
+"
+ ["InnerfirstA" "InnerlastA"
+  nil
+  nil
+  (["Office" "+1-919-555-1234"])
+  nil
+  ("InnerA@hostA.com")
+  ((creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
+ "InnerfirstA InnerlastA")
+
+
+(bbdb-vcard-test
+ "
+** A vcard with two other vcards inside; we check the second inner one
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+FN:OuterfirstA OuterlastA
+N:OuterlastA OuterfirstA
+AGENT:BEGIN:VCARD\\nVERSION:3.0\\nN:InnerlastA\\;InnerfirstA\\nFN:InnerfirstA InnerlastA\\nTEL:+1-919-555-
+ 1234\\nEMAIL\\;INTERNET:InnerA@hostA.com\\nEND:VCARD\\n
+B.AGENT:BEGIN:VCARD\\nVERSION:3.0\\nN:InnerlastB\\;InnerfirstB\\nFN:InnerfirstB InnerlastB\\nTEL:+1-919-555-
+ 1234\\nEMAIL\\;INTERNET:InnerB@hostB.com\\nEND:VCARD\\n
+NOTE:A note
+END:VCARD
+"
+ ["InnerfirstB" "InnerlastB"
+  nil
+  nil
+  (["Office" "+1-919-555-1234"])
+  nil
+  ("InnerB@hostB.com")
+  ((creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
+ "InnerfirstB InnerlastB")
 

@@ -63,15 +63,16 @@
 ;; In case (c), if the vcard has ORG defined, this ORG would overwrite
 ;; an existing Company in BBDB.
 ;;
-;; Any vcard type prefixes (A.ADR:..., B.ADR:... etc.) are stripped
-;; off and discarded.
-;;
 ;; For vcard types that have more or less direct counterparts in BBDB,
 ;; labels and parameters are translated and structured values
 ;; (lastname; firstname; additional names; prefixes etc.) are
 ;; converted appropriately with the risk of some (hopefully
 ;; unessential) information loss.  For labels of the vcard types ADR
 ;; and TEL, translation is defined in bbdb-vcard-translation-table.
+;;
+;; Vcard type prefixes (A.ADR:..., B.ADR:... etc.) are stripped off
+;; and discarded from the following types: N, FN, NICKNAME, ORG (first
+;; entry), ADR, TEL, EMAIL, URL, BDAY (first entry), NOTE.
 ;;
 ;; All remaining vcard types that don't match the regexp in
 ;; `bbdb-vcard-skip' and that have a non-empty value are stored
@@ -393,7 +394,7 @@ stripped off.) Extend existing BBDB entries where possible."
       ;; prepare bbdb's notes:
       (when vcard-url (push (cons 'www vcard-url) bbdb-raw-notes))
       (when vcard-notes
-        ;; Put vcard NOTEs under key 'notes (append if necessary)
+        ;; Put vcard NOTEs under key 'notes (append if necessary).
         (unless (assoc 'notes bbdb-raw-notes)
           (push (cons 'notes "") bbdb-raw-notes))
         (setf (cdr (assoc 'notes bbdb-raw-notes))
@@ -407,6 +408,11 @@ stripped off.) Extend existing BBDB entries where possible."
         (push (cons 'anniversary (concat vcard-bday " birthday"))
               bbdb-raw-notes))          ; for consumption by org-mode
       (while (setq other-vcard-type (bbdb-vcard-other-entry))
+        (when (string-match "^\\([[:alnum:]-]*\\.\\)?AGENT"
+                            (symbol-name (car other-vcard-type)))
+          ;; Notice other vcards inside the current one.
+          (bbdb-vcard-iterate-vcards (cdr other-vcard-type)
+                                     'bbdb-vcard-process-vcard))
         (unless (or (and bbdb-vcard-skip
                          (string-match bbdb-vcard-skip
                                        (symbol-name (car other-vcard-type))))
