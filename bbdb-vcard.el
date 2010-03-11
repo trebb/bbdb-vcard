@@ -69,6 +69,9 @@
 ;; converted appropriately with the risk of some (hopefully
 ;; unessential) information loss.  For labels of the vcard types ADR
 ;; and TEL, translation is defined in bbdb-vcard-translation-table.
+;; 
+;; If there is a REV entry, it is stored in BBDB's creation-date in
+;; newly created BBDB records, or discarded for existing ones.
 ;;
 ;; Vcard type prefixes (A.ADR:..., B.ADR:... etc.) are stripped off
 ;; and discarded from the following types: N, FN, NICKNAME, ORG (first
@@ -80,6 +83,9 @@
 ;; `TZ;VALUE=text:-05:00' is stored as `(tz\;value=text . "-05:00")'.
 ;; From the BBDB data fields AKA, Phones, Addresses, Net Addresses,
 ;; and Notes, duplicates are removed, respectively.
+;;
+;; Vcards found inside other vcards (as values of type AGENT) are
+;; imported as well.
 ;;
 ;;
 ;; Handling of the individual types defined in RFC2426 (assuming
@@ -148,7 +154,7 @@
 ;; | PRODID      |                   | Notes<prodid           |
 ;; | CLASS       |                   | Notes<class            |
 ;; | X-foo       |                   | Notes<x-foo            |
-;; | REV         |                   | Notes<rev              |
+;; | REV         |                   | Notes<creation-date    |
 ;; |-------------+-------------------+------------------------|
 ;; | anyJunK     | ;a=x;b=y          | Notes<anyjunk;a=x;b=y  |
 ;; |-------------+-------------------+------------------------|
@@ -322,6 +328,8 @@ stripped off.) Extend existing BBDB entries where possible."
            (vcard-notes (bbdb-vcard-entries-of-type "NOTE"))
            (vcard-bday
             (cdr (assoc "value" (car (bbdb-vcard-entries-of-type "BDAY" t)))))
+           (vcard-rev
+            (cdr (assoc "value" (car (bbdb-vcard-entries-of-type "REV")))))
            ;; The BBDB record to change:
            (record-freshness-info "BBDB record changed:") ; default user info
            (bbdb-record
@@ -358,7 +366,12 @@ stripped off.) Extend existing BBDB entries where possible."
              (let ((fresh-record (make-vector bbdb-record-length nil)))
                (bbdb-record-set-cache fresh-record
                                       (make-vector bbdb-cache-length nil))
-               (bbdb-invoke-hook 'bbdb-create-hook fresh-record)
+               (if vcard-rev            ; For fresh records,
+                   (bbdb-record-putprop ; set creation-date from vcard-rev
+                    fresh-record 'creation-date
+                    (replace-regexp-in-string "\\([0-9]\\{4\\}-[01][0-9]-[0-3][0-9]\\).*"
+                                              "\\1" vcard-rev))
+                 (bbdb-invoke-hook 'bbdb-create-hook fresh-record))
                (setq record-freshness-info "BBDB record added:") ; for user information
                fresh-record)))
            (bbdb-akas (when bbdb-record (bbdb-record-aka bbdb-record)))

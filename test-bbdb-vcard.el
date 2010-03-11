@@ -104,7 +104,6 @@ Subunit1"
   (uid . "111-111-111-111")
   (sound . "Audible1")
   (sort-string . "aaa000")
-  (rev . "1995-10-31T22:27:10Z")
   (prodid . "-//ONLINE DIRECTORY//NONSGML Version 1//EN")
   (categories . "category1")
   (agent . "CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com")
@@ -202,7 +201,6 @@ Marketing"
    (uid . "19950401-080045-40000F192713-0052")
    (sound\;type=basic\;encoding=b
     . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0")
-   (rev . "1995-10-31T22:27:10Z")
    (prodid . "-//ONLINE DIRECTORY//NONSGML Version 1//EN")
    (categories . "TRAVEL AGENT")
    (agent\;value=uri . "CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com")
@@ -226,7 +224,7 @@ Marketing"
 (bbdb-vcard-test
  "
 ** Exactly the same as before.
-   Re-reading it shouldn't duplicate anything.unless (= (point-max) (point-min)b
+   Re-reading it shouldn't duplicate anything.
 ------------------------------------------------------------
 BEGIN:VCARD
 VERSION:3.0
@@ -302,7 +300,6 @@ Marketing"
    (uid . "19950401-080045-40000F192713-0052")
    (sound\;type=basic\;encoding=b
     . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0")
-   (rev . "1995-10-31T22:27:10Z")
    (prodid . "-//ONLINE DIRECTORY//NONSGML Version 1//EN")
    (categories . "TRAVEL AGENT")
    (agent\;value=uri . "CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com")
@@ -340,7 +337,7 @@ EMAIL;TYPE=internet,pref:jane_doe@abc.com
 TZ;VALUE=text:-05:00; EST; Raleigh/North America
 LOGO;VALUE=uri:http://www.abc.com/pub/logos/abccorp.jpg
 AGENT:BEGIN:VCARD\\nVERSION:3.0\\nFN:Susan Thomas\\nTEL:+1-919-555-
- 1234\\nEMAIL\\;INTERNET:sthomas@host.com\\nEND:VCARD\\n
+ 1234\\nEMAIL\\;TYPE=INTERNET:sthomas@host.com\\nEND:VCARD\\n
 CATEGORIES:INTERNET,IETF,INDUSTRY,INFORMATION TECHNOLOGY
 REV:1997-11-15
 SOUND;TYPE=BASIC;VALUE=uri:CID:JOHNQPUBLIC.part8.
@@ -358,10 +355,9 @@ END:VCARD
   ((class . "PRIVATE")
    (sound\;type=basic\;value=uri
     . "CID:JOHNQPUBLIC.part8.19960229T080000.xyzMail@host1.com")
-   (rev . "1997-11-15")
    (categories . "INTERNET,IETF,INDUSTRY,INFORMATION TECHNOLOGY")
    (agent
-    . "BEGIN:VCARD\nVERSION:3.0\nFN:Susan Thomas\nTEL:+1-919-555-1234\nEMAIL;INTERNET:sthomas@host.com\nEND:VCARD\n")
+    . "BEGIN:VCARD\nVERSION:3.0\nFN:Susan Thomas\nTEL:+1-919-555-1234\nEMAIL\;TYPE=INTERNET:sthomas@host.com\nEND:VCARD\n")
    (logo\;value=uri . "http://www.abc.com/pub/logos/abccorp.jpg")
    (tz\;value=text . "-05:00; EST; Raleigh/North America")
    (photo\;encoding=b\;type=jpeg
@@ -897,9 +893,9 @@ VERSION:3.0
 FN:OuterfirstA OuterlastA
 N:OuterlastA OuterfirstA
 AGENT:BEGIN:VCARD\\nVERSION:3.0\\nN:InnerlastA\\;InnerfirstA\\nFN:InnerfirstA InnerlastA\\nTEL:+1-919-555-
- 1234\\nEMAIL\\;INTERNET:InnerA@hostA.com\\nEND:VCARD\\n
+ 1234\\nEMAIL\\;TYPE=INTERNET:InnerA@hostA.com\\nEND:VCARD\\n
 B.AGENT:BEGIN:VCARD\\nVERSION:3.0\\nN:InnerlastB\\;InnerfirstB\\nFN:InnerfirstB InnerlastB\\nTEL:+1-919-555-
- 1234\\nEMAIL\\;INTERNET:InnerB@hostB.com\\nEND:VCARD\\n
+ 1234\\nEMAIL\\;TYPE=INTERNET:InnerB@hostB.com\\nEND:VCARD\\n
 NOTE:A note
 END:VCARD
 "
@@ -914,7 +910,7 @@ VERSION:3.0
 N:InnerlastB;InnerfirstB
 FN:InnerfirstB InnerlastB
 TEL:+1-919-555-1234
-EMAIL;INTERNET:InnerB@hostB.com
+EMAIL;TYPE=INTERNET:InnerB@hostB.com
 END:VCARD
 ")
    (agent . "BEGIN:VCARD
@@ -922,7 +918,7 @@ VERSION:3.0
 N:InnerlastA;InnerfirstA
 FN:InnerfirstA InnerlastA
 TEL:+1-919-555-1234
-EMAIL;INTERNET:InnerA@hostA.com
+EMAIL;TYPE=INTERNET:InnerA@hostA.com
 END:VCARD
 ")
    (notes . "A note")
@@ -939,9 +935,9 @@ VERSION:3.0
 FN:OuterfirstA OuterlastA
 N:OuterlastA OuterfirstA
 AGENT:BEGIN:VCARD\\nVERSION:3.0\\nN:InnerlastA\\;InnerfirstA\\nFN:InnerfirstA InnerlastA\\nTEL:+1-919-555-
- 1234\\nEMAIL\\;INTERNET:InnerA@hostA.com\\nEND:VCARD\\n
+ 1234\\nEMAIL\\;TYPE=INTERNET:InnerA@hostA.com\\nEND:VCARD\\n
 B.AGENT:BEGIN:VCARD\\nVERSION:3.0\\nN:InnerlastB\\;InnerfirstB\\nFN:InnerfirstB InnerlastB\\nTEL:+1-919-555-
- 1234\\nEMAIL\\;INTERNET:InnerB@hostB.com\\nEND:VCARD\\n
+ 1234\\nEMAIL\\;TYPE=INTERNET:InnerB@hostB.com\\nEND:VCARD\\n
 NOTE:A note
 END:VCARD
 "
@@ -964,9 +960,9 @@ VERSION:3.0
 FN:OuterfirstA OuterlastA
 N:OuterlastA OuterfirstA
 AGENT:BEGIN:VCARD\\nVERSION:3.0\\nN:InnerlastA\\;InnerfirstA\\nFN:InnerfirstA InnerlastA\\nTEL:+1-919-555-
- 1234\\nEMAIL\\;INTERNET:InnerA@hostA.com\\nEND:VCARD\\n
+ 1234\\nEMAIL\\;TYPE=INTERNET:InnerA@hostA.com\\nEND:VCARD\\n
 B.AGENT:BEGIN:VCARD\\nVERSION:3.0\\nN:InnerlastB\\;InnerfirstB\\nFN:InnerfirstB InnerlastB\\nTEL:+1-919-555-
- 1234\\nEMAIL\\;INTERNET:InnerB@hostB.com\\nEND:VCARD\\n
+ 1234\\nEMAIL\\;TYPE=INTERNET:InnerB@hostB.com\\nEND:VCARD\\n
 NOTE:A note
 END:VCARD
 "
