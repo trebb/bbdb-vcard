@@ -380,7 +380,7 @@ stripped off.) Extend existing BBDB entries where possible."
                        (bbdb-search
                         (and bday-to-search-for
                              (bbdb-search (bbdb-records)
-                                          nil "" "" bday-to-search-for))
+                                          nil nil nil bday-to-search-for))
                         name-to-search-for)))
              ;; (e) try phone and name; we may change company here:
              (car (and bbdb-vcard-try-merge
@@ -475,7 +475,7 @@ stripped off.) Extend existing BBDB entries where possible."
                 "\n" "; " (or (bbdb-record-company bbdb-record) "-"))))))
 
 (defun bbdb-vcard-unescape-strings (escaped-strings)
-  "Unescape escaped newlines, commas and semi-colons in ESCAPED-STRINGS.
+  "Unescape escaped `;', `,', `\\', and newlines in ESCAPED-STRINGS.
 ESCAPED-STRINGS may be a string or a sequence of strings."
   (flet ((unescape (x) (replace-regexp-in-string
                         "\\([\\\\]\\)\\([,;\\]\\)" ""

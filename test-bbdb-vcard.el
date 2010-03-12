@@ -1047,7 +1047,8 @@ END:VCARD
   nil
   ((anniversary . "1927-03-27 birthday")
    (creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
- "FirstK FamilyK")
+ "FirstK FamilyK"
+ "CompanyK1")
 
 
 
