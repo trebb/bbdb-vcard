@@ -402,15 +402,11 @@ stripped off.) Extend existing BBDB entries where possible."
                  (bbdb-invoke-hook 'bbdb-create-hook fresh-record))
                (setq record-freshness-info "BBDB record added:") ; for user information
                fresh-record)))
-           (bbdb-akas (when bbdb-record (bbdb-record-aka bbdb-record)))
-           (bbdb-addresses (when bbdb-record
-                             (bbdb-record-addresses bbdb-record)))
-           (bbdb-phones (when bbdb-record
-                          (bbdb-record-phones bbdb-record)))
-           (bbdb-nets (when bbdb-record
-                        (bbdb-record-net bbdb-record)))
-           (bbdb-raw-notes (when bbdb-record
-                             (bbdb-record-raw-notes bbdb-record)))
+           (bbdb-akas (bbdb-record-aka bbdb-record))
+           (bbdb-addresses (bbdb-record-addresses bbdb-record))
+           (bbdb-phones (bbdb-record-phones bbdb-record))
+           (bbdb-nets (bbdb-record-net bbdb-record))
+           (bbdb-raw-notes (bbdb-record-raw-notes bbdb-record))
            notes
            other-vcard-type)
       (when name ; which should be the case as N is mandatory in vcard
