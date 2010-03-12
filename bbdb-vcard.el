@@ -512,7 +512,7 @@ ESCAPED-STRINGS may be a string or a sequence of strings."
 
 (defun bbdb-vcard-convert-adr (vcard-adr)
   "Convert VCARD-ADR into BBDB format.
-Turn an vcard element of type ADR into (TYPE STREETS CITY STATE ZIP
+Turn a vcard element of type ADR into (TYPE STREETS CITY STATE ZIP
 COUNTRY)."
   (let ((adr-type (or (cdr (assoc "type" vcard-adr)) ""))
         (adr-value (mapcar      ; flatten comma-separated substructure
@@ -591,7 +591,7 @@ Buffer is supposed to contain a single vcard.  Return (TYPE . ENTRY)."
   "Split TEXT at unescaped occurrences of SEPARATOR; return parts in a list.
 Return text unchanged if there aren't any separators and RETURN-ALWAYS-LIST-P
 is nil."
-  (when text
+  (when (stringp text)
     (let ((string-elements
            (split-string
             (replace-regexp-in-string
