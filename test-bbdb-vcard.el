@@ -14,12 +14,15 @@
   (vcard bbdb-entry search-name
          &optional search-company search-net check-creation-date-p)
   "Import VCARD and search for it in bbdb by SEARCH-NAME,
-SEARCH-COMPANY, SEARCH-NET.  If search result disagrees with
-BBDB-ENTRY, talk about it in buffer bbdb-vcard-test-result. timestamp
-and, if CHECK-CREATION-DATE-P is nil, creation-date are not taken into
-account."
+SEARCH-COMPANY, (perhaps later) SEARCH-NET.  If search result
+disagrees with BBDB-ENTRY, talk about it in buffer
+bbdb-vcard-test-result. timestamp and, if CHECK-CREATION-DATE-P is
+nil, creation-date are not taken into account."
   (bbdb-vcard-iterate-vcards vcard 'bbdb-vcard-process-vcard)
-  (let ((bbdb-search-result (car (bbdb-search (bbdb-records) search-name))))
+  (let* ((search-company (or search-company ""))
+         (bbdb-search-result
+          (car (bbdb-search (bbdb-search (bbdb-records) search-name) nil search-company)))
+         )
     (setf (cdr (assoc 'timestamp (elt bbdb-search-result 7))) "2010-03-04"
           (cdr (assoc 'timestamp (elt bbdb-entry 7))) "2010-03-04")
     (unless check-creation-date-p
@@ -65,7 +68,7 @@ PHOTO:The Alphabet:
 BDAY:1999-12-05
 ADR:Box111;Room 111;First Street,First Corner;Cityone;First State;11111;Country
 LABEL:Label 1
-TEL=home:+11111111
+TEL:+11111111
 EMAIL:first1@provider1
 MAILER:Wanderlust1
 TZ:+01:00
@@ -93,7 +96,7 @@ END:VCARD
   "Company1
 Unit1
 Subunit1"
-  nil
+  (["Office" "+11111111"])
   (["Office"
     ("Box111" "Room 111" "First Street, First Corner")
     "Cityone"
@@ -116,7 +119,6 @@ Subunit1"
    (geo . "37.386013;-122.082932")
    (tz . "+01:00")
    (mailer . "Wanderlust1")
-   (tel=home . "+11111111")
    (label . "Label 1")
    (photo . "The Alphabet:abcdefghijklmnopqrstuvwsyz")
    (anniversary . "1999-12-05 birthday")
@@ -318,60 +320,11 @@ Marketing"
    (label\;type=dom\,home\,postal\,parcel
     . "Mr.John Q. Public, Esq.\nMail Drop: TNE QB\n123 Main Street\nAny Town, CA  91921-1234\nU.S.A.")
    (photo\;value=uri . "http://www.abc.com/pub/photos/jqpublic.gif")
-   (anniversary . "1996-04-15 birthday")
    (www . "http://www.swbyps.restaurant.french/~chezchic.html")
+   (anniversary . "1996-04-15 birthday")
    (notes . "This fax number is operational 0800 to 1715 EST, Mon-Fri.")
    (creation-date . "1995-10-31") (timestamp . "2010-03-04"))]
  "John"
- nil nil t)
-
-
-(bbdb-vcard-test
- "
-** More example entries from rfc2426.
-------------------------------------------------------------
-BEGIN:VCARD
-VERSION:3.0
-FN:Mr. John Q. Public\\, Esq.
-N:Public;John;Quinlan;Mr.;Esq.
-NICKNAME:Jim,Jimmie
-PHOTO;ENCODING=b;TYPE=JPEG:MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcN
- AQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bm
- ljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0
-BDAY:1987-09-27T08:30:00-06:00
-EMAIL;TYPE=internet,pref:jane_doe@abc.com
-TZ;VALUE=text:-05:00; EST; Raleigh/North America
-LOGO;VALUE=uri:http://www.abc.com/pub/logos/abccorp.jpg
-AGENT:BEGIN:VCARD\\nVERSION:3.0\\nFN:Susan Thomas\\nTEL:+1-919-555-
- 1234\\nEMAIL\\;TYPE=INTERNET:sthomas@host.com\\nEND:VCARD\\n
-CATEGORIES:INTERNET,IETF,INDUSTRY,INFORMATION TECHNOLOGY
-REV:1997-11-15
-SOUND;TYPE=BASIC;VALUE=uri:CID:JOHNQPUBLIC.part8.
- 19960229T080000.xyzMail@host1.com
-CLASS:PRIVATE
-NOTE:A note
-END:VCARD
-"
- ["Mr. John Quinlan" "Public Esq."
-  ("Mr. John Q. Public, Esq." "Jim" "Jimmie")
-  nil
-  nil
-  nil
-  ("jane_doe@abc.com")
-  ((class . "PRIVATE")
-   (sound\;type=basic\;value=uri
-    . "CID:JOHNQPUBLIC.part8.19960229T080000.xyzMail@host1.com")
-   (categories . "INTERNET,IETF,INDUSTRY,INFORMATION TECHNOLOGY")
-   (agent
-    . "BEGIN:VCARD\nVERSION:3.0\nFN:Susan Thomas\nTEL:+1-919-555-1234\nEMAIL\;TYPE=INTERNET:sthomas@host.com\nEND:VCARD\n")
-   (logo\;value=uri . "http://www.abc.com/pub/logos/abccorp.jpg")
-   (tz\;value=text . "-05:00; EST; Raleigh/North America")
-   (photo\;encoding=b\;type=jpeg
-    . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0")
-   (anniversary . "1987-09-27T08:30:00-06:00 birthday")
-   (notes . "A note")
-   (creation-date . "1997-11-15") (timestamp . "2010-03-04"))]
- "Public"
  nil nil t)
 
 
@@ -1026,3 +979,154 @@ END:VCARD
   ((creation-date . "1997-03-27") (timestamp . "2010-03-04")) ]
  "FirstJ FamilyJ"
  nil nil t)
+
+
+
+(bbdb-vcard-test
+ "
+** Matching BDAY and N induce merge
+*** Storing a new person
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyK;FirstK
+ORG:CompanyK
+BDAY:1927-03-27
+END:VCARD
+"
+ ["FirstK" "FamilyK"
+  nil
+  "CompanyK"
+  nil
+  nil
+  nil
+  ((anniversary . "1927-03-27 birthday")
+   (creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
+ "FirstK FamilyK")
+
+
+(bbdb-vcard-test
+ "
+*** Not quite the same person: BDAY differs.
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyK;FirstK
+ORG:CompanyK2
+BDAY:1937-04-28
+END:VCARD
+"
+ ["FirstK" "FamilyK"
+  nil
+  "CompanyK2"
+  nil
+  nil
+  nil
+  ((anniversary . "1937-04-28 birthday")
+   (creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
+ "FirstK FamilyK"
+ "CompanyK2")
+
+
+(bbdb-vcard-test
+ "
+*** Known person due to matching BDAY. Different ORG, though.
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyK;FirstK
+ORG:CompanyK1
+BDAY:1927-03-27
+END:VCARD
+"
+ ["FirstK" "FamilyK"
+  nil
+  "CompanyK1"
+  nil
+  nil
+  nil
+  ((anniversary . "1927-03-27 birthday")
+   (creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
+ "FirstK FamilyK")
+
+
+
+(bbdb-vcard-test
+ "
+** Matching TEL and N induce merge
+*** Storing a new person
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyL;FirstL
+TEL;TYPE=work:111100001
+TEL;TYPE=home:111100002
+TEL:111100003
+ORG:CompanyL
+END:VCARD
+"
+ ["FirstL" "FamilyL"
+  nil
+  "CompanyL"
+  (["Office" "111100003"]
+   ["Home" "111100002"]
+   ["Office" "111100001"])
+  nil
+  nil
+  ((creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
+ "FirstL FamilyL")
+
+
+(bbdb-vcard-test
+ "
+*** Not quite the same person: no matching TEL.
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyL;FirstL
+TEL;TYPE=work:222200001
+TEL;TYPE=home:222200002
+TEL:222200003
+ORG:CompanyL2
+END:VCARD
+"
+ ["FirstL" "FamilyL"
+  nil
+  "CompanyL2"
+  (["Office" "222200003"]
+   ["Home" "222200002"]
+   ["Office" "222200001"])
+  nil
+  nil
+  ((creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
+ "FirstL FamilyL"
+ "CompanyL2")
+
+
+(bbdb-vcard-test
+ "
+*** Known person: matching TEL (but different ORG).
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyL;FirstL
+TEL;TYPE=work:333300001
+TEL;TYPE=work:111100002
+TEL:333300003
+ORG:CompanyL3
+END:VCARD
+"
+ ["FirstL" "FamilyL"
+  nil
+  "CompanyL3"
+  (["Office" "111100001"]
+   ["Home" "111100002"]
+   ["Office" "111100003"]
+   ["Office" "333300003"]
+   ["Office" "111100002"]
+   ["Office" "333300001"])
+  nil
+  nil
+  ((creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
+ "FirstL FamilyL"
+ "CompanyL3")

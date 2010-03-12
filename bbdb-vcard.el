@@ -53,15 +53,17 @@
 ;; 
 ;;   (a) if name and company and an email address match
 ;;   (b) or if name and company match
-;;   (c) or if name and an email address match.
+;;   (c) or if name and an email address match
+;;   (d) or if name and birthday match
+;;   (e) or if name and a phone number match.
 ;;
 ;; Otherwise, a fresh BBDB entry is created.
 ;;
 ;; When `bbdb-vcard-try-merge' is set to nil, there is always a fresh
 ;; entry created.
 ;;
-;; In case (c), if the vcard has ORG defined, this ORG would overwrite
-;; an existing Company in BBDB.
+;; In cases (c), (d), and (e), if the vcard has ORG defined, this ORG
+;; would overwrite an existing Company in BBDB.
 ;;
 ;; For vcard types that have more or less direct counterparts in BBDB,
 ;; labels and parameters are translated and structured values
@@ -137,6 +139,7 @@
 ;; | URL         |                   | Notes<www              |
 ;; | BDAY        |                   | Notes<anniversary      |
 ;; | NOTE        |                   | Notes<notes (append)   |
+;; | REV         |                   | Notes<creation-date    |
 ;; | CATEGORIES  |                   | Notes<categories       |
 ;; | SORT-STRING |                   | Notes<sort-string      |
 ;; | KEY         |                   | Notes<key              |
@@ -154,7 +157,6 @@
 ;; | PRODID      |                   | Notes<prodid           |
 ;; | CLASS       |                   | Notes<class            |
 ;; | X-foo       |                   | Notes<x-foo            |
-;; | REV         |                   | Notes<creation-date    |
 ;; |-------------+-------------------+------------------------|
 ;; | anyJunK     | ;a=x;b=y          | Notes<anyjunk;a=x;b=y  |
 ;; |-------------+-------------------+------------------------|
@@ -309,16 +311,22 @@ stripped off.) Extend existing BBDB entries where possible."
                     (bbdb-vcard-entries-of-type "EMAIL")))
            ;; Email to search for in BBDB now:
            (email-to-search-for
-            (when vcard-email (concat "\\("
-                                      (mapconcat 'identity vcard-email "\\)\\|\\(")
-                                      "\\)")))
-           ;; Phone numbers
+            (when vcard-email
+              (concat "\\(" (mapconcat 'identity vcard-email "\\)\\|\\(")
+                      "\\)")))
+           ;; Phone numbers suitable for storing in BBDB:
            (vcard-tels
             (mapcar (lambda (tel)
                       (vector (bbdb-vcard-translate
                                (or (cdr (assoc "type" tel)) ""))
                               (cdr (assoc "value" tel))))
                     (bbdb-vcard-entries-of-type "TEL")))
+           ;; Phone numbers to search for in BBDB now:
+           (tel-to-search-for
+            (when vcard-tels
+              (concat "\\("
+                      (mapconcat (lambda (x) (elt x 1)) vcard-tels "\\)\\|\\(")
+                      "\\)")))
            ;; Addresses
            (vcard-adrs
             (mapcar 'bbdb-vcard-convert-adr
@@ -330,6 +338,8 @@ stripped off.) Extend existing BBDB entries where possible."
             (cdr (assoc "value" (car (bbdb-vcard-entries-of-type "BDAY" t)))))
            ;; Birthday suitable for storing in BBDB (usable by org-mode):
            (vcard-bday (when raw-bday (concat raw-bday " birthday")))
+           ;; Birthday to search for in BBDB now:
+           (bday-to-search-for vcard-bday)
            (vcard-rev
             (cdr (assoc "value" (car (bbdb-vcard-entries-of-type "REV")))))
            ;; The BBDB record to change:
@@ -364,19 +374,22 @@ stripped off.) Extend existing BBDB entries where possible."
                              (bbdb-search (bbdb-records)
                                           nil nil email-to-search-for))
                         name-to-search-for)))
-
-
-             ;; () try phone and name; we may change company here:
-             ;; () try birthday and name; we may change company here:
+             ;; (d) try birthday and name; we may change company here:
              (car (and bbdb-vcard-try-merge
                        name-to-search-for
                        (bbdb-search
-                        (and vcard-bday
+                        (and bday-to-search-for
                              (bbdb-search (bbdb-records)
-                                          nil vcard-bday))
+                                          nil "" "" bday-to-search-for))
                         name-to-search-for)))
-
-
+             ;; (e) try phone and name; we may change company here:
+             (car (and bbdb-vcard-try-merge
+                       name-to-search-for
+                       (bbdb-search
+                        (and tel-to-search-for
+                             (bbdb-search (bbdb-records)
+                                          nil nil nil nil tel-to-search-for))
+                        name-to-search-for)))
              ;; No existing record found; make a fresh one:
              (let ((fresh-record (make-vector bbdb-record-length nil)))
                (bbdb-record-set-cache fresh-record
@@ -433,8 +446,10 @@ stripped off.) Extend existing BBDB entries where possible."
                            (nreverse vcard-notes)
                            ";\n")))))
       (when vcard-bday
-        (push (print(cons 'anniversary vcard-bday))
-              bbdb-raw-notes))          ; for consumption by org-mode
+        (unless (assoc 'anniversary bbdb-raw-notes)
+          (push (cons 'anniversary "") bbdb-raw-notes))
+        (setf (cdr (assoc 'anniversary bbdb-raw-notes))
+              vcard-bday))              ; for consumption by org-mode
       (while (setq other-vcard-type (bbdb-vcard-other-entry))
         (when (string-match "^\\([[:alnum:]-]*\\.\\)?AGENT"
                             (symbol-name (car other-vcard-type)))
