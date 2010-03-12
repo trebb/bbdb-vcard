@@ -326,8 +326,10 @@ stripped off.) Extend existing BBDB entries where possible."
            (vcard-url
             (cdr (assoc "value" (car (bbdb-vcard-entries-of-type "URL" t)))))
            (vcard-notes (bbdb-vcard-entries-of-type "NOTE"))
-           (vcard-bday
+           (raw-bday
             (cdr (assoc "value" (car (bbdb-vcard-entries-of-type "BDAY" t)))))
+           ;; Birthday suitable for storing in BBDB (usable by org-mode):
+           (vcard-bday (when raw-bday (concat raw-bday " birthday")))
            (vcard-rev
             (cdr (assoc "value" (car (bbdb-vcard-entries-of-type "REV")))))
            ;; The BBDB record to change:
@@ -362,6 +364,19 @@ stripped off.) Extend existing BBDB entries where possible."
                              (bbdb-search (bbdb-records)
                                           nil nil email-to-search-for))
                         name-to-search-for)))
+
+
+             ;; () try phone and name; we may change company here:
+             ;; () try birthday and name; we may change company here:
+             (car (and bbdb-vcard-try-merge
+                       name-to-search-for
+                       (bbdb-search
+                        (and vcard-bday
+                             (bbdb-search (bbdb-records)
+                                          nil vcard-bday))
+                        name-to-search-for)))
+
+
              ;; No existing record found; make a fresh one:
              (let ((fresh-record (make-vector bbdb-record-length nil)))
                (bbdb-record-set-cache fresh-record
@@ -418,7 +433,7 @@ stripped off.) Extend existing BBDB entries where possible."
                            (nreverse vcard-notes)
                            ";\n")))))
       (when vcard-bday
-        (push (cons 'anniversary (concat vcard-bday " birthday"))
+        (push (print(cons 'anniversary vcard-bday))
               bbdb-raw-notes))          ; for consumption by org-mode
       (while (setq other-vcard-type (bbdb-vcard-other-entry))
         (when (string-match "^\\([[:alnum:]-]*\\.\\)?AGENT"

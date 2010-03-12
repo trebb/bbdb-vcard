@@ -10,20 +10,23 @@
 
 (require 'bbdb-vcard)
 
-(defun bbdb-vcard-test (vcard bbdb-entry
-                              search-name &optional search-company search-net)
-  "Import VCARD and search for it in bbdb by SEARCH-NAME, SEARCH-COMPANY,
-SEARCH-NET.  If search result disagrees with BBDB-ENTRY, talk about it in
-buffer bbdb-vcard-test-result."
+(defun bbdb-vcard-test
+  (vcard bbdb-entry search-name
+         &optional search-company search-net check-creation-date-p)
+  "Import VCARD and search for it in bbdb by SEARCH-NAME,
+SEARCH-COMPANY, SEARCH-NET.  If search result disagrees with
+BBDB-ENTRY, talk about it in buffer bbdb-vcard-test-result. timestamp
+and, if CHECK-CREATION-DATE-P is nil, creation-date are not taken into
+account."
   (bbdb-vcard-iterate-vcards vcard 'bbdb-vcard-process-vcard)
   (let ((bbdb-search-result (car (bbdb-search (bbdb-records) search-name))))
-    (setf (cdr (assoc 'creation-date (elt bbdb-search-result 7))) "2010-03-04"
-          (cdr (assoc 'timestamp (elt bbdb-search-result 7))) "2010-03-04"
-          (cdr (assoc 'creation-date (elt bbdb-entry 7))) "2010-03-04"
+    (setf (cdr (assoc 'timestamp (elt bbdb-search-result 7))) "2010-03-04"
           (cdr (assoc 'timestamp (elt bbdb-entry 7))) "2010-03-04")
-    (unless
-        (equal (subseq bbdb-search-result 0 8)
-               (subseq bbdb-entry 0 8))
+    (unless check-creation-date-p
+      (setf (cdr (assoc 'creation-date (elt bbdb-search-result 7))) "2010-03-04"
+            (cdr (assoc 'creation-date (elt bbdb-entry 7))) "2010-03-04"))
+    (unless (equal (subseq bbdb-search-result 0 8)
+                   (subseq bbdb-entry 0 8))
       (princ "\nTest failed:\n" (get-buffer-create "bbdb-vcard-test-result"))
       (prin1 vcard (get-buffer-create "bbdb-vcard-test-result"))
       (princ "\nwas stored as\n" (get-buffer-create "bbdb-vcard-test-result"))
@@ -85,42 +88,43 @@ KEY:The Key No 1
 X-foo:extended type 1
 END:VCARD
 "
-["First1" "Last1"
- ("Firsty1")
- "Company1
+ ["First1" "Last1"
+  ("Firsty1")
+  "Company1
 Unit1
 Subunit1"
- nil
- (["Office"
-   ("Box111" "Room 111" "First Street, First Corner")
-   "Cityone"
-   "First State"
-   "11111"
-   "Country"])
- ("first1@provider1")
- ((x-foo . "extended type 1")
-  (key . "The Key No 1")
-  (class . "CONFIDENTIAL")
-  (uid . "111-111-111-111")
-  (sound . "Audible1")
-  (sort-string . "aaa000")
-  (prodid . "-//ONLINE DIRECTORY//NONSGML Version 1//EN")
-  (categories . "category1")
-  (agent . "CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com")
-  (logo . "encoded logo #1")
-  (role . "Programmer")
-  (title . "Director, Research and Development")
-  (geo . "37.386013;-122.082932")
-  (tz . "+01:00")
-  (mailer . "Wanderlust1")
-  (tel=home . "+11111111")
-  (label . "Label 1")
-  (photo . "The Alphabet:abcdefghijklmnopqrstuvwsyz")
-  (anniversary . "1999-12-05 birthday")
-  (notes . "This vcard uses every type defined in rfc2426.")
-  (www . "first1@host1.org")
-  (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
- "First1 Last1")
+  nil
+  (["Office"
+    ("Box111" "Room 111" "First Street, First Corner")
+    "Cityone"
+    "First State"
+    "11111"
+    "Country"])
+  ("first1@provider1")
+  ((x-foo . "extended type 1")
+   (key . "The Key No 1")
+   (class . "CONFIDENTIAL")
+   (uid . "111-111-111-111")
+   (sound . "Audible1")
+   (sort-string . "aaa000")
+   (prodid . "-//ONLINE DIRECTORY//NONSGML Version 1//EN")
+   (categories . "category1")
+   (agent . "CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com")
+   (logo . "encoded logo #1")
+   (role . "Programmer")
+   (title . "Director, Research and Development")
+   (geo . "37.386013;-122.082932")
+   (tz . "+01:00")
+   (mailer . "Wanderlust1")
+   (tel=home . "+11111111")
+   (label . "Label 1")
+   (photo . "The Alphabet:abcdefghijklmnopqrstuvwsyz")
+   (anniversary . "1999-12-05 birthday")
+   (notes . "This vcard uses every type defined in rfc2426.")
+   (www . "first1@host1.org")
+   (creation-date . "1995-10-31") (timestamp . "2010-03-04"))]
+ "First1 Last1"
+ nil nil t)
 
 
 (bbdb-vcard-test
@@ -217,8 +221,9 @@ Marketing"
    (anniversary . "1996-04-15 birthday")
    (notes . "This fax number is operational 0800 to 1715 EST, Mon-Fri.")
    (www . "http://www.swbyps.restaurant.french/~chezchic.html")
-   (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
- "John")
+   (creation-date . "1995-10-31") (timestamp . "2010-03-04"))]
+ "John"
+ nil nil t)
 
 
 (bbdb-vcard-test
@@ -316,8 +321,9 @@ Marketing"
    (anniversary . "1996-04-15 birthday")
    (www . "http://www.swbyps.restaurant.french/~chezchic.html")
    (notes . "This fax number is operational 0800 to 1715 EST, Mon-Fri.")
-   (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
- "John")
+   (creation-date . "1995-10-31") (timestamp . "2010-03-04"))]
+ "John"
+ nil nil t)
 
 
 (bbdb-vcard-test
@@ -364,8 +370,9 @@ END:VCARD
     . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0")
    (anniversary . "1987-09-27T08:30:00-06:00 birthday")
    (notes . "A note")
-   (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
- "Public")
+   (creation-date . "1997-11-15") (timestamp . "2010-03-04"))]
+ "Public"
+ nil nil t)
 
 
 (bbdb-vcard-test 
@@ -975,3 +982,47 @@ END:VCARD
   ((creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
  "InnerfirstB InnerlastB")
 
+
+(bbdb-vcard-test
+ "
+** Treatment of REV
+*** Store REV as creation-date in new records...
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyJ;FirstJ
+ORG:OrgJ
+REV:1997-03-27T22:27:10Z
+END:VCARD
+"
+ ["FirstJ" "FamilyJ"
+  nil
+  "OrgJ"
+  nil
+  nil
+  nil
+  ((creation-date . "1997-03-27") (timestamp . "2010-03-04")) ]
+ "FirstJ FamilyJ"
+ nil nil t)
+
+
+(bbdb-vcard-test
+ "
+*** ...but not in existing records
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyJ;FirstJ
+ORG:OrgJ
+REV:1977-12-03T22:27:10Z
+END:VCARD
+"
+ ["FirstJ" "FamilyJ"
+  nil
+  "OrgJ"
+  nil
+  nil
+  nil
+  ((creation-date . "1997-03-27") (timestamp . "2010-03-04")) ]
+ "FirstJ FamilyJ"
+ nil nil t)
