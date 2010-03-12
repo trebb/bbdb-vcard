@@ -219,7 +219,7 @@ Nil means create a fresh bbdb entry each time a vcard is read."
 (defun bbdb-vcard-import-region (begin end)
   "Import the vcards between BEGIN and END into BBDB.
 Existing BBDB entries may be altered."
-  (interactive "d \nm")
+  (interactive "r")
   (bbdb-vcard-iterate-vcards (buffer-substring-no-properties begin end)
                              'bbdb-vcard-process-vcard))
 
@@ -232,11 +232,13 @@ Existing BBDB entries may be altered."
 
 (defun bbdb-vcard-import-file (vcard-file)
   "Import vcards from VCARD-FILE into BBDB.
-Existing BBDB entries may be altered."
-  (interactive "fVcard file: ")
-  (with-temp-buffer
-    (insert-file-contents vcard-file)
-    (bbdb-vcard-import-region (point-min) (point-max))))
+If VCARD-FILE is a wildcard, import each matching file.  Existing BBDB
+entries may be altered."
+  (interactive "FVcard file (or wildcard): ")
+  (dolist (vcard-file (file-expand-wildcards vcard-file))
+    (with-temp-buffer
+      (insert-file-contents vcard-file)
+      (bbdb-vcard-import-region (point-min) (point-max)))))
 
 (defun bbdb-vcard-iterate-vcards (vcards vcard-processor)
   "Apply VCARD-PROCESSOR successively to each vcard in string VCARDS."
