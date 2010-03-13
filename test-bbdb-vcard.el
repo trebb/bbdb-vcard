@@ -21,8 +21,8 @@ nil, creation-date are not taken into account."
   (bbdb-vcard-iterate-vcards vcard 'bbdb-vcard-process-vcard)
   (let* ((search-company (or search-company ""))
          (bbdb-search-result
-          (car (bbdb-search (bbdb-search (bbdb-records) search-name) nil search-company)))
-         )
+          (car (bbdb-search (bbdb-search (bbdb-records) search-name)
+                            nil search-company))))
     (setf (cdr (assoc 'timestamp (elt bbdb-search-result 7))) "2010-03-04"
           (cdr (assoc 'timestamp (elt bbdb-entry 7))) "2010-03-04")
     (unless check-creation-date-p

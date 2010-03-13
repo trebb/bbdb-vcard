@@ -178,15 +178,13 @@
   "Customizations for vcards"
   :group 'bbdb)
 
-(defcustom bbdb-vcard-skip
-  "X-GSM-"
+(defcustom bbdb-vcard-skip "X-GSM-"
   "Regexp describing vcard entry types that are to be discarded.
 Example: `X-GSM-\\|X-MS-'."
   :group 'bbdb-vcard
   :type 'regexp)
 
-(defcustom bbdb-vcard-skip-valueless
-  t
+(defcustom bbdb-vcard-skip-valueless t
   "Skip vcard entry types with an empty value.
 Nil means insert empty types into BBDB."
   :group 'bbdb-vcard
@@ -195,7 +193,7 @@ Nil means insert empty types into BBDB."
 (defcustom bbdb-vcard-translation-table
   '(("CELL\\|CAR" . "Mobile")
     ("WORK" . "Office")
-    ("HOME" . "Home")  ; translates e.g. "dom,home,postal,parcel" to Home
+    ("HOME" . "Home")  ; translates e.g. "dom,home,postal,parcel" to "Home"
     ("^$" . "Office")) ; acts as a default for parameterless ADR or TEL
   "Label translation.
 Alist with translations of location labels for addresses and phone
@@ -207,8 +205,7 @@ corresponds to unlabelled vcard entries."
                 (choice regexp (const :tag "Empty (as default)" "^$"))
                 :value-type string))
 
-(defcustom bbdb-vcard-try-merge
-  t
+(defcustom bbdb-vcard-try-merge t
   "Try to merge vcards into existing BBDB entries.
 Nil means create a fresh bbdb entry each time a vcard is read."
   :group 'bbdb-vcard
@@ -285,8 +282,7 @@ stripped off.) Extend existing BBDB entries where possible."
            (other-names
             (mapcar
              (lambda (n)
-               (mapconcat 'identity (bbdb-vcard-convert-name
-                                     (cdr (assoc "value" n)))
+               (bbdb-join (bbdb-vcard-convert-name (cdr (assoc "value" n)))
                           " "))
              (bbdb-vcard-entries-of-type "N")))
            (vcard-formatted-names
@@ -314,8 +310,7 @@ stripped off.) Extend existing BBDB entries where possible."
            ;; Email to search for in BBDB now:
            (email-to-search-for
             (when vcard-email
-              (concat "\\(" (mapconcat 'identity vcard-email "\\)\\|\\(")
-                      "\\)")))
+              (concat "\\(" (bbdb-join vcard-email "\\)\\|\\(") "\\)")))
            ;; Phone numbers suitable for storing in BBDB:
            (vcard-tels
             (mapcar (lambda (tel)
@@ -351,47 +346,29 @@ stripped off.) Extend existing BBDB entries where possible."
              ;; Try to find an existing one ...
              ;; (a) try company and net and name:
              (car (and bbdb-vcard-try-merge
-                       name-to-search-for
-                       (bbdb-search
-                        (and email-to-search-for
-                             (bbdb-search
-                              (and org-to-search-for
-                                   (bbdb-search (bbdb-records)
-                                                nil org-to-search-for))
-                              nil nil email-to-search-for))
-                        name-to-search-for)))
+                       (bbdb-vcard-search-intersection
+                        (bbdb-records)
+                        name-to-search-for
+                        org-to-search-for email-to-search-for)))
              ;; (b) try company and name:
              (car (and bbdb-vcard-try-merge
-                       name-to-search-for
-                       (bbdb-search
-                        (and org-to-search-for
-                             (bbdb-search (bbdb-records)
-                                          nil org-to-search-for))
-                        name-to-search-for)))
+                       (bbdb-vcard-search-intersection
+                        (bbdb-records) name-to-search-for org-to-search-for)))
              ;; (c) try net and name; we may change company here:
              (car (and bbdb-vcard-try-merge
-                       name-to-search-for
-                       (bbdb-search
-                        (and email-to-search-for
-                             (bbdb-search (bbdb-records)
-                                          nil nil email-to-search-for))
-                        name-to-search-for)))
+                       (bbdb-vcard-search-intersection
+                        (bbdb-records)
+                        name-to-search-for nil email-to-search-for)))
              ;; (d) try birthday and name; we may change company here:
              (car (and bbdb-vcard-try-merge
-                       name-to-search-for
-                       (bbdb-search
-                        (and bday-to-search-for
-                             (bbdb-search (bbdb-records)
-                                          nil nil nil bday-to-search-for))
-                        name-to-search-for)))
+                       (bbdb-vcard-search-intersection
+                        (bbdb-records)
+                        name-to-search-for nil nil bday-to-search-for)))
              ;; (e) try phone and name; we may change company here:
              (car (and bbdb-vcard-try-merge
-                       name-to-search-for
-                       (bbdb-search
-                        (and tel-to-search-for
-                             (bbdb-search (bbdb-records)
-                                          nil nil nil nil tel-to-search-for))
-                        name-to-search-for)))
+                       (bbdb-vcard-search-intersection
+                        (bbdb-records)
+                        name-to-search-for nil nil nil tel-to-search-for)))
              ;; No existing record found; make a fresh one:
              (let ((fresh-record (make-vector bbdb-record-length nil)))
                (bbdb-record-set-cache fresh-record
@@ -399,8 +376,9 @@ stripped off.) Extend existing BBDB entries where possible."
                (if vcard-rev            ; For fresh records,
                    (bbdb-record-putprop ; set creation-date from vcard-rev
                     fresh-record 'creation-date
-                    (replace-regexp-in-string "\\([0-9]\\{4\\}-[01][0-9]-[0-3][0-9]\\).*"
-                                              "\\1" vcard-rev))
+                    (replace-regexp-in-string
+                     "\\([0-9]\\{4\\}-[01][0-9]-[0-3][0-9]\\).*" "\\1"
+                     vcard-rev))
                  (bbdb-invoke-hook 'bbdb-create-hook fresh-record))
                (setq record-freshness-info "BBDB record added:") ; for user information
                fresh-record)))
@@ -472,26 +450,13 @@ stripped off.) Extend existing BBDB entries where possible."
                (replace-regexp-in-string
                 "\n" "; " (or (bbdb-record-company bbdb-record) "-"))))))
 
-(defun bbdb-vcard-unescape-strings (escaped-strings)
-  "Unescape escaped `;', `,', `\\', and newlines in ESCAPED-STRINGS.
-ESCAPED-STRINGS may be a string or a sequence of strings."
-  (flet ((unescape (x) (replace-regexp-in-string
-                        "\\([\\\\]\\)\\([,;\\]\\)" ""
-                        (replace-regexp-in-string "\\\\n" "\n" x)
-                        nil nil 1)))
-    (if (stringp escaped-strings)
-        (unescape escaped-strings)
-      (mapcar 'unescape
-              escaped-strings))))
-
 (defun bbdb-vcard-convert-name (vcard-name)
   "Convert VCARD-NAME (type N) into (FIRSTNAME LASTNAME)."
   (if (stringp vcard-name)              ; unstructured N
       (bbdb-divide-name vcard-name)
     (let ((vcard-name
            (mapcar (lambda (x)
-                     (mapconcat 'identity
-                                (bbdb-vcard-split-structured-text x "," t)
+                     (bbdb-join (bbdb-vcard-split-structured-text x "," t)
                                 " "))
                    vcard-name))) ; flatten comma-separated substructure
       (list (concat (nth 3 vcard-name)  ; honorific prefixes
@@ -508,19 +473,18 @@ ESCAPED-STRINGS may be a string or a sequence of strings."
   (if (or (null vcard-org)
           (stringp vcard-org)) ; unstructured, probably non-standard ORG
       vcard-org                ; Company, unit 1, unit 2...
-    (mapconcat 'identity vcard-org "\n")))
+    (bbdb-join vcard-org "\n")))
 
 (defun bbdb-vcard-convert-adr (vcard-adr)
   "Convert VCARD-ADR into BBDB format.
 Turn a vcard element of type ADR into (TYPE STREETS CITY STATE ZIP
 COUNTRY)."
   (let ((adr-type (or (cdr (assoc "type" vcard-adr)) ""))
-        (adr-value (mapcar      ; flatten comma-separated substructure
-                    (lambda (x)
-                      (mapconcat 'identity
-                                 (bbdb-vcard-split-structured-text x "," t)
-                                 ", "))
-                    (cdr (assoc "value" vcard-adr)))))
+        (adr-value
+         (mapcar                ; flatten comma-separated substructure
+          (lambda (x)
+            (bbdb-join (bbdb-vcard-split-structured-text x "," t) ", "))
+          (cdr (assoc "value" vcard-adr)))))
     (vector (bbdb-vcard-translate adr-type)
             ;; Postbox, Extended, Streets
             (remove-if (lambda (x) (zerop (length x)))
@@ -529,18 +493,6 @@ COUNTRY)."
             (elt adr-value 4)           ; State
             (elt adr-value 5)           ; Zip
             (elt adr-value 6))))        ; Country
-
-(defun bbdb-vcard-merge-notes (bbdb-notes vcard-notes)
-  "Merge string VCARD-NOTES into string BBDB-NOTES.
-If VCARD-NOTES is already in BBDB-NOTES, return BBDB-NOTES.  Otherwise
-append VCARD-NOTES."
-  (with-temp-buffer
-    (insert bbdb-notes)
-    (unless (search-backward vcard-notes nil t)
-      (goto-char (point-max))
-      (unless (zerop (buffer-size)) (insert ";\n"))
-      (insert vcard-notes))
-    (buffer-string)))
 
 (defun bbdb-vcard-entries-of-type (type &optional one-is-enough-p)
   "From current buffer read and delete the vcard entries of TYPE.
@@ -586,6 +538,18 @@ Buffer is supposed to contain a single vcard.  Return (TYPE . ENTRY)."
       (delete-region (match-beginning 0) (match-end 0))
       (cons (intern (downcase type)) (bbdb-vcard-unescape-strings value)))))
 
+(defun bbdb-vcard-merge-notes (bbdb-notes vcard-notes)
+  "Merge string VCARD-NOTES into string BBDB-NOTES.
+If VCARD-NOTES is already in BBDB-NOTES, return BBDB-NOTES.  Otherwise
+append VCARD-NOTES."
+  (with-temp-buffer
+    (insert bbdb-notes)
+    (unless (search-backward vcard-notes nil t)
+      (goto-char (point-max))
+      (unless (zerop (buffer-size)) (insert ";\n"))
+      (insert vcard-notes))
+    (buffer-string)))
+
 (defun bbdb-vcard-split-structured-text
   (text separator &optional return-always-list-p)
   "Split TEXT at unescaped occurrences of SEPARATOR; return parts in a list.
@@ -603,12 +567,44 @@ is nil."
           (car string-elements)
         string-elements))))
 
+(defun bbdb-vcard-unescape-strings (escaped-strings)
+  "Unescape escaped `;', `,', `\\', and newlines in ESCAPED-STRINGS.
+ESCAPED-STRINGS may be a string or a sequence of strings."
+  (flet ((unescape (x) (replace-regexp-in-string
+                        "\\([\\\\]\\)\\([,;\\]\\)" ""
+                        (replace-regexp-in-string "\\\\n" "\n" x)
+                        nil nil 1)))
+    (if (stringp escaped-strings)
+        (unescape escaped-strings)
+      (mapcar 'unescape escaped-strings))))
+
 (defun bbdb-vcard-translate (vcard-label)
   "Translate VCARD-LABEL into its bbdb counterpart.
 Translations are defined in `bbdb-vcard-translation-table'."
   (upcase-initials
    (or (assoc-default vcard-label bbdb-vcard-translation-table 'string-match)
        vcard-label)))
+
+(defmacro bbdb-vcard-search-intersection
+  (records &optional name company net notes phone)
+  "Search RECORDS for records that match each non-nil argument."
+  (let*
+      ((phone-search
+        (if phone `(when ,phone (bbdb-search ,records nil nil nil nil ,phone))
+          records))
+       (notes-search
+        (if notes `(when ,notes (bbdb-search ,phone-search nil nil nil ,notes))
+          phone-search))
+       (net-search
+        (if net `(when ,net (bbdb-search ,notes-search nil nil ,net))
+          notes-search))
+       (company-search
+        (if company `(when ,company (bbdb-search ,net-search nil ,company))
+          net-search))
+       (name-search
+        (if name `(when ,name (bbdb-search ,company-search ,name))
+          company-search)))
+    name-search))
 
 (provide 'bbdb-vcard)
 
