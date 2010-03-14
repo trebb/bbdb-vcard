@@ -191,15 +191,15 @@
 ;;    (concat first-name "_" last-name ".vcf")))
 ;;;; TODO: make it unique
 
-(defun bbdb-vcard-export-make-vcard (record vcard-name)
-  "Make a record buffer and write it"
-  (let ((buffer (get-buffer-create "*bbdb-vcard-export*")))
-    (save-excursion
-      (set-buffer buffer)
-      (kill-region (point-min) (point-max))
-      (bbdb-vcard-export-record-insert-vcard record)
-      (write-region (point-min) (point-max) vcard-name))
-    (kill-buffer buffer)))
+;; (defun bbdb-vcard-export-make-vcard (record vcard-name)
+;;   "Make a record buffer and write it"
+;;   (let ((buffer (get-buffer-create "*bbdb-vcard-export*")))
+;;     (save-excursion
+;;       (set-buffer buffer)
+;;       (kill-region (point-min) (point-max))
+;;       (bbdb-vcard-export-record-insert-vcard record)
+;;       (write-region (point-min) (point-max) vcard-name))
+;;     (kill-buffer buffer)))
 
 (defun bbdb-vcard-do-record (record output-dir coding-system)
   "Update the vcard of one bbdb record"

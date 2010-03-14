@@ -40,9 +40,9 @@ nil, creation-date are not taken into account."
 
 
 ;;; Try not to mess up our real BBDB:
-(when (get-buffer "bbdb")
-  (save-buffer "bbdb") ; hopefully, this is the bbdb buffer
-  (kill-buffer "bbdb"))
+(when bbdb-buffer
+  (save-buffer bbdb-buffer)
+  (kill-buffer bbdb-buffer))
 (when (get-buffer "test-bbdb") (kill-buffer "test-bbdb"))
 (setq bbdb-file "/tmp/test-bbdb")
 (when (file-exists-p bbdb-file) (delete-file bbdb-file))
@@ -778,6 +778,32 @@ UnitG"
 
 (bbdb-vcard-test
  "
+*** Remove X-BBDB- prefixes
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyN;FirstN
+ORG:OrgN;UnitN
+EMAIL:userN@hostN.example.com
+X-BBDB-MARK-CHAR:b
+X-BBDB-TEX-NAME:{\\\\em FirstM FamilyM}
+END:VCARD
+"
+ ["FirstN" "FamilyN"
+  nil
+  "OrgN
+UnitN"
+  nil
+  nil
+  ("userN@hostN.example.com")
+  ((tex-name . "{\\em FirstM FamilyM}")
+   (mark-char . "b")
+   (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
+ "FirstN FamilyN")
+
+
+(bbdb-vcard-test
+ "
 ** Merging of vcard NOTEs
 *** A vcard with two NOTEs.
 ------------------------------------------------------------
@@ -1200,3 +1226,60 @@ END:VCARD
   ((creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
  "FirstL FamilyL"
  "CompanyL3")
+
+
+
+(bbdb-vcard-test
+ "
+** From RFC 2426: author's address.  Note the omission or type N
+   which is declared mandatory by this very RFC.
+------------------------------------------------------------
+BEGIN:vCard
+VERSION:3.0
+FN:Frank Dawson
+ORG:Lotus Development Corporation
+ADR;TYPE=WORK,POSTAL,PARCEL:;;6544 Battleford Drive
+ ;Raleigh;NC;27613-3502;U.S.A.
+TEL;TYPE=VOICE,MSG,WORK:+1-919-676-9515
+TEL;TYPE=FAX,WORK:+1-919-676-9564
+EMAIL;TYPE=INTERNET,PREF:Frank_Dawson@Lotus.com
+EMAIL;TYPE=INTERNET:fdawson@earthlink.net
+URL:http://home.earthlink.net/~fdawson
+END:vCard
+"
+ ["" ""
+  ("Frank Dawson")
+  "Lotus Development Corporation"
+  (["Office" "+1-919-676-9564"]
+   ["Office" "+1-919-676-9515"])
+  (["Office" ("6544 Battleford Drive") "Raleigh" "NC" "27613-3502" "U.S.A."])
+  ("fdawson@earthlink.net"
+   "Frank_Dawson@Lotus.com")
+  ((www . "http://home.earthlink.net/~fdawson")
+   (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
+"Frank Dawson")
+
+(bbdb-vcard-test
+ "
+** The other author of RFC 2426
+------------------------------------------------------------
+BEGIN:vCard
+VERSION:3.0
+FN:Tim Howes
+ORG:Netscape Communications Corp.
+ADR;TYPE=WORK:;;501 E. Middlefield Rd.;Mountain View;
+ CA; 94043;U.S.A.
+TEL;TYPE=VOICE,MSG,WORK:+1-415-937-3419
+TEL;TYPE=FAX,WORK:+1-415-528-4164
+EMAIL;TYPE=INTERNET:howes@netscape.com
+END:vCard
+"
+ ["" ""
+  ("Tim Howes")
+  "Netscape Communications Corp."
+  (["Office" "+1-415-528-4164"]
+   ["Office" "+1-415-937-3419"])
+  (["Office" ("501 E. Middlefield Rd.") "Mountain View" "CA" " 94043" "U.S.A."])
+  ("howes@netscape.com")
+  ((creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
+ "Tim Howes")
