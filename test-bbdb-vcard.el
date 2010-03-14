@@ -85,7 +85,7 @@ REV:1995-10-31T22:27:10Z
 SORT-STRING:aaa000
 SOUND:Audible1
 UID:111-111-111-111
-URL:first1@host1.org
+URL:http://first1.host1.org
 CLASS:CONFIDENTIAL
 KEY:The Key No 1
 X-foo:extended type 1
@@ -111,7 +111,6 @@ Subunit1"
    (sound . "Audible1")
    (sort-string . "aaa000")
    (prodid . "-//ONLINE DIRECTORY//NONSGML Version 1//EN")
-   (categories . "category1")
    (agent . "CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com")
    (logo . "encoded logo #1")
    (role . "Programmer")
@@ -121,9 +120,10 @@ Subunit1"
    (mailer . "Wanderlust1")
    (label . "Label 1")
    (photo . "The Alphabet:abcdefghijklmnopqrstuvwsyz")
+   (mail-alias . "category1")
    (anniversary . "1999-12-05 birthday")
    (notes . "This vcard uses every type defined in rfc2426.")
-   (www . "first1@host1.org")
+   (www . "http://first1.host1.org")
    (creation-date . "1995-10-31") (timestamp . "2010-03-04"))]
  "First1 Last1"
  nil nil t)
@@ -208,7 +208,6 @@ Marketing"
    (sound\;type=basic\;encoding=b
     . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0")
    (prodid . "-//ONLINE DIRECTORY//NONSGML Version 1//EN")
-   (categories . "TRAVEL AGENT")
    (agent\;value=uri . "CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com")
    (logo\;encoding=b\;type=jpeg
     . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0")
@@ -220,6 +219,7 @@ Marketing"
    (label\;type=dom\,home\,postal\,parcel
     . "Mr.John Q. Public, Esq.\nMail Drop: TNE QB\n123 Main Street\nAny Town, CA  91921-1234\nU.S.A.")
    (photo\;value=uri . "http://www.abc.com/pub/photos/jqpublic.gif")
+   (mail-alias . "TRAVEL AGENT")
    (anniversary . "1996-04-15 birthday")
    (notes . "This fax number is operational 0800 to 1715 EST, Mon-Fri.")
    (www . "http://www.swbyps.restaurant.french/~chezchic.html")
@@ -308,7 +308,6 @@ Marketing"
    (sound\;type=basic\;encoding=b
     . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0")
    (prodid . "-//ONLINE DIRECTORY//NONSGML Version 1//EN")
-   (categories . "TRAVEL AGENT")
    (agent\;value=uri . "CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com")
    (logo\;encoding=b\;type=jpeg
     . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0")
@@ -321,6 +320,7 @@ Marketing"
     . "Mr.John Q. Public, Esq.\nMail Drop: TNE QB\n123 Main Street\nAny Town, CA  91921-1234\nU.S.A.")
    (photo\;value=uri . "http://www.abc.com/pub/photos/jqpublic.gif")
    (www . "http://www.swbyps.restaurant.french/~chezchic.html")
+   (mail-alias . "TRAVEL AGENT")
    (anniversary . "1996-04-15 birthday")
    (notes . "This fax number is operational 0800 to 1715 EST, Mon-Fri.")
    (creation-date . "1995-10-31") (timestamp . "2010-03-04"))]
@@ -842,6 +842,75 @@ END:VCARD
   ((notes . "Note No. 1a;\nNote No. 1b;\nNote No. 2")
    (creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
  "FirstI FamilyI")
+
+
+
+(bbdb-vcard-test
+ "
+** Merging of vcard CATEGORIES
+*** A vcard with two CATEGORIES.
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyM;FirstM
+ORG:OrgI
+CATEGORIES:Category 1a,Category 1b
+CATEGORIES:Category 2a,Category 2b
+END:VCARD
+"
+ ["FirstM" "FamilyM"
+  nil
+  "OrgI"
+  nil
+  nil
+  nil
+  ((mail-alias . "Category 1a,Category 1b,Category 2a,Category 2b")
+   (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
+ "FirstM FamilyM")
+
+
+(bbdb-vcard-test
+ "
+*** Same as before, but a different CATEGORIES.
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyM;FirstM
+ORG:OrgI
+CATEGORIES:Category 3
+END:VCARD
+"
+ ["FirstM" "FamilyM"
+  nil
+  "OrgI"
+  nil
+  nil
+  nil
+  ((mail-alias . "Category 1a,Category 1b,Category 2a,Category 2b,Category 3")
+   (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
+ "FirstM FamilyM")
+
+
+(bbdb-vcard-test
+ "
+*** Same as before, but a CATEGORIES we've seen already
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyM;FirstM
+ORG:OrgI
+CATEGORIES:Category 2b
+END:VCARD
+"
+ ["FirstM" "FamilyM"
+  nil
+  "OrgI"
+  nil
+  nil
+  nil
+  ((mail-alias . "Category 1a,Category 1b,Category 2a,Category 2b,Category 3")
+   (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
+ "FirstM FamilyM")
 
 
 (bbdb-vcard-test
