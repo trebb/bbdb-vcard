@@ -281,6 +281,7 @@ is removed again."
 
 ;;;; User Functions
 
+;;;###autoload
 (defun bbdb-vcard-import-region (begin end)
   "Import the vCards between BEGIN and END into BBDB.
 Existing BBDB entries may be altered."
@@ -288,6 +289,7 @@ Existing BBDB entries may be altered."
   (bbdb-vcard-iterate-vcards (buffer-substring-no-properties begin end)
                              'bbdb-vcard-process-vcard))
 
+;;;###autoload
 (defun bbdb-vcard-import-buffer (vcard-buffer)
   "Import vCards from VCARD-BUFFER into BBDB.
 Existing BBDB entries may be altered."
@@ -295,6 +297,7 @@ Existing BBDB entries may be altered."
   (set-buffer vcard-buffer)
   (bbdb-vcard-import-region (point-min) (point-max)))
 
+;;;###autoload
 (defun bbdb-vcard-import-file (vcard-file)
   "Import vCards from VCARD-FILE into BBDB.
 If VCARD-FILE is a wildcard, import each matching file.  Existing BBDB
@@ -305,6 +308,7 @@ entries may be altered."
       (insert-file-contents vcard-file)
       (bbdb-vcard-import-region (point-min) (point-max)))))
 
+;;;###autoload
 (defun bbdb-vcard-export
   (filename-or-directory all-records-p one-file-per-record-p)
   "From Buffer *BBDB*, write one or more record(s) as vCard(s) to file(s).
@@ -344,8 +348,7 @@ in individual files."
                          (bbdb-vcard-make-file-name record
                                                     used-up-basenames)))
                     (insert (bbdb-vcard-from record))
-                    (write-region (point-min)
-                                  (point-max)
+                    (write-region nil nil
                                   (concat filename-or-directory basename)
                                   nil nil nil t)
                     (push basename used-up-basenames))))
@@ -354,18 +357,13 @@ in individual files."
           (with-temp-buffer     ; all visible BBDB records in one file
             (dolist (record records)
               (insert (bbdb-vcard-from record)))
-            (write-region (point-min)
-                          (point-max)
-                          filename-or-directory
-                          nil nil nil t))))
+            (write-region nil nil filename-or-directory nil nil nil t))))
     (let ((vcard (bbdb-vcard-from (bbdb-current-record nil)))) ; current record
       (with-temp-buffer
         (insert vcard)
-        (write-region (point-min)
-                      (point-max)
-                      filename-or-directory
-                      nil nil nil t)))))
+        (write-region nil nil filename-or-directory nil nil nil t)))))
 
+;;;###autoload (define-key bbdb-mode-map [(v)] 'bbdb-vcard-export)
 (define-key bbdb-mode-map [(v)] 'bbdb-vcard-export)
 
 
@@ -620,13 +618,16 @@ stripped off.) Extend existing BBDB entries where possible."
 
 (defun bbdb-vcard-insert-vcard-element (type &rest values)
   "Insert a vCard element comprising TYPE, `:', VALUES into current buffer.
-Take care of TYPE canonicalization, line folding, and closing newline.  Do
-nothing if VALUES are empty."
-  (let ((value (bbdb-join values "")))
-    (unless (zerop (length value))
-      (insert (bbdb-vcard-fold-line
-               (concat (bbdb-vcard-canonicalize-vcard-type type) ":"
-                       value))))))
+Take care of TYPE canonicalization, line folding, and closing newline.
+Do nothing if TYPE is non-nil and VALUES are empty.  Insert just a
+newline if TYPE is nil."
+  (if type
+      (let ((value (bbdb-join values "")))
+        (unless (zerop (length value))
+          (insert (bbdb-vcard-fold-line
+                   (concat (bbdb-vcard-canonicalize-vcard-type type) ":"
+                           value)))))
+    (insert (bbdb-vcard-fold-line ""))))
 
 (defun bbdb-vcard-from (record)
   "Return BBDB RECORD as a vCard."
@@ -703,7 +704,8 @@ nothing if VALUES are empty."
         (bbdb-vcard-insert-vcard-element
          (symbol-name (bbdb-vcard-prepend-x-bbdb-maybe (car raw-note)))
          (bbdb-vcard-escape-strings (cdr raw-note))))
-      (bbdb-vcard-insert-vcard-element "END" "VCARD"))
+      (bbdb-vcard-insert-vcard-element "END" "VCARD")
+      (bbdb-vcard-insert-vcard-element nil)) ; newline
     (buffer-string)))
 
 (defun bbdb-vcard-unvcardize-name (vcard-name)
