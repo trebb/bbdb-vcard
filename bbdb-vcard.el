@@ -293,7 +293,7 @@ Existing BBDB entries may be altered."
 (defun bbdb-vcard-import-buffer (vcard-buffer)
   "Import vCards from VCARD-BUFFER into BBDB.
 Existing BBDB entries may be altered."
-  (interactive "bvCard buffer: ")
+  (interactive (list (current-buffer)))
   (set-buffer vcard-buffer)
   (bbdb-vcard-import-region (point-min) (point-max)))
 
