@@ -19,24 +19,38 @@
 ;; along with GNU Emacs; see the file COPYING.  If not, write to the
 ;; Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 ;; Boston, MA 02111-1307, USA.
+
+;; The exporter functionality is based on code from
+;; bbdb-vcard-export.el by Jim Hourihan and Alex Schroeder.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 ;;; Commentary:
 ;; 
 ;; Purpose
 ;; -------
 ;; 
-;; Data import from vCards version 3.0 as defined in RFC2425 and
-;; RFC2426 into The Insidious Big Brother Database (BBDB).
+;; Import and export of vCards (version 3.0) as defined in RFC 2425
+;; and RFC 2426 to/from The Insidious Big Brother Database (BBDB).
 ;; 
+;;
 ;; Usage
 ;; -----
+;;
+;; vCard Import
 ;;
 ;; On a file, a buffer or a region containing one or more vCards, use
 ;; `bbdb-vcard-import-file', `bbdb-vcard-import-buffer', or
 ;; `bbdb-vcard-import-region' respectively to import them into BBDB.
 ;;
+;; vCard Export
+;;
+;; In buffer *BBDB*, press v to export the record under point. Press
+;; *v to export all records in buffer into one vCard file.
+;; Press * C-u v to export them into one file each.
+;;
 ;; There are a few customization variables grouped under `bbdb-vcard'.
+;;
 ;;
 ;; Installation
 ;; ------------
@@ -46,8 +60,11 @@
 ;;
 ;;   (require 'bbdb-vcard)
 ;;
+;;
 ;; Implementation
 ;; --------------
+;;
+;; vCard Import
 ;;
 ;; An existing BBDB entry is extended by new information from a vCard
 ;; 
@@ -166,7 +183,10 @@
 ;; | anyJunK     | ;a=x;b=y          | Notes<anyjunk;a=x;b=y     |
 ;; |-------------+-------------------+---------------------------|
 ;; "
-
+;;
+;; vCard Export
+;;
+;; (TODO)
 
 ;;; History:
 ;; 
@@ -285,52 +305,68 @@ entries may be altered."
       (insert-file-contents vcard-file)
       (bbdb-vcard-import-region (point-min) (point-max)))))
 
-(defun bbdb-vcard-export-current (filename)
-  "Write current BBDB record as a vCard to FILENAME."
+(defun bbdb-vcard-export
+  (filename-or-directory all-records-p one-file-per-record-p)
+  "From Buffer *BBDB*, write one or more record(s) as vCard(s) to file(s).
+\\<bbdb-mode-map>\
+If \"\\[bbdb-apply-next-command-to-all-records]\\[bbdb-vcard-export]\"\
+is used instead of simply \"\\[bbdb-vcard-export]\", then export all\
+records currently
+in the *BBDB* buffer.  If used with prefix argument, store records
+in individual files."
   (interactive
-   (let ((default-filename
-           (bbdb-vcard-make-file-name (bbdb-current-record nil))))
+   (let ((default-filename              ; argument filename-or-directory
+           (bbdb-vcard-make-file-name (bbdb-current-record nil)))
+         (all-records-p (bbdb-do-all-records-p)))
      (list
-      (read-file-name "Write vCard to file: "
-                      bbdb-vcard-default-dir nil nil default-filename))))
-  (let ((vcard (bbdb-vcard-from (bbdb-current-record nil))))
-    (with-temp-buffer
-      (insert vcard)
-      (write-region (point-min) (point-max) filename nil nil nil t))))
-
-;TODO: integrate exporters
-(defun bbdb-vcard-export (filename-or-directory one-file-per-record-p)
-  "Write BBDB records as vCards to a file or to one file each.\\<bbdb-mode-map>
-If \"\\[bbdb-apply-next-command-to-all-records]\\[bbdb-vcard-export]\" is \
-used instead of simply \"\\[bbdb-vcard-export]\", then include only the
-people currently in the *BBDB* buffer."
-  (interactive
-   (list
-    (if current-prefix-arg
-        (read-directory-name "Write vCard files to directory: "
-                             bbdb-vcard-default-dir nil "confirm")
-      (read-file-name "Write vCards to file: "
-                      bbdb-vcard-default-dir nil nil "today.vcf")) ;TODO: nice default
-    current-prefix-arg))
-  (let ((records (progn (set-buffer bbdb-buffer-name)
-                        (mapcar 'car bbdb-records)))
-        used-up-basenames)              ; keep them unique
-    (if one-file-per-record-p
-        (dolist (record records)
-          (with-temp-buffer
-            (let ((basename
-                   (bbdb-vcard-make-file-name record used-up-basenames)))
-              (insert (bbdb-vcard-from record))
-              (write-region (point-min)
-                            (point-max)
-                            (concat filename-or-directory basename)
-                            nil nil nil t)
-              (push basename used-up-basenames))))
+      (if all-records-p
+          (if current-prefix-arg
+              (read-directory-name "Write vCard files to directory: "
+                                   bbdb-vcard-default-dir nil 42)
+            (read-file-name
+             "Write vCards to file: "
+             bbdb-vcard-default-dir
+             nil nil
+             (format-time-string "%Y-%m-%dT%H:%M.vcf" (current-time))))
+        (read-file-name "Write current record to vCard file: "
+                        bbdb-vcard-default-dir nil nil default-filename))
+      all-records-p           ; argument all-records-p
+      current-prefix-arg)))             ; argument one-file-per-record-p
+  (if all-records-p
+      (let ((records (progn (set-buffer bbdb-buffer-name)
+                            (mapcar 'car bbdb-records)))
+            used-up-basenames)          ; keep them unique
+        (if one-file-per-record-p
+            (progn
+              (dolist (record records)
+                (with-temp-buffer
+                  (let ((basename
+                         (bbdb-vcard-make-file-name record
+                                                    used-up-basenames)))
+                    (insert (bbdb-vcard-from record))
+                    (write-region (point-min)
+                                  (point-max)
+                                  (concat filename-or-directory basename)
+                                  nil nil nil t)
+                    (push basename used-up-basenames))))
+              (message "Wrote %d vCards to %s"
+                       (length used-up-basenames) filename-or-directory))
+          (with-temp-buffer     ; all visible BBDB records in one file
+            (dolist (record records)
+              (insert (bbdb-vcard-from record)))
+            (write-region (point-min)
+                          (point-max)
+                          filename-or-directory
+                          nil nil nil t))))
+    (let ((vcard (bbdb-vcard-from (bbdb-current-record nil)))) ; current record
       (with-temp-buffer
-        (dolist (record records)
-          (insert (bbdb-vcard-from record)))
-        (write-region (point-min) (point-max) filename-or-directory nil nil nil t)))))
+        (insert vcard)
+        (write-region (point-min)
+                      (point-max)
+                      filename-or-directory
+                      nil nil nil t)))))
 
+(define-key bbdb-mode-map [(v)] 'bbdb-vcard-export)
 
 
 
@@ -498,10 +534,10 @@ stripped off.) Extend existing BBDB entries where possible."
                              vcard-formatted-names
                              bbdb-akas))))
       (when vcard-org (bbdb-record-set-company bbdb-record vcard-org))
-      (bbdb-record-set-net bbdb-record
-                           (union vcard-email bbdb-nets :test 'string=))
-      (bbdb-record-set-addresses bbdb-record
-                                 (union vcard-adrs bbdb-addresses :test 'equal))
+      (bbdb-record-set-net
+       bbdb-record (union vcard-email bbdb-nets :test 'string=))
+      (bbdb-record-set-addresses
+       bbdb-record (union vcard-adrs bbdb-addresses :test 'equal))
       (bbdb-record-set-phones bbdb-record
                               (union vcard-tels bbdb-phones :test 'equal))
       ;; prepare bbdb's notes:
@@ -592,16 +628,6 @@ nothing if VALUES are empty."
                (concat (bbdb-vcard-canonicalize-vcard-type type) ":"
                        value))))))
 
-;;(defun bbdb-vcard-export-make-vcard (record vcard-name)
-;;  "Make a record buffer and write it"
-;;  (let ((buffer (get-buffer-create "*bbdb-vcard-export*")))
-;;    (save-excursion
-;;      (set-buffer buffer)
-;;      (kill-region (point-min) (point-max))
-;;      (insert (bbdb-vcard-from record))
-;;      (write-region (point-min) (point-max) vcard-name))
-;;    (kill-buffer buffer)))
-
 (defun bbdb-vcard-from (record)
   "Return BBDB RECORD as a vCard."
   (with-temp-buffer
@@ -669,16 +695,14 @@ nothing if VALUES are empty."
        "CATEGORIES" 
        (bbdb-join (bbdb-vcard-escape-strings
                    (bbdb-vcard-split-structured-text mail-aliases "," t)) ","))
-      ;; prune raw-notes
+      ;; prune raw-notes...
       (dolist (key '(www notes anniversary mail-alias creation-date timestamp))
         (setq raw-notes (assq-delete-all key raw-notes)))
-      ;; output what's left
+      ;; ... and output what's left
       (dolist (raw-note raw-notes)
         (bbdb-vcard-insert-vcard-element
          (symbol-name (bbdb-vcard-prepend-x-bbdb-maybe (car raw-note)))
          (bbdb-vcard-escape-strings (cdr raw-note))))
-      ;; FIXME: use face attribute for this one.
-      ;; PHOTO;ENCODING=b;TYPE=JPEG:MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcN
       (bbdb-vcard-insert-vcard-element "END" "VCARD"))
     (buffer-string)))
 
@@ -729,7 +753,6 @@ COUNTRY)."
 (defun bbdb-vcard-canonicalize-vcard-type (&rest strings)
   "Concatenate STRINGS and apply `bbdb-vcard-type-canonicalizer' to them."
   (funcall bbdb-vcard-type-canonicalizer (bbdb-join strings "")))
-
 
 (defun bbdb-vcard-entries-of-type (type &optional one-is-enough-p)
   "From current buffer read and delete the vCard entries of TYPE.
@@ -868,7 +891,8 @@ Translations are defined in `bbdb-vcard-import-translation-table' and
     name-search))
 
 (defun bbdb-vcard-make-file-name (bbdb-record &optional used-up-basenames)
-  "Come up with a vCard filename given a BBDB-RECORD."
+  "Come up with a vCard filename given a BBDB-RECORD.
+Make it unique against the list USED-UP-BASENAMES."
   (let ((name (bbdb-record-name bbdb-record))
         (aka (car (bbdb-record-aka bbdb-record)))
         (unique-number 0)
@@ -888,8 +912,7 @@ Translations are defined in `bbdb-vcard-import-translation-table' and
       (incf unique-number))
     filename))
 
-
-
+
 
 (provide 'bbdb-vcard)
 

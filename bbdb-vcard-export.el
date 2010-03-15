@@ -234,7 +234,7 @@
   (let ((record (bbdb-current-record nil)))
     (bbdb-vcard-do-record record output-dir coding-system)))
 
-(define-key bbdb-mode-map [(v)] 'bbdb-vcard-export-current)
+;;(define-key bbdb-mode-map [(v)] 'bbdb-vcard-export-current)
 
 
 (provide 'bbdb-vcard-export)
