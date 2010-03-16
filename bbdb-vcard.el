@@ -747,10 +747,10 @@ COUNTRY)."
             ;; Postbox, Extended, Streets
             (remove-if (lambda (x) (zerop (length x)))
                        (subseq adr-value 0 3))
-            (elt adr-value 3)           ; City
-            (elt adr-value 4)           ; State
-            (elt adr-value 5)           ; Zip
-            (elt adr-value 6))))        ; Country
+            (or (elt adr-value 3) "")    ; City
+            (or (elt adr-value 4) "")    ; State
+            (or (elt adr-value 5) "")    ; Zip
+            (or (elt adr-value 6) "")))) ; Country
 
 (defun bbdb-vcard-canonicalize-vcard-type (&rest strings)
   "Concatenate STRINGS and apply `bbdb-vcard-type-canonicalizer' to them."
