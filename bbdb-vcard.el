@@ -718,12 +718,12 @@ newline if TYPE is nil."
                                 " "))
                    vcard-name))) ; flatten comma-separated substructure
       (list (concat (nth 3 vcard-name)  ; honorific prefixes
-                    (when (nth 3 vcard-name) " ")
+                    (unless (zerop (length (nth 3 vcard-name))) " ")
                     (nth 1 vcard-name)  ; given name
-                    (when (nth 2 vcard-name) " ")
+                    (unless (zerop (length (nth 2 vcard-name))) " ")
                     (nth 2 vcard-name)) ; additional names
             (concat (nth 0 vcard-name)  ; family name
-                    (when (nth 4 vcard-name) " ")
+                    (unless (zerop (length (nth 4 vcard-name))) " ")
                     (nth 4 vcard-name)))))) ; honorific suffixes
 
 (defun bbdb-vcard-unvcardize-org (vcard-org)
