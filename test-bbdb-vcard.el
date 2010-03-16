@@ -202,24 +202,24 @@ Marketing"
     "CA"
     "91921-1234"
     ""])
-  ("jdoe@isp.net" "jqpublic@xyz.dom1.com")
-  ((key\;encoding=b
-    . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0ZW1zMRwwGgYDVQQDExNyb290Y2EubmV0c2NhcGUuY29tMB4XDTk3MDYwNjE5NDc1OVoXDTk3MTIwMzE5NDc1OVowgYkxCzAJBgNVBAYTAlVTMSYwJAYDVQQKEx1OZXRzY2FwZSBDb21tdW5pY2F0aW9ucyBDb3JwLjEYMBYGA1UEAxMPVGltb3RoeSBBIEhvd2VzMSEwHwYJKoZIhvcNAQkBFhJob3dlc0BuZXRzY2FwZS5jb20xFTATBgoJkiaJk/IsZAEBEwVob3dlczBcMA0GCSqGSIb3DQEBAQUAA0sAMEgCQQC0JZf6wkg8pLMXHHCUvMfL5H6zjSk4vTTXZpYyrdN2dXcoX49LKiOmgeJSzoiFKHtLOIboyludF90CgqcxtwKnAgMBAAGjNjA0MBEGCWCGSAGG+EIBAQQEAwIAoDAfBgNVHSMEGDAWgBT84FToB/GV3jr3mcau+hUMbsQukjANBgkqhkiG9w0BAQQFAAOBgQBexv7o7mi3PLXadkmNP9LcIPmx93HGp0Kgyx1jIVMyNgsemeAwBM+MSlhMfcpbTrONwNjZYW8vJDSoi//yrZlVt9bJbs7MNYZVsyF1unsqaln4/vy6Uawfg8VUMk1U7jt8LYpo4YULU7UZHPYVUaSgVttImOHZIKi4hlPXBOhcUQ==")
+  ("jqpublic@xyz.dom1.com" "jdoe@isp.net")
+  ((key\;encoding=b . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0ZW1zMRwwGgYDVQQDExNyb290Y2EubmV0c2NhcGUuY29tMB4XDTk3MDYwNjE5NDc1OVoXDTk3MTIwMzE5NDc1OVowgYkxCzAJBgNVBAYTAlVTMSYwJAYDVQQKEx1OZXRzY2FwZSBDb21tdW5pY2F0aW9ucyBDb3JwLjEYMBYGA1UEAxMPVGltb3RoeSBBIEhvd2VzMSEwHwYJKoZIhvcNAQkBFhJob3dlc0BuZXRzY2FwZS5jb20xFTATBgoJkiaJk/IsZAEBEwVob3dlczBcMA0GCSqGSIb3DQEBAQUAA0sAMEgCQQC0JZf6wkg8pLMXHHCUvMfL5H6zjSk4vTTXZpYyrdN2dXcoX49LKiOmgeJSzoiFKHtLOIboyludF90CgqcxtwKnAgMBAAGjNjA0MBEGCWCGSAGG+EIBAQQEAwIAoDAfBgNVHSMEGDAWgBT84FToB/GV3jr3mcau+hUMbsQukjANBgkqhkiG9w0BAQQFAAOBgQBexv7o7mi3PLXadkmNP9LcIPmx93HGp0Kgyx1jIVMyNgsemeAwBM+MSlhMfcpbTrONwNjZYW8vJDSoi//yrZlVt9bJbs7MNYZVsyF1unsqaln4/vy6Uawfg8VUMk1U7jt8LYpo4YULU7UZHPYVUaSgVttImOHZIKi4hlPXBOhcUQ==")
    (class . "PUBLIC")
    (uid . "19950401-080045-40000F192713-0052")
-   (sound\;type=basic\;encoding=b
-    . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0")
+   (sound\;type=basic\;encoding=b . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0")
    (prodid . "-//ONLINE DIRECTORY//NONSGML Version 1//EN")
    (agent\;value=uri . "CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com")
-   (logo\;encoding=b\;type=jpeg
-    . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0")
+   (logo\;encoding=b\;type=jpeg . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0")
    (role . "Programmer")
    (title . "Director, Research and Development")
    (geo . "37.386013;-122.082932")
    (tz . "-05:00")
    (mailer . "PigeonMail 2.1")
-   (label\;type=dom\,home\,postal\,parcel
-    . "Mr.John Q. Public, Esq.\nMail Drop: TNE QB\n123 Main Street\nAny Town, CA  91921-1234\nU.S.A.")
+   (label\;type=dom\,home\,postal\,parcel . "Mr.John Q. Public, Esq.
+Mail Drop: TNE QB
+123 Main Street
+Any Town, CA  91921-1234
+U.S.A.")
    (photo\;value=uri . "http://www.abc.com/pub/photos/jqpublic.gif")
    (mail-alias . "TRAVEL AGENT")
    (anniversary . "1996-04-15 birthday")
@@ -290,42 +290,42 @@ KEY;ENCODING=b:MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQA
  UZHPYVUaSgVttImOHZIKi4hlPXBOhcUQ==
 END:VCARD
 "
- ["Dr. John Philip Paul" "Stevenson Jr. M.D. A.C.P."
-  ("Mr. John Q. Public, Esq." "Robbie")
-  "ABC, Inc.
+["Dr. John Philip Paul" "Stevenson Jr. M.D. A.C.P."
+ ("Mr. John Q. Public, Esq." "Robbie")
+ "ABC, Inc.
 North American Division
 Marketing"
-  (["Office" "+1-213-555-1234"])
-  (["Home"
-    ("123 Main Street")
-    "Any Town"
-    "CA"
-    "91921-1234"
-    ""])
-  ("jdoe@isp.net" "jqpublic@xyz.dom1.com")
-  ((key\;encoding=b
-    . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0ZW1zMRwwGgYDVQQDExNyb290Y2EubmV0c2NhcGUuY29tMB4XDTk3MDYwNjE5NDc1OVoXDTk3MTIwMzE5NDc1OVowgYkxCzAJBgNVBAYTAlVTMSYwJAYDVQQKEx1OZXRzY2FwZSBDb21tdW5pY2F0aW9ucyBDb3JwLjEYMBYGA1UEAxMPVGltb3RoeSBBIEhvd2VzMSEwHwYJKoZIhvcNAQkBFhJob3dlc0BuZXRzY2FwZS5jb20xFTATBgoJkiaJk/IsZAEBEwVob3dlczBcMA0GCSqGSIb3DQEBAQUAA0sAMEgCQQC0JZf6wkg8pLMXHHCUvMfL5H6zjSk4vTTXZpYyrdN2dXcoX49LKiOmgeJSzoiFKHtLOIboyludF90CgqcxtwKnAgMBAAGjNjA0MBEGCWCGSAGG+EIBAQQEAwIAoDAfBgNVHSMEGDAWgBT84FToB/GV3jr3mcau+hUMbsQukjANBgkqhkiG9w0BAQQFAAOBgQBexv7o7mi3PLXadkmNP9LcIPmx93HGp0Kgyx1jIVMyNgsemeAwBM+MSlhMfcpbTrONwNjZYW8vJDSoi//yrZlVt9bJbs7MNYZVsyF1unsqaln4/vy6Uawfg8VUMk1U7jt8LYpo4YULU7UZHPYVUaSgVttImOHZIKi4hlPXBOhcUQ==")
-   (class . "PUBLIC")
-   (uid . "19950401-080045-40000F192713-0052")
-   (sound\;type=basic\;encoding=b
-    . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0")
-   (prodid . "-//ONLINE DIRECTORY//NONSGML Version 1//EN")
-   (agent\;value=uri . "CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com")
-   (logo\;encoding=b\;type=jpeg
-    . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0")
-   (role . "Programmer")
-   (title . "Director, Research and Development")
-   (geo . "37.386013;-122.082932")
-   (tz . "-05:00")
-   (mailer . "PigeonMail 2.1")
-   (label\;type=dom\,home\,postal\,parcel
-    . "Mr.John Q. Public, Esq.\nMail Drop: TNE QB\n123 Main Street\nAny Town, CA  91921-1234\nU.S.A.")
-   (photo\;value=uri . "http://www.abc.com/pub/photos/jqpublic.gif")
-   (www . "http://www.swbyps.restaurant.french/~chezchic.html")
-   (mail-alias . "TRAVEL AGENT")
-   (anniversary . "1996-04-15 birthday")
-   (notes . "This fax number is operational 0800 to 1715 EST, Mon-Fri.")
-   (creation-date . "1995-10-31") (timestamp . "2010-03-04"))]
+ (["Office" "+1-213-555-1234"])
+ (["Home"
+   ("123 Main Street")
+   "Any Town"
+   "CA"
+   "91921-1234"
+   ""])
+ ("jqpublic@xyz.dom1.com" "jdoe@isp.net")
+ ((key\;encoding=b . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0ZW1zMRwwGgYDVQQDExNyb290Y2EubmV0c2NhcGUuY29tMB4XDTk3MDYwNjE5NDc1OVoXDTk3MTIwMzE5NDc1OVowgYkxCzAJBgNVBAYTAlVTMSYwJAYDVQQKEx1OZXRzY2FwZSBDb21tdW5pY2F0aW9ucyBDb3JwLjEYMBYGA1UEAxMPVGltb3RoeSBBIEhvd2VzMSEwHwYJKoZIhvcNAQkBFhJob3dlc0BuZXRzY2FwZS5jb20xFTATBgoJkiaJk/IsZAEBEwVob3dlczBcMA0GCSqGSIb3DQEBAQUAA0sAMEgCQQC0JZf6wkg8pLMXHHCUvMfL5H6zjSk4vTTXZpYyrdN2dXcoX49LKiOmgeJSzoiFKHtLOIboyludF90CgqcxtwKnAgMBAAGjNjA0MBEGCWCGSAGG+EIBAQQEAwIAoDAfBgNVHSMEGDAWgBT84FToB/GV3jr3mcau+hUMbsQukjANBgkqhkiG9w0BAQQFAAOBgQBexv7o7mi3PLXadkmNP9LcIPmx93HGp0Kgyx1jIVMyNgsemeAwBM+MSlhMfcpbTrONwNjZYW8vJDSoi//yrZlVt9bJbs7MNYZVsyF1unsqaln4/vy6Uawfg8VUMk1U7jt8LYpo4YULU7UZHPYVUaSgVttImOHZIKi4hlPXBOhcUQ==")
+  (class . "PUBLIC")
+  (uid . "19950401-080045-40000F192713-0052")
+  (sound\;type=basic\;encoding=b . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0")
+  (prodid . "-//ONLINE DIRECTORY//NONSGML Version 1//EN")
+  (agent\;value=uri . "CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com")
+  (logo\;encoding=b\;type=jpeg . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0")
+  (role . "Programmer")
+  (title . "Director, Research and Development")
+  (geo . "37.386013;-122.082932")
+  (tz . "-05:00")
+  (mailer . "PigeonMail 2.1")
+  (label\;type=dom\,home\,postal\,parcel . "Mr.John Q. Public, Esq.
+Mail Drop: TNE QB
+123 Main Street
+Any Town, CA  91921-1234
+U.S.A.")
+  (photo\;value=uri . "http://www.abc.com/pub/photos/jqpublic.gif")
+  (www . "http://www.swbyps.restaurant.french/~chezchic.html")
+  (mail-alias . "TRAVEL AGENT")
+  (anniversary . "1996-04-15 birthday")
+  (notes . "This fax number is operational 0800 to 1715 EST, Mon-Fri.")
+  (creation-date . "1995-10-31") (timestamp . "2010-03-04"))]
  "John"
  nil nil t)
 
@@ -502,9 +502,9 @@ NICKNAME:Bee,Effy Bee,FirstB FamilyB
 END:VCARD
 "
  ["FirstB" "FamilyB"
-  ("The FirstB of FamilyB"
+  ("FirstB2 FamilyB2"
    "FirstB1 FamilyB1"
-   "FirstB2 FamilyB2"
+   "The FirstB of FamilyB"
    "FirstB PseudonymB"
    "Bee"
    "Effy Bee")
@@ -512,7 +512,7 @@ END:VCARD
   nil
   nil
   nil
-  ((creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
+  ((creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
  "FirstB FamilyB")
 
 
@@ -701,31 +701,31 @@ END:VCARD
 UnitF"
   nil
   (["Home"
+    ("Box111" "LHS" "Room 111" "or not" "First Street" "First Corner")
+    "Cityone"
+    "First State"
+    "11111\n22222"
+    "Country"]
+   ["Office"
+    ("Box222" "RHS" "Room 22" "or something" "Second Street" "First Corner")
+    "Citytwo"
+    "Second State"
+    "222\n33333"
+    "Country"]
+   ["Office"
+    ("Second Street" "First Corner")
+    "Citytwo"
+    ""
+    "222\n33333"
+    ""]
+   ["Home"
     ("Third Street" "First Corner")
     "Citythree"
     ""
-    "222, 33333"
-    ""]
-   ["Office"
-    ("Second Street, First Corner")
-    "Citytwo"
-    ""
-    "222, 33333"
-    ""]
-   ["Office"
-    ("Box222, RHS" "Room 22" "or something" "Second Street" "First Corner")
-    "Citytwo"
-    "Second State"
-    "222, 33333"
-    "Country"]
-   ["Home"
-    ("Box111, LHS" "Room 111" "or not" "First Street" "First Corner")
-    "Cityone"
-    "First State"
-    "11111, 22222"
-    "Country"])
+    "222\n33333"
+    ""])
   nil
-  ((creation-date . "2010-03-06") (timestamp . "2010-03-06")) ]
+  ((creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
  "FirstF FamilyF")
 
 
@@ -1166,9 +1166,10 @@ END:VCARD
  ["FirstL" "FamilyL"
   nil
   "CompanyL"
-  (["Office" "111100003"]
+  (["Office" "111100001"]
    ["Home" "111100002"]
-   ["Office" "111100001"])
+   ["Office" "111100003"]
+)
   nil
   nil
   ((creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
@@ -1191,9 +1192,9 @@ END:VCARD
  ["FirstL" "FamilyL"
   nil
   "CompanyL2"
-  (["Office" "222200003"]
+  (["Office" "222200001"]
    ["Home" "222200002"]
-   ["Office" "222200001"])
+   ["Office" "222200003"])
   nil
   nil
   ((creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
@@ -1217,12 +1218,12 @@ END:VCARD
  ["FirstL" "FamilyL"
   nil
   "CompanyL3"
-  (["Office" "111100001"]
-   ["Home" "111100002"]
-   ["Office" "111100003"]
-   ["Office" "333300003"]
-   ["Office" "111100002"]
-   ["Office" "333300001"])
+   (["Office" "111100003"]
+    ["Home" "111100002"]
+    ["Office" "111100001"]
+    ["Office" "333300001"]
+    ["Office" "111100002"]
+    ["Office" "333300003"])
   nil
   nil
   ((creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
@@ -1252,14 +1253,11 @@ END:vCard
  ["" ""
   ("Frank Dawson")
   "Lotus Development Corporation"
-  (["Office" "+1-919-676-9564"]
-   ["Office" "+1-919-676-9515"])
+  (["Office" "+1-919-676-9515"] ["Office" "+1-919-676-9564"])
   (["Office" ("6544 Battleford Drive") "Raleigh" "NC" "27613-3502" "U.S.A."])
-  ("fdawson@earthlink.net"
-   "Frank_Dawson@Lotus.com")
-  ((www . "http://home.earthlink.net/~fdawson")
-   (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
-"Frank Dawson")
+  ("Frank_Dawson@Lotus.com" "fdawson@earthlink.net")
+  ((www . "http://home.earthlink.net/~fdawson") (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
+ "Frank Dawson")
 
 (bbdb-vcard-test
  "
@@ -1279,8 +1277,7 @@ END:vCard
  ["" ""
   ("Tim Howes")
   "Netscape Communications Corp."
-  (["Office" "+1-415-528-4164"]
-   ["Office" "+1-415-937-3419"])
+  (["Office" "+1-415-937-3419"] ["Office" "+1-415-528-4164"])
   (["Office" ("501 E. Middlefield Rd.") "Mountain View" "CA" " 94043" "U.S.A."])
   ("howes@netscape.com")
   ((creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
@@ -1289,20 +1286,37 @@ END:vCard
 
 ;;; Export
 
-;(bbdb "" nil)
-;(with-current-buffer "*BBDB*"
-;  (bbdb-vcard-export "/tmp/test-bbdb.vcf" t nil))
-;(bbdb-save-db)
-;(save-buffer bbdb-buffer)
-;(kill-buffer bbdb-buffer)
-;(kill-buffer "*BBDB*")
-;(rename-file "/tmp/test-bbdb" "/tmp/test-bbdb-0" t)
-;(bbdb-vcard-import-file "/tmp/test-bbdb.vcf")
-;(bbdb-save-db)
-;
-;(with-temp-buffer
-;  (insert-file-contents-literally "/tmp/test-bbdb")
-;  (let ((border (cadr (insert-file-contents-literally "/tmp/test-bbdb-0"))))
-;    (print (compare-buffer-substrings nil (point-min) border
-;                                      nil border (point-max))
-;           (get-buffer-create "bbdb-vcard-test-result"))))
+(bbdb "" nil)
+(with-current-buffer "*BBDB*"
+  (bbdb-vcard-export "/tmp/test-bbdb-0.vcf" t nil))
+(bbdb-save-db)
+(save-buffer bbdb-buffer)
+(kill-buffer bbdb-buffer)
+(kill-buffer "*BBDB*")
+(rename-file "/tmp/test-bbdb" "/tmp/test-bbdb-0" t)
+(bbdb-vcard-import-file "/tmp/test-bbdb-0.vcf")
+(bbdb-save-db)
+
+(bbdb "" nil)
+(with-current-buffer "*BBDB*"
+  (bbdb-vcard-export "/tmp/test-bbdb-1.vcf" t nil))
+(bbdb-save-db)
+(save-buffer bbdb-buffer)
+(kill-buffer bbdb-buffer)
+(kill-buffer "*BBDB*")
+(rename-file "/tmp/test-bbdb" "/tmp/test-bbdb-1" t)
+(bbdb-vcard-import-file "/tmp/test-bbdb-1.vcf")
+(bbdb-save-db)
+
+
+
+(with-temp-buffer
+  (insert-file-contents-literally "/tmp/test-bbdb")
+  (let ((border (cadr (insert-file-contents-literally "/tmp/test-bbdb-0"))))
+    (while (re-search-forward "(creation-date \\. \"[-0-9]\\{10\\}\")" nil t)
+      (replace-match  "creation-date-dummy"))
+    (print (compare-buffer-substrings nil (point-min) border
+                                      nil border (point-max))
+           (get-buffer-create "bbdb-vcard-test-result")))
+  (print (buffer-string) (get-buffer-create "bbdb-vcard-test-result"))
+  )

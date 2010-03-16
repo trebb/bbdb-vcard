@@ -549,7 +549,7 @@ stripped off.) Extend existing BBDB entries where possible."
                (cdr (assq 'notes bbdb-raw-notes))
                (bbdb-vcard-unescape-strings
                 (mapconcat (lambda (element) (cdr (assoc "value" element)))
-                           (nreverse vcard-notes)
+                           vcard-notes
                            ";\n"))
                ";\n")))
       (when vcard-bday
@@ -566,7 +566,7 @@ stripped off.) Extend existing BBDB entries where possible."
                (cdr (assq 'mail-alias bbdb-raw-notes))
                (bbdb-vcard-unescape-strings
                 (mapconcat (lambda (element) (cdr (assoc "value" element)))
-                           (nreverse vcard-categories)
+                           vcard-categories
                            ","))
                ",")))
       (while (setq other-vcard-type (bbdb-vcard-other-entry))
@@ -682,10 +682,10 @@ newline if TYPE is nil."
          ";;"                           ; no Postbox, no Extended
          (bbdb-join (bbdb-vcard-escape-strings (bbdb-address-streets address))
                     ",")
-         ";" (bbdb-vcard-escape-strings (bbdb-address-city address))
-         ";" (bbdb-vcard-escape-strings (bbdb-address-state address))
-         ";" (bbdb-vcard-escape-strings (bbdb-address-zip address))
-         ";" (bbdb-vcard-escape-strings (bbdb-address-country address))))
+         ";" (bbdb-vcard-vcardize-address-element (bbdb-vcard-escape-strings (bbdb-address-city address)))
+         ";" (bbdb-vcard-vcardize-address-element (bbdb-vcard-escape-strings (bbdb-address-state address)))
+         ";" (bbdb-vcard-vcardize-address-element (bbdb-vcard-escape-strings (bbdb-address-zip address)))
+         ";" (bbdb-vcard-vcardize-address-element (bbdb-vcard-escape-strings (bbdb-address-country address)))))
       (bbdb-vcard-insert-vcard-element "URL" www)
       (dolist (note notes)
         (bbdb-vcard-insert-vcard-element
@@ -745,18 +745,19 @@ COUNTRY)."
                                (bbdb-vcard-split-structured-text x "," t))
                              (subseq (cdr (assoc "value" vcard-adr))
                                      0 3)))))
-        (adr-value            ; turn comma-separated substructure into
-         (mapcar              ; comma-space-separated text
+        (non-streets          ; turn comma-separated substructure into
+         (mapcar              ; newline-separated text
           (lambda (x) (bbdb-join
                        (bbdb-vcard-split-structured-text x "," t)
-                       ", "))
-          (cdr (assoc "value" vcard-adr)))))
+                       "\n"))
+          (subseq (cdr (assoc "value" vcard-adr))
+                  3 nil))))
     (vector (bbdb-vcard-translate adr-type)
             streets
-            (or (elt adr-value 3) "")    ; City
-            (or (elt adr-value 4) "")    ; State
-            (or (elt adr-value 5) "")    ; Zip
-            (or (elt adr-value 6) "")))) ; Country
+            (or (elt non-streets 0) "")    ; City
+            (or (elt non-streets 1) "")    ; State
+            (or (elt non-streets 2) "")    ; Zip
+            (or (elt non-streets 3) "")))) ; Country
 
 (defun bbdb-vcard-canonicalize-vcard-type (&rest strings)
   "Concatenate STRINGS and apply `bbdb-vcard-type-canonicalizer' to them."
@@ -794,7 +795,7 @@ ONE-IS-ENOUGH-P is t, read and delete only the first entry of TYPE."
       (push parameters values)
       (delete-region (line-end-position 0) (line-end-position))
       (when one-is-enough-p (setq read-enough t)))
-    values))
+    (nreverse values)))
 
 (defun bbdb-vcard-other-entry ()
   "From current buffer read and delete the topmost vCard entry.
@@ -849,7 +850,7 @@ ESCAPED-STRINGS may be a string or a sequence of strings."
                         nil nil 1)))
     (bbdb-vcard-process-strings 'unescape escaped-strings)))
 
-(defun bbdb-vcard-escape-strings (unescaped-strings)
+(defun bbdb-vcard-escape-strings (unescaped-strings )
   "Escape `;', `,', `\\', and newlines in UNESCAPED-STRINGS.
 UNESCAPED-STRINGS may be a string or a sequence of strings."
   (flet ((escape (x) (replace-regexp-in-string
@@ -857,6 +858,11 @@ UNESCAPED-STRINGS may be a string or a sequence of strings."
                                     "\\(\\)[,;\\]" "\\\\" (or x "")
                                     nil nil 1))))
     (bbdb-vcard-process-strings 'escape unescaped-strings)))
+
+(defun bbdb-vcard-vcardize-address-element (address-element)
+  "Replace escaped newlines by commas."
+  (replace-regexp-in-string "\\\\n" "," address-element))
+
 
 (defun bbdb-vcard-process-strings (string-processor strings)
   "Apply STRING-PROCESSOR to STRINGS.
