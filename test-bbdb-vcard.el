@@ -1,4 +1,4 @@
-;;; Tests for the vcard import from bbdb-vcard.el
+;;; Tests for bbdb-vcard.el
 ;;
 ;; Before proceeding, you should probably save your production bbdb file.
 ;;
@@ -50,8 +50,10 @@ nil, creation-date are not taken into account."
 
 
 
-;;; The Tests
+;;;; The Tests
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;; Initial Import
 
 (bbdb-vcard-test
  "
@@ -98,7 +100,7 @@ Unit1
 Subunit1"
   (["Office" "+11111111"])
   (["Office"
-    ("Box111" "Room 111" "First Street, First Corner")
+    ("Box111" "Room 111" "First Street" "First Corner")
     "Cityone"
     "First State"
     "11111"
@@ -199,7 +201,7 @@ Marketing"
     "Any Town"
     "CA"
     "91921-1234"
-    nil])
+    ""])
   ("jdoe@isp.net" "jqpublic@xyz.dom1.com")
   ((key\;encoding=b
     . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0ZW1zMRwwGgYDVQQDExNyb290Y2EubmV0c2NhcGUuY29tMB4XDTk3MDYwNjE5NDc1OVoXDTk3MTIwMzE5NDc1OVowgYkxCzAJBgNVBAYTAlVTMSYwJAYDVQQKEx1OZXRzY2FwZSBDb21tdW5pY2F0aW9ucyBDb3JwLjEYMBYGA1UEAxMPVGltb3RoeSBBIEhvd2VzMSEwHwYJKoZIhvcNAQkBFhJob3dlc0BuZXRzY2FwZS5jb20xFTATBgoJkiaJk/IsZAEBEwVob3dlczBcMA0GCSqGSIb3DQEBAQUAA0sAMEgCQQC0JZf6wkg8pLMXHHCUvMfL5H6zjSk4vTTXZpYyrdN2dXcoX49LKiOmgeJSzoiFKHtLOIboyludF90CgqcxtwKnAgMBAAGjNjA0MBEGCWCGSAGG+EIBAQQEAwIAoDAfBgNVHSMEGDAWgBT84FToB/GV3jr3mcau+hUMbsQukjANBgkqhkiG9w0BAQQFAAOBgQBexv7o7mi3PLXadkmNP9LcIPmx93HGp0Kgyx1jIVMyNgsemeAwBM+MSlhMfcpbTrONwNjZYW8vJDSoi//yrZlVt9bJbs7MNYZVsyF1unsqaln4/vy6Uawfg8VUMk1U7jt8LYpo4YULU7UZHPYVUaSgVttImOHZIKi4hlPXBOhcUQ==")
@@ -299,7 +301,7 @@ Marketing"
     "Any Town"
     "CA"
     "91921-1234"
-    nil])
+    ""])
   ("jdoe@isp.net" "jqpublic@xyz.dom1.com")
   ((key\;encoding=b
     . "MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0ZW1zMRwwGgYDVQQDExNyb290Y2EubmV0c2NhcGUuY29tMB4XDTk3MDYwNjE5NDc1OVoXDTk3MTIwMzE5NDc1OVowgYkxCzAJBgNVBAYTAlVTMSYwJAYDVQQKEx1OZXRzY2FwZSBDb21tdW5pY2F0aW9ucyBDb3JwLjEYMBYGA1UEAxMPVGltb3RoeSBBIEhvd2VzMSEwHwYJKoZIhvcNAQkBFhJob3dlc0BuZXRzY2FwZS5jb20xFTATBgoJkiaJk/IsZAEBEwVob3dlczBcMA0GCSqGSIb3DQEBAQUAA0sAMEgCQQC0JZf6wkg8pLMXHHCUvMfL5H6zjSk4vTTXZpYyrdN2dXcoX49LKiOmgeJSzoiFKHtLOIboyludF90CgqcxtwKnAgMBAAGjNjA0MBEGCWCGSAGG+EIBAQQEAwIAoDAfBgNVHSMEGDAWgBT84FToB/GV3jr3mcau+hUMbsQukjANBgkqhkiG9w0BAQQFAAOBgQBexv7o7mi3PLXadkmNP9LcIPmx93HGp0Kgyx1jIVMyNgsemeAwBM+MSlhMfcpbTrONwNjZYW8vJDSoi//yrZlVt9bJbs7MNYZVsyF1unsqaln4/vy6Uawfg8VUMk1U7jt8LYpo4YULU7UZHPYVUaSgVttImOHZIKi4hlPXBOhcUQ==")
@@ -699,7 +701,7 @@ END:VCARD
 UnitF"
   nil
   (["Home"
-    ("Third Street, First Corner")
+    ("Third Street" "First Corner")
     "Citythree"
     ""
     "222, 33333"
@@ -711,13 +713,13 @@ UnitF"
     "222, 33333"
     ""]
    ["Office"
-    ("Box222, RHS" "Room 22, or something" "Second Street, First Corner")
+    ("Box222, RHS" "Room 22" "or something" "Second Street" "First Corner")
     "Citytwo"
     "Second State"
     "222, 33333"
     "Country"]
    ["Home"
-    ("Box111, LHS" "Room 111, or not" "First Street, First Corner")
+    ("Box111, LHS" "Room 111" "or not" "First Street" "First Corner")
     "Cityone"
     "First State"
     "11111, 22222"
@@ -1283,3 +1285,24 @@ END:vCard
   ("howes@netscape.com")
   ((creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
  "Tim Howes")
+
+
+;;; Export
+
+;(bbdb "" nil)
+;(with-current-buffer "*BBDB*"
+;  (bbdb-vcard-export "/tmp/test-bbdb.vcf" t nil))
+;(bbdb-save-db)
+;(save-buffer bbdb-buffer)
+;(kill-buffer bbdb-buffer)
+;(kill-buffer "*BBDB*")
+;(rename-file "/tmp/test-bbdb" "/tmp/test-bbdb-0" t)
+;(bbdb-vcard-import-file "/tmp/test-bbdb.vcf")
+;(bbdb-save-db)
+;
+;(with-temp-buffer
+;  (insert-file-contents-literally "/tmp/test-bbdb")
+;  (let ((border (cadr (insert-file-contents-literally "/tmp/test-bbdb-0"))))
+;    (print (compare-buffer-substrings nil (point-min) border
+;                                      nil border (point-max))
+;           (get-buffer-create "bbdb-vcard-test-result"))))

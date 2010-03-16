@@ -738,15 +738,21 @@ newline if TYPE is nil."
 Turn a vCard element of type ADR into (TYPE STREETS CITY STATE ZIP
 COUNTRY)."
   (let ((adr-type (or (cdr (assoc "type" vcard-adr)) ""))
-        (adr-value
-         (mapcar                ; flatten comma-separated substructure
-          (lambda (x)
-            (bbdb-join (bbdb-vcard-split-structured-text x "," t) ", "))
+        (streets         ; all comma-separated sub-elements of 
+         (remove         ; Postbox, Extended, Streets go into one list
+          "" (reduce 'append
+                     (mapcar (lambda (x)
+                               (bbdb-vcard-split-structured-text x "," t))
+                             (subseq (cdr (assoc "value" vcard-adr))
+                                     0 3)))))
+        (adr-value            ; turn comma-separated substructure into
+         (mapcar              ; comma-space-separated text
+          (lambda (x) (bbdb-join
+                       (bbdb-vcard-split-structured-text x "," t)
+                       ", "))
           (cdr (assoc "value" vcard-adr)))))
     (vector (bbdb-vcard-translate adr-type)
-            ;; Postbox, Extended, Streets
-            (remove-if (lambda (x) (zerop (length x)))
-                       (subseq adr-value 0 3))
+            streets
             (or (elt adr-value 3) "")    ; City
             (or (elt adr-value 4) "")    ; State
             (or (elt adr-value 5) "")    ; Zip
