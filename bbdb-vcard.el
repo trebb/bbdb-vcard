@@ -28,14 +28,14 @@
 ;;; Commentary:
 ;; 
 ;; Purpose
-;; -------
+;; =======
 ;; 
 ;; Import and export of vCards (version 3.0) as defined in RFC 2425
 ;; and RFC 2426 to/from The Insidious Big Brother Database (BBDB).
 ;; 
 ;;
 ;; Usage
-;; -----
+;; =====
 ;;
 ;; vCard Import
 ;;
@@ -45,7 +45,7 @@
 ;;
 ;; vCard Export
 ;;
-;; In buffer *BBDB*, press v to export the record under point. Press
+;; In buffer *BBDB*, press v to export the record under point.  Press
 ;; *v to export all records in buffer into one vCard file.
 ;; Press * C-u v to export them into one file each.
 ;;
@@ -53,7 +53,7 @@
 ;;
 ;;
 ;; Installation
-;; ------------
+;; ============
 ;;
 ;; Put this file into your `load-path' and add the following line to
 ;; your Emacs initialization file:
@@ -62,9 +62,10 @@
 ;;
 ;;
 ;; Implementation
-;; --------------
+;; ==============
 ;;
 ;; vCard Import
+;; ------------
 ;;
 ;; An existing BBDB entry is extended by new information from a vCard
 ;; 
@@ -81,6 +82,8 @@
 ;;
 ;; In cases (c), (d), and (e), if the vCard has ORG defined, this ORG
 ;; would overwrite an existing Company in BBDB.
+;;
+;; Phone numbers are always imported as strings.
 ;;
 ;; For vCard types that have more or less direct counterparts in BBDB,
 ;; labels and parameters are translated and structured values
@@ -111,8 +114,8 @@
 ;; imported as well.
 ;;
 ;;
-;; Handling of the individual types defined in RFC2426 (assuming
-;; default label translation and no vCard type exclusion):
+;; Handling of the individual types defined in RFC2426 during import
+;; (assuming default label translation and no vCard type exclusion):
 ;; "
 ;; |-------------+-------------------+---------------------------|
 ;; | TYPE FROM   | VCARD             | STORAGE IN BBDB           |
@@ -185,8 +188,31 @@
 ;; "
 ;;
 ;; vCard Export
+;; ------------
 ;;
-;; (TODO)
+;; VCard types N (only fields lastname, firstname) and FN both come
+;; from BBDB's Name.
+;;
+;; Members of BBDB field AKA are stored comma-separated under the
+;; vCard type NICKNAME.
+;;
+;; Labels of Addresses and Phones are translated as defined in
+;; `bbdb-vcard-export-translation-table' into type parameters of
+;; vCard types ADR and TEL, respectively.
+;;
+;; In vCard type ADR, fields postbox and extended address are always
+;; empty.  Newlines which subdivide BBDB Address fields are converted
+;; into commas subdividing vCard ADR fields.
+;;
+;; Field names listed in `bbdb-vcard-x-type-candidates' are in the
+;; exported vCard prepended by `X-BBDB-'.
+;;
+;; The creation-date of the BBDB record is stored as vCard type REV.
+;;
+;; Remaining members of BBDB Notes are exported to the vCard without
+;; change.
+;;
+
 
 ;;; History:
 ;; 
@@ -335,7 +361,7 @@ in individual files."
         (read-file-name "Write current record to vCard file: "
                         bbdb-vcard-default-dir nil nil default-filename))
       all-records-p           ; argument all-records-p
-      current-prefix-arg)))             ; argument one-file-per-record-p
+      current-prefix-arg)))   ; argument one-file-per-record-p
   (if all-records-p
       (let ((records (progn (set-buffer bbdb-buffer-name)
                             (mapcar 'car bbdb-records)))
@@ -510,7 +536,7 @@ stripped off.) Extend existing BBDB entries where possible."
                      "\\([0-9]\\{4\\}-[01][0-9]-[0-3][0-9]\\).*" "\\1"
                      vcard-rev))
                  (bbdb-invoke-hook 'bbdb-create-hook fresh-record))
-               (setq record-freshness-info "BBDB record added:") ; for user information
+               (setq record-freshness-info "BBDB record added:") ; user information
                fresh-record)))
            (bbdb-akas (bbdb-record-aka bbdb-record))
            (bbdb-addresses (bbdb-record-addresses bbdb-record))
@@ -675,17 +701,21 @@ newline if TYPE is nil."
          (bbdb-vcard-escape-strings (bbdb-phone-string phone))))
       (dolist (address addresses)
         (bbdb-vcard-insert-vcard-element
-         (concat 
+         (concat
           "ADR;TYPE="
           (bbdb-vcard-escape-strings
            (bbdb-vcard-translate (bbdb-address-location address) t)))
          ";;"                           ; no Postbox, no Extended
          (bbdb-join (bbdb-vcard-escape-strings (bbdb-address-streets address))
                     ",")
-         ";" (bbdb-vcard-vcardize-address-element (bbdb-vcard-escape-strings (bbdb-address-city address)))
-         ";" (bbdb-vcard-vcardize-address-element (bbdb-vcard-escape-strings (bbdb-address-state address)))
-         ";" (bbdb-vcard-vcardize-address-element (bbdb-vcard-escape-strings (bbdb-address-zip address)))
-         ";" (bbdb-vcard-vcardize-address-element (bbdb-vcard-escape-strings (bbdb-address-country address)))))
+         ";" (bbdb-vcard-vcardize-address-element
+              (bbdb-vcard-escape-strings (bbdb-address-city address)))
+         ";" (bbdb-vcard-vcardize-address-element
+              (bbdb-vcard-escape-strings (bbdb-address-state address)))
+         ";" (bbdb-vcard-vcardize-address-element
+              (bbdb-vcard-escape-strings (bbdb-address-zip address)))
+         ";" (bbdb-vcard-vcardize-address-element
+              (bbdb-vcard-escape-strings (bbdb-address-country address)))))
       (bbdb-vcard-insert-vcard-element "URL" www)
       (dolist (note notes)
         (bbdb-vcard-insert-vcard-element
@@ -693,7 +723,7 @@ newline if TYPE is nil."
       (bbdb-vcard-insert-vcard-element "BDAY" anniversary)
       (bbdb-vcard-insert-vcard-element "REV" creation-date)
       (bbdb-vcard-insert-vcard-element
-       "CATEGORIES" 
+       "CATEGORIES"
        (bbdb-join (bbdb-vcard-escape-strings
                    (bbdb-vcard-split-structured-text mail-aliases "," t)) ","))
       ;; prune raw-notes...
@@ -738,7 +768,7 @@ newline if TYPE is nil."
 Turn a vCard element of type ADR into (TYPE STREETS CITY STATE ZIP
 COUNTRY)."
   (let ((adr-type (or (cdr (assoc "type" vcard-adr)) ""))
-        (streets         ; all comma-separated sub-elements of 
+        (streets         ; all comma-separated sub-elements of
          (remove         ; Postbox, Extended, Streets go into one list
           "" (reduce 'append
                      (mapcar (lambda (x)
@@ -860,7 +890,7 @@ UNESCAPED-STRINGS may be a string or a sequence of strings."
     (bbdb-vcard-process-strings 'escape unescaped-strings)))
 
 (defun bbdb-vcard-vcardize-address-element (address-element)
-  "Replace escaped newlines by commas."
+  "Replace escaped newlines in ADDRESS-ELEMENT by commas."
   (replace-regexp-in-string "\\\\n" "," address-element))
 
 

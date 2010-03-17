@@ -1283,9 +1283,15 @@ END:vCard
   ("Frank Dawson")
   "Lotus Development Corporation"
   (["Office" "+1-919-676-9515"] ["Office" "+1-919-676-9564"])
-  (["Office" ("6544 Battleford Drive") "Raleigh" "NC" "27613-3502" "U.S.A."])
+  (["Office"
+    ("6544 Battleford Drive")
+    "Raleigh"
+    "NC"
+    "27613-3502"
+    "U.S.A."])
   ("Frank_Dawson@Lotus.com" "fdawson@earthlink.net")
-  ((www . "http://home.earthlink.net/~fdawson") (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
+  ((www . "http://home.earthlink.net/~fdawson")
+   (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
  "Frank Dawson")
 
 (bbdb-vcard-import-test
@@ -1306,8 +1312,14 @@ END:vCard
  ["" ""
   ("Tim Howes")
   "Netscape Communications Corp."
-  (["Office" "+1-415-937-3419"] ["Office" "+1-415-528-4164"])
-  (["Office" ("501 E. Middlefield Rd.") "Mountain View" "CA" " 94043" "U.S.A."])
+  (["Office" "+1-415-937-3419"]
+   ["Office" "+1-415-528-4164"])
+  (["Office"
+    ("501 E. Middlefield Rd.")
+    "Mountain View"
+    "CA"
+    " 94043"
+    "U.S.A."])
   ("howes@netscape.com")
   ((creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
  "Tim Howes")
