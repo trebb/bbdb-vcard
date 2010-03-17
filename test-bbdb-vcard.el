@@ -10,7 +10,7 @@
 
 (require 'bbdb-vcard)
 
-(defun bbdb-vcard-test
+(defun bbdb-vcard-import-test
   (vcard bbdb-entry search-name
          &optional search-company search-net check-creation-date-p)
   "Import VCARD and search for it in bbdb by SEARCH-NAME,
@@ -38,6 +38,38 @@ nil, creation-date are not taken into account."
       (princ "\nbut was expected as\n" (get-buffer-create "bbdb-vcard-test-result"))
       (prin1 bbdb-entry (get-buffer-create "bbdb-vcard-test-result")))))
 
+(defun bbdb-vcard-normalize-notes (notes)
+  "Sort a BBDB NOTES field and delete the timestamps in order to make them
+comparable after re-import."
+  (let ((notes (remove-alist 'notes 'timestamp)))
+    (setq notes (remove-alist 'notes 'creation-date))
+    (sort
+     notes
+     '(lambda (x y) (if (string= (symbol-name (car x)) (symbol-name (car y)))
+                        (string< (cdr x) (cdr y))
+                      (string< (symbol-name (car x)) (symbol-name (car y))))))))
+
+(defun bbdb-vcard-normalize-record (record)
+  "Make BBDB RECORD comparable by deleting certain things and sorting others."
+  (setf (elt record 6) (bbdb-vcard-normalize-notes (elt record 7)))
+  (subseq record 0 7))
+
+(defun bbdb-vcard-compare-bbdbs (first-bbdb second-bbdb)
+  "Compare two BBDB record lists. Tell about mismatches in buffer
+`bbdb-vcard-test-result'."
+  (let ((i 0)
+        first-record second-record)
+    (while (or (nth i first-bbdb) (nth i second-bbdb))
+      (unless (equal (bbdb-vcard-normalize-record (nth i first-bbdb))
+                     (bbdb-vcard-normalize-record (nth i second-bbdb)))
+        (princ "\nRe-import: comparison of these records failed:"
+               (get-buffer-create "bbdb-vcard-test-result"))
+        (print (bbdb-vcard-normalize-record (nth i first-bbdb))
+               (get-buffer-create "bbdb-vcard-test-result"))
+        (prin1 (bbdb-vcard-normalize-record (nth i second-bbdb))
+               (get-buffer-create "bbdb-vcard-test-result")))
+      (incf i))))
+
 
 ;;; Try not to mess up our real BBDB:
 (when bbdb-buffer
@@ -49,13 +81,10 @@ nil, creation-date are not taken into account."
 (when (get-buffer "bbdb-vcard-test-result") (kill-buffer "bbdb-vcard-test-result"))
 
 
-
-;;;; The Tests
+;;;; The Import Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;; Initial Import
-
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 ** A vcard without any type parameters.
 ------------------------------------------------------------
@@ -131,7 +160,7 @@ Subunit1"
  nil nil t)
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 ** The following is made of examples from rfc2426.
 ------------------------------------------------------------
@@ -230,7 +259,7 @@ U.S.A.")
  nil nil t)
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 ** Exactly the same as before.
    Re-reading it shouldn't duplicate anything.
@@ -330,7 +359,7 @@ U.S.A.")
  nil nil t)
 
 
-(bbdb-vcard-test 
+(bbdb-vcard-import-test 
  "
 ** Re-use of existing BBDB entries. 
 *** N, ORG, EMAIL
@@ -353,7 +382,7 @@ UnitA"
  "FirstA FamilyA")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 *** The same again; shouldn't change the previous one.
 ------------------------------------------------------------
@@ -375,7 +404,7 @@ UnitA"
  "FirstA FamilyA")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 *** Same N, same ORG, different EMAIL, which should be added to the previous
     one.
@@ -398,7 +427,7 @@ UnitA"
  "FirstA FamilyA")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 *** Same N, same ORG, no EMAIL; shouldn't change anything.
 ------------------------------------------------------------
@@ -419,7 +448,7 @@ UnitA"
  "FirstA FamilyA")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 *** Same N, same EMAIL, no ORG; shouldn't change anything.
 ------------------------------------------------------------
@@ -440,7 +469,7 @@ UnitA"
  "FirstA FamilyA")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 *** Same N, same EMAIL, different ORG by which Company of the previous one
     should be replaced.
@@ -463,7 +492,7 @@ UnitB"
  "FirstA FamilyA")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 *** Different N, same EMAIL, same ORG; should go into a fresh entry.
 ------------------------------------------------------------
@@ -486,7 +515,7 @@ UnitB"
 
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 ** AKA has various sources; duplicates are being discarded.
 ------------------------------------------------------------
@@ -516,7 +545,7 @@ END:VCARD
  "FirstB FamilyB")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 ** Additional ORGs go to Notes, org.
 ------------------------------------------------------------
@@ -538,7 +567,7 @@ END:vcard
  "FirstC FamilyC")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 *** ... but only if they are unique
 ------------------------------------------------------------
@@ -565,7 +594,7 @@ END:VCARD
  "FirstC FamilyC")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 ** Prefixes are discarded.
 ------------------------------------------------------------
@@ -587,7 +616,7 @@ UnitD"
  "FirstD FamilyD")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 *** Same as before, don't change anything.
 ------------------------------------------------------------
@@ -609,7 +638,7 @@ UnitD"
  "FirstD FamilyD")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 *** Same as before, don't change anything.
 ------------------------------------------------------------
@@ -631,7 +660,7 @@ UnitD"
  "FirstD FamilyD")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 ** Case Insensitivity
 ------------------------------------------------------------
@@ -653,7 +682,7 @@ UnitE"
  "FirstE FamilyE")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 ** Non-ASCII Content
 ------------------------------------------------------------
@@ -681,7 +710,7 @@ END:VCARD
  "Rübe")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 *** Multiple, structured ADR
 ------------------------------------------------------------
@@ -729,7 +758,7 @@ UnitF"
  "FirstF FamilyF")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 *** Skip types from bbdb-vcard-skip
 ------------------------------------------------------------
@@ -753,7 +782,7 @@ UnitH"
  "FirstH FamilyH")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 *** Skip empty types.
 ------------------------------------------------------------
@@ -778,7 +807,7 @@ UnitG"
  "FirstG FamilyG")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 *** Remove X-BBDB- prefixes
 ------------------------------------------------------------
@@ -804,7 +833,7 @@ UnitN"
  "FirstN FamilyN")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 ** Merging of vcard NOTEs
 *** A vcard with two NOTEs.
@@ -828,7 +857,7 @@ END:VCARD
  "FirstI FamilyI")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 *** Same as before, but a different NOTE.
 ------------------------------------------------------------
@@ -850,7 +879,7 @@ END:VCARD
  "FirstI FamilyI")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 *** Same as before, but a NOTE we've seen already
 ------------------------------------------------------------
@@ -873,7 +902,7 @@ END:VCARD
 
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 ** Merging of vcard CATEGORIES
 *** A vcard with two CATEGORIES.
@@ -897,7 +926,7 @@ END:VCARD
  "FirstM FamilyM")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 *** Same as before, but a different CATEGORIES.
 ------------------------------------------------------------
@@ -919,7 +948,7 @@ END:VCARD
  "FirstM FamilyM")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 *** Same as before, but a CATEGORIES we've seen already
 ------------------------------------------------------------
@@ -941,7 +970,7 @@ END:VCARD
  "FirstM FamilyM")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 ** A vcard with two other vcards inside; we check the outer one
 ------------------------------------------------------------
@@ -983,7 +1012,7 @@ END:VCARD
  "OuterfirstA OuterlastA")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 ** A vcard with two other vcards inside; we check the first inner one
 ------------------------------------------------------------
@@ -1008,7 +1037,7 @@ END:VCARD
  "InnerfirstA InnerlastA")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 ** A vcard with two other vcards inside; we check the second inner one
 ------------------------------------------------------------
@@ -1033,7 +1062,7 @@ END:VCARD
  "InnerfirstB InnerlastB")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 ** Treatment of REV
 *** Store REV as creation-date in new records...
@@ -1056,7 +1085,7 @@ END:VCARD
  nil nil t)
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 *** ...but not in existing records
 ------------------------------------------------------------
@@ -1079,7 +1108,7 @@ END:VCARD
 
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 ** Matching BDAY and N induce merge
 *** Storing a new person
@@ -1102,7 +1131,7 @@ END:VCARD
  "FirstK FamilyK")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 *** Not quite the same person: BDAY differs.
 ------------------------------------------------------------
@@ -1125,7 +1154,7 @@ END:VCARD
  "CompanyK2")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 *** Known person due to matching BDAY. Different ORG, though.
 ------------------------------------------------------------
@@ -1149,7 +1178,7 @@ END:VCARD
 
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 ** Matching TEL and N induce merge
 *** Storing a new person
@@ -1176,7 +1205,7 @@ END:VCARD
  "FirstL FamilyL")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 *** Not quite the same person: no matching TEL.
 ------------------------------------------------------------
@@ -1202,7 +1231,7 @@ END:VCARD
  "CompanyL2")
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 *** Known person: matching TEL (but different ORG).
 ------------------------------------------------------------
@@ -1232,7 +1261,7 @@ END:VCARD
 
 
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 ** From RFC 2426: author's address.  Note the omission or type N
    which is declared mandatory by this very RFC.
@@ -1259,7 +1288,7 @@ END:vCard
   ((www . "http://home.earthlink.net/~fdawson") (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
  "Frank Dawson")
 
-(bbdb-vcard-test
+(bbdb-vcard-import-test
  "
 ** The other author of RFC 2426
 ------------------------------------------------------------
@@ -1284,39 +1313,21 @@ END:vCard
  "Tim Howes")
 
 
-;;; Export
+;;;; The Export/Re-Import Tests
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (bbdb "" nil)
 (with-current-buffer "*BBDB*"
   (bbdb-vcard-export "/tmp/test-bbdb-0.vcf" t nil))
-(bbdb-save-db)
-(save-buffer bbdb-buffer)
-(kill-buffer bbdb-buffer)
-(kill-buffer "*BBDB*")
-(rename-file "/tmp/test-bbdb" "/tmp/test-bbdb-0" t)
-(bbdb-vcard-import-file "/tmp/test-bbdb-0.vcf")
-(bbdb-save-db)
 
-(bbdb "" nil)
-(with-current-buffer "*BBDB*"
-  (bbdb-vcard-export "/tmp/test-bbdb-1.vcf" t nil))
-(bbdb-save-db)
-(save-buffer bbdb-buffer)
-(kill-buffer bbdb-buffer)
-(kill-buffer "*BBDB*")
-(rename-file "/tmp/test-bbdb" "/tmp/test-bbdb-1" t)
-(bbdb-vcard-import-file "/tmp/test-bbdb-1.vcf")
-(bbdb-save-db)
-
-
-
-(with-temp-buffer
-  (insert-file-contents-literally "/tmp/test-bbdb")
-  (let ((border (cadr (insert-file-contents-literally "/tmp/test-bbdb-0"))))
-    (while (re-search-forward "(creation-date \\. \"[-0-9]\\{10\\}\")" nil t)
-      (replace-match  "creation-date-dummy"))
-    (print (compare-buffer-substrings nil (point-min) border
-                                      nil border (point-max))
-           (get-buffer-create "bbdb-vcard-test-result")))
-  (print (buffer-string) (get-buffer-create "bbdb-vcard-test-result"))
-  )
+(let ((first-bbdb (bbdb-search (bbdb-records) ""))
+      second-bbdb)
+  (bbdb-save-db)
+  (save-buffer bbdb-buffer)
+  (kill-buffer bbdb-buffer)
+  (kill-buffer "*BBDB*")
+  (delete-file "/tmp/test-bbdb")
+  (bbdb-vcard-import-file "/tmp/test-bbdb-0.vcf")
+  (setq second-bbdb (bbdb-search (bbdb-records) ""))
+  (bbdb-vcard-compare-bbdbs first-bbdb second-bbdb))
+;; FIXME: previous line messes bbdb up.
