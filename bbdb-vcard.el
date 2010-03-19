@@ -268,25 +268,6 @@ Most reasonable choices are `upcase' and `downcase'."
   :group 'bbdb-vcard
   :type 'function)
 
-(defcustom bbdb-vcard-default-dir "~/exported-vcards/"
-  "Default storage directory for exported vCards.
-Nil means current directory."
-  :group 'bbdb-vcard
-  :type '(choice directory (const :tag "Current directory" nil)))
-
-(defcustom bbdb-vcard-export-translation-table
-  '(("Mobile" . "CELL")
-    ("Office" . "WORK"))
-  "Label translation on vCard export.
-Alist with translations of location labels for addresses and phone
-numbers.  Cells are (BBDB-LABEL-REGEXP . VCARD-LABEL).  One entry
-should map a default BBDB label to the empty string (`\"^$\"') which
-corresponds to unlabelled vCard entries."
-  :group 'bbdb-vcard
-  :type '(alist :key-type
-                (choice regexp (const :tag "Empty (as default)" "^$"))
-                :value-type string))
-
 (defcustom bbdb-vcard-x-type-candidates
   '(attribution
     finger-host
@@ -302,6 +283,31 @@ extended types by prepending `X-BBDB-'.  On (re-)import, this prefix
 is removed again."
   :group 'bbdb-vcard
   :type '(repeat symbol))
+
+(defcustom bbdb-vcard-export-translation-table
+  '(("Mobile" . "CELL")
+    ("Office" . "WORK"))
+  "Label translation on vCard export.
+Alist with translations of location labels for addresses and phone
+numbers.  Cells are (BBDB-LABEL-REGEXP . VCARD-LABEL).  One entry
+should map a default BBDB label to the empty string (`\"^$\"') which
+corresponds to unlabelled vCard entries."
+  :group 'bbdb-vcard
+  :type '(alist :key-type
+                (choice regexp (const :tag "Empty (as default)" "^$"))
+                :value-type string))
+
+(defcustom bbdb-vcard-export-coding-system
+  'utf-8-dos                  ; dos line endings mandatory in RFC 2426
+  "Coding system to use when writing vcard files."
+  :group 'bbdb-vcard
+  :type 'symbol)
+
+(defcustom bbdb-vcard-default-dir "~/exported-vcards/"
+  "Default storage directory for exported vCards.
+Nil means current directory."
+  :group 'bbdb-vcard
+  :type '(choice directory (const :tag "Current directory" nil)))
 
 
 
@@ -374,20 +380,19 @@ in individual files."
                          (bbdb-vcard-make-file-name record
                                                     used-up-basenames)))
                     (insert (bbdb-vcard-from record))
-                    (write-region nil nil
-                                  (concat filename-or-directory basename)
-                                  nil nil nil t)
+                    (bbdb-vcard-write-buffer
+                     (concat filename-or-directory basename))
                     (push basename used-up-basenames))))
               (message "Wrote %d vCards to %s"
                        (length used-up-basenames) filename-or-directory))
           (with-temp-buffer     ; all visible BBDB records in one file
             (dolist (record records)
               (insert (bbdb-vcard-from record)))
-            (write-region nil nil filename-or-directory nil nil nil t))))
+            (bbdb-vcard-write-buffer filename-or-directory))))
     (let ((vcard (bbdb-vcard-from (bbdb-current-record nil)))) ; current record
       (with-temp-buffer
         (insert vcard)
-        (write-region nil nil filename-or-directory nil nil nil t)))))
+        (bbdb-vcard-write-buffer filename-or-directory)))))
 
 ;;;###autoload (define-key bbdb-mode-map [(v)] 'bbdb-vcard-export)
 (define-key bbdb-mode-map [(v)] 'bbdb-vcard-export)
@@ -737,6 +742,11 @@ newline if TYPE is nil."
       (bbdb-vcard-insert-vcard-element "END" "VCARD")
       (bbdb-vcard-insert-vcard-element nil)) ; newline
     (buffer-string)))
+
+(defun bbdb-vcard-write-buffer (vcard-file-name)
+  "Write current buffer to VCARD-FILE-NAME."
+  (let ((buffer-file-coding-system bbdb-vcard-export-coding-system))
+    (write-region nil nil vcard-file-name nil nil nil t)))
 
 (defun bbdb-vcard-unvcardize-name (vcard-name)
   "Convert VCARD-NAME (type N) into (FIRSTNAME LASTNAME)."
