@@ -38,12 +38,14 @@
 ;; =====
 ;;
 ;; vCard Import
+;; ------------
 ;;
 ;; On a file, a buffer or a region containing one or more vCards, use
 ;; `bbdb-vcard-import-file', `bbdb-vcard-import-buffer', or
 ;; `bbdb-vcard-import-region' respectively to import them into BBDB.
 ;;
 ;; vCard Export
+;; ------------
 ;;
 ;; In buffer *BBDB*, press v to export the record under point.  Press
 ;; *v to export all records in buffer into one vCard file.
@@ -67,7 +69,7 @@
 ;; vCard Import
 ;; ------------
 ;;
-;; An existing BBDB entry is extended by new information from a vCard
+;; An existing BBDB record is extended by new information from a vCard
 ;; 
 ;;   (a) if name and company and an email address match
 ;;   (b) or if name and company match
@@ -75,10 +77,10 @@
 ;;   (d) or if name and birthday match
 ;;   (e) or if name and a phone number match.
 ;;
-;; Otherwise, a fresh BBDB entry is created.
+;; Otherwise, a fresh BBDB record is created.
 ;;
 ;; When `bbdb-vcard-try-merge' is set to nil, there is always a fresh
-;; entry created.
+;; record created.
 ;;
 ;; In cases (c), (d), and (e), if the vCard has ORG defined, this ORG
 ;; would overwrite an existing Company in BBDB.
@@ -93,12 +95,12 @@
 ;; and TEL, parameter translation is defined in
 ;; `bbdb-vcard-import-translation-table'.
 ;; 
-;; If there is a REV entry, it is stored in BBDB's creation-date in
+;; If there is a REV element, it is stored in BBDB's creation-date in
 ;; newly created BBDB records, or discarded for existing ones.
 ;;
 ;; VCard type prefixes (A.ADR:..., B.ADR:... etc.) are stripped off
 ;; and discarded from the following types: N, FN, NICKNAME, ORG (first
-;; entry), ADR, TEL, EMAIL, URL, BDAY (first entry), NOTE.
+;; occurence), ADR, TEL, EMAIL, URL, BDAY (first occurence), NOTE.
 ;;
 ;; VCard types that are prefixed `X-BBDB-' are stored in BBDB without
 ;; the prefix.
@@ -124,7 +126,7 @@
 ;; |-------------+-------------------+---------------------------|
 ;; | VERSION     |                   | -                         |
 ;; |-------------+-------------------+---------------------------|
-;; | N           |                   | First entry:              |
+;; | N           |                   | First occurence:          |
 ;; |             |                   | Firstname                 |
 ;; |             |                   | Lastname                  |
 ;; |             |                   |                           |
@@ -134,7 +136,7 @@
 ;; | FN          |                   | AKAs (append)             |
 ;; | NICKNAME    |                   | AKAs (append)             |
 ;; |-------------+-------------------+---------------------------|
-;; | ORG         |                   | First entry:              |
+;; | ORG         |                   | First occurence:          |
 ;; |             |                   | Company                   |
 ;; |             |                   |                           |
 ;; |             |                   | Rest:                     |
@@ -204,7 +206,7 @@
 ;; empty.  Newlines which subdivide BBDB Address fields are converted
 ;; into commas subdividing vCard ADR fields.
 ;;
-;; Field names listed in `bbdb-vcard-x-type-candidates' are in the
+;; Field names listed in `bbdb-vcard-x-bbdb-candidates' are in the
 ;; exported vCard prepended by `X-BBDB-'.
 ;;
 ;; The creation-date of the BBDB record is stored as vCard type REV.
@@ -230,13 +232,13 @@
   :group 'bbdb)
 
 (defcustom bbdb-vcard-skip "X-GSM-"
-  "Regexp describing vCard entry types that are to be discarded during import.
+  "Regexp describing vCard elements that are to be discarded during import.
 Example: `X-GSM-\\|X-MS-'."
   :group 'bbdb-vcard
   :type 'regexp)
 
 (defcustom bbdb-vcard-skip-valueless t
-  "Skip vCard entry types with an empty value.
+  "Skip vCard elements types with an empty value.
 Nil means insert empty types into BBDB."
   :group 'bbdb-vcard
   :type 'boolean)
@@ -250,15 +252,15 @@ Nil means insert empty types into BBDB."
 Alist with translations of location labels for addresses and phone
 numbers.  Cells are (VCARD-LABEL-REGEXP . BBDB-LABEL).  One entry
 should map a default BBDB label to the empty string (`\"^$\"') which
-corresponds to unlabelled vCard entries."
+corresponds to unlabelled vCard elements."
   :group 'bbdb-vcard
   :type '(alist :key-type
                 (choice regexp (const :tag "Empty (as default)" "^$"))
                 :value-type string))
 
 (defcustom bbdb-vcard-try-merge t
-  "Try to merge vCards into existing BBDB entries.
-Nil means create a fresh bbdb entry each time a vCard is read."
+  "Try to merge vCards into existing BBDB records.
+Nil means create a fresh bbdb record each time a vCard is read."
   :group 'bbdb-vcard
   :type 'boolean)
 
@@ -268,7 +270,7 @@ Most reasonable choices are `upcase' and `downcase'."
   :group 'bbdb-vcard
   :type 'function)
 
-(defcustom bbdb-vcard-x-type-candidates
+(defcustom bbdb-vcard-x-bbdb-candidates
   '(attribution
     finger-host
     gnus-score
@@ -289,16 +291,14 @@ is removed again."
     ("Office" . "WORK"))
   "Label translation on vCard export.
 Alist with translations of location labels for addresses and phone
-numbers.  Cells are (BBDB-LABEL-REGEXP . VCARD-LABEL).  One entry
-should map a default BBDB label to the empty string (`\"^$\"') which
-corresponds to unlabelled vCard entries."
+numbers.  Cells are (BBDB-LABEL-REGEXP . VCARD-LABEL)."
   :group 'bbdb-vcard
   :type '(alist :key-type
                 (choice regexp (const :tag "Empty (as default)" "^$"))
                 :value-type string))
 
 (defcustom bbdb-vcard-export-coding-system
-  'utf-8-dos                  ; dos line endings mandatory in RFC 2426
+  'utf-8-dos        ; dos line endings mandatory according to RFC 2426
   "Coding system to use when writing vCard files."
   :group 'bbdb-vcard
   :type 'symbol)
@@ -316,15 +316,15 @@ Nil means current directory."
 ;;;###autoload
 (defun bbdb-vcard-import-region (begin end)
   "Import the vCards between BEGIN and END into BBDB.
-Existing BBDB entries may be altered."
+Existing BBDB records may be altered."
   (interactive "r")
   (bbdb-vcard-iterate-vcards (buffer-substring-no-properties begin end)
-                             'bbdb-vcard-process-vcard))
+                             'bbdb-vcard-import-vcard))
 
 ;;;###autoload
 (defun bbdb-vcard-import-buffer (vcard-buffer)
   "Import vCards from VCARD-BUFFER into BBDB.
-Existing BBDB entries may be altered."
+Existing BBDB records may be altered."
   (interactive (list (current-buffer)))
   (set-buffer vcard-buffer)
   (bbdb-vcard-import-region (point-min) (point-max)))
@@ -333,7 +333,7 @@ Existing BBDB entries may be altered."
 (defun bbdb-vcard-import-file (vcard-file)
   "Import vCards from VCARD-FILE into BBDB.
 If VCARD-FILE is a wildcard, import each matching file.  Existing BBDB
-entries may be altered."
+records may be altered."
   (interactive "FvCard file (or wildcard): ")
   (dolist (vcard-file (file-expand-wildcards vcard-file))
     (with-temp-buffer
@@ -415,20 +415,20 @@ in individual files."
             nil t)
       (funcall vcard-processor (match-string 2)))))
 
-(defun bbdb-vcard-process-vcard (entry)
-  "Store the vCard ENTRY in BBDB.
-\(ENTRY is expected to have BEGIN:VCARD and END:VCARD delimiters
-stripped off.) Extend existing BBDB entries where possible."
+(defun bbdb-vcard-import-vcard (vcard)
+  "Store VCARD in BBDB.
+\(VCARD is expected to have BEGIN:VCARD and END:VCARD delimiters
+stripped off.)  Extend existing BBDB records where possible."
   (with-temp-buffer
-    (insert entry)
+    (insert vcard)
     (let* ((record-version-info         ; user info
-            (if (string= (cdr (assoc "value" (car (bbdb-vcard-entries-of-type
+            (if (string= (cdr (assoc "value" (car (bbdb-vcard-elements-of-type
                                                    "version"))))
                          "3.0")
                 ""
               " (Not a version 3.0 vCard)"))
            (raw-name
-            (cdr (assoc "value" (car (bbdb-vcard-entries-of-type "N" t)))))
+            (cdr (assoc "value" (car (bbdb-vcard-elements-of-type "N" t)))))
            ;; Name suitable for storing in BBDB:
            (name
             (bbdb-vcard-unescape-strings (bbdb-vcard-unvcardize-name raw-name)))
@@ -445,29 +445,29 @@ stripped off.) Extend existing BBDB entries where possible."
              (lambda (n)
                (bbdb-join (bbdb-vcard-unvcardize-name (cdr (assoc "value" n)))
                           " "))
-             (bbdb-vcard-entries-of-type "N")))
+             (bbdb-vcard-elements-of-type "N")))
            (vcard-formatted-names
             (bbdb-vcard-unescape-strings
              (mapcar (lambda (fn) (cdr (assoc "value" fn)))
-                     (bbdb-vcard-entries-of-type "FN"))))
+                     (bbdb-vcard-elements-of-type "FN"))))
            (vcard-nicknames
             (bbdb-vcard-unescape-strings
              (bbdb-vcard-split-structured-text
               (cdr (assoc "value"
-                          (car (bbdb-vcard-entries-of-type "NICKNAME"))))
+                          (car (bbdb-vcard-elements-of-type "NICKNAME"))))
               "," t)))
            ;; Company suitable for storing in BBDB:
            (vcard-org
             (bbdb-vcard-unescape-strings
              (bbdb-vcard-unvcardize-org
               (cdr (assoc "value"
-                          (car (bbdb-vcard-entries-of-type "ORG" t)))))))
+                          (car (bbdb-vcard-elements-of-type "ORG" t)))))))
            ;; Company to search for in BBDB now:
            (org-to-search-for vcard-org) ; sorry
            ;; Email suitable for storing in BBDB:
            (vcard-email
             (mapcar (lambda (email) (cdr (assoc "value" email)))
-                    (bbdb-vcard-entries-of-type "EMAIL")))
+                    (bbdb-vcard-elements-of-type "EMAIL")))
            ;; Email to search for in BBDB now:
            (email-to-search-for
             (when vcard-email
@@ -478,7 +478,7 @@ stripped off.) Extend existing BBDB entries where possible."
                       (vector (bbdb-vcard-translate
                                (or (cdr (assoc "type" tel)) ""))
                               (cdr (assoc "value" tel))))
-                    (bbdb-vcard-entries-of-type "TEL")))
+                    (bbdb-vcard-elements-of-type "TEL")))
            ;; Phone numbers to search for in BBDB now:
            (tel-to-search-for
             (when vcard-tels
@@ -488,19 +488,19 @@ stripped off.) Extend existing BBDB entries where possible."
            ;; Addresses
            (vcard-adrs
             (mapcar 'bbdb-vcard-unvcardize-adr
-                    (bbdb-vcard-entries-of-type "ADR")))
+                    (bbdb-vcard-elements-of-type "ADR")))
            (vcard-url
-            (cdr (assoc "value" (car (bbdb-vcard-entries-of-type "URL" t)))))
-           (vcard-notes (bbdb-vcard-entries-of-type "NOTE"))
+            (cdr (assoc "value" (car (bbdb-vcard-elements-of-type "URL" t)))))
+           (vcard-notes (bbdb-vcard-elements-of-type "NOTE"))
            (raw-bday
-            (cdr (assoc "value" (car (bbdb-vcard-entries-of-type "BDAY" t)))))
+            (cdr (assoc "value" (car (bbdb-vcard-elements-of-type "BDAY" t)))))
            ;; Birthday suitable for storing in BBDB (usable by org-mode):
            (vcard-bday (when raw-bday (concat raw-bday " birthday")))
            ;; Birthday to search for in BBDB now:
            (bday-to-search-for vcard-bday)
            (vcard-rev
-            (cdr (assoc "value" (car (bbdb-vcard-entries-of-type "REV")))))
-           (vcard-categories (bbdb-vcard-entries-of-type "CATEGORIES"))
+            (cdr (assoc "value" (car (bbdb-vcard-elements-of-type "REV")))))
+           (vcard-categories (bbdb-vcard-elements-of-type "CATEGORIES"))
            ;; The BBDB record to change:
            (record-freshness-info "BBDB record changed:") ; default user info
            (bbdb-record
@@ -542,7 +542,7 @@ stripped off.) Extend existing BBDB entries where possible."
                      "\\([0-9]\\{4\\}-[01][0-9]-[0-3][0-9]\\).*" "\\1"
                      vcard-rev))
                  (bbdb-invoke-hook 'bbdb-create-hook fresh-record))
-               (setq record-freshness-info "BBDB record added:") ; user information
+               (setq record-freshness-info "BBDB record added:") ; user info
                fresh-record)))
            (bbdb-akas (bbdb-record-aka bbdb-record))
            (bbdb-addresses (bbdb-record-addresses bbdb-record))
@@ -601,12 +601,12 @@ stripped off.) Extend existing BBDB entries where possible."
                            vcard-categories
                            ","))
                ",")))
-      (while (setq other-vcard-type (bbdb-vcard-other-entry))
+      (while (setq other-vcard-type (bbdb-vcard-other-element))
         (when (string-match "^\\([[:alnum:]-]*\\.\\)?AGENT"
                             (symbol-name (car other-vcard-type)))
           ;; Notice other vCards inside the current one.
           (bbdb-vcard-iterate-vcards (cdr other-vcard-type)
-                                     'bbdb-vcard-process-vcard))
+                                     'bbdb-vcard-import-vcard))
         (unless (or (and bbdb-vcard-skip
                          (string-match bbdb-vcard-skip
                                        (symbol-name (car other-vcard-type))))
@@ -625,42 +625,6 @@ stripped off.) Extend existing BBDB entries where possible."
                (replace-regexp-in-string
                 "\n" "; " (or (bbdb-record-company bbdb-record) "-"))
                record-version-info))))
-
-(defun bbdb-vcard-remove-x-bbdb (vcard-element)
-  "Remove the `X-BBDB-' prefix from the type part of VCARD-ELEMENT if any."
-  (cons (intern (replace-regexp-in-string
-                 "^X-BBDB-" "" (symbol-name (car vcard-element))))
-        (cdr vcard-element)))
-
-(defun bbdb-vcard-prepend-x-bbdb-maybe (bbdb-fieldname)
-  "If BBDB-FIELDNAME is in `bbdb-vcard-x-type-candidates', prepend `X-BBDB'."
-  (if (member bbdb-fieldname bbdb-vcard-x-type-candidates)
-      ;; lowercase more consistent here
-      (intern (concat "x-bbdb-" (symbol-name bbdb-fieldname)))
-    bbdb-fieldname))
-
-(defun bbdb-vcard-fold-line (long-line)
-  "Insert after every 75th position in LONG-LINE a newline and a space."
-  (with-temp-buffer (insert long-line)
-                    (goto-char (point-min))
-                    (while (< (goto-char (+ (point) 75))
-                              (point-max))
-                      (insert "\n "))
-                    (insert "\n")
-                    (buffer-string)))
-
-(defun bbdb-vcard-insert-vcard-element (type &rest values)
-  "Insert a vCard element comprising TYPE, `:', VALUES into current buffer.
-Take care of TYPE canonicalization, line folding, and closing newline.
-Do nothing if TYPE is non-nil and VALUES are empty.  Insert just a
-newline if TYPE is nil."
-  (if type
-      (let ((value (bbdb-join values "")))
-        (unless (zerop (length value))
-          (insert (bbdb-vcard-fold-line
-                   (concat (bbdb-vcard-canonicalize-vcard-type type) ":"
-                           value)))))
-    (insert (bbdb-vcard-fold-line ""))))
 
 (defun bbdb-vcard-from (record)
   "Return BBDB RECORD as a vCard."
@@ -745,10 +709,123 @@ newline if TYPE is nil."
       (bbdb-vcard-insert-vcard-element nil)) ; newline
     (buffer-string)))
 
-(defun bbdb-vcard-write-buffer (vcard-file-name)
-  "Write current buffer to VCARD-FILE-NAME."
-  (let ((buffer-file-coding-system bbdb-vcard-export-coding-system))
-    (write-region nil nil vcard-file-name nil nil nil t)))
+
+
+(defun bbdb-vcard-elements-of-type (type &optional one-is-enough-p)
+  "From current buffer read and delete the vCard elements of TYPE.
+The current buffer is supposed to contain a single vCard.  If
+ONE-IS-ENOUGH-P is t, read and delete only the first element of TYPE.
+Return a list of alists, one per element.  Each alist has a cell with
+key \"value\" containing the element's value, and may have other
+elements of the form \(parameter-name . parameter-value)."
+  (goto-char (point-min))
+  (let (values parameters read-enough)
+    (while
+        (and
+         (not read-enough)
+         (re-search-forward
+          (concat
+           "^\\([[:alnum:]-]*\\.\\)?\\(" type "\\)\\(;.*\\)?:\\(.*\\)\r$")
+          nil t))
+      (goto-char (match-end 2))
+      (setq parameters nil)
+      (push (cons "value" (bbdb-vcard-split-structured-text
+                           (match-string 4) ";")) parameters)
+      (while (re-search-forward "\\([^;:=]+\\)=\\([^;:]+\\)"
+                                (line-end-position) t)
+        (let* ((parameter-key (downcase (match-string 1)))
+               (parameter-value (downcase (match-string 2)))
+               (parameter-sibling (assoc parameter-key parameters)))
+          (if parameter-sibling         ; i.e., pair with equal key
+              ;; collect vCard parameter list `;a=x;a=y;a=z'
+              ;; into vCard value list `;a=x,y,z'; becoming ("a" . "x,y,z")
+              (setf (cdr parameter-sibling)
+                    (concat (cdr parameter-sibling) "," parameter-value))
+            ;; vCard parameter pair `;key=value;' with new key
+            (push (cons parameter-key parameter-value) parameters))))
+      (push parameters values)
+      (delete-region (line-end-position 0) (line-end-position))
+      (when one-is-enough-p (setq read-enough t)))
+    (nreverse values)))
+
+(defun bbdb-vcard-other-element ()
+  "From current buffer read and delete the topmost vCard element.
+Buffer is supposed to contain a single vCard.  Return (TYPE . VALUE)."
+  (goto-char (point-min))
+  (when (re-search-forward "^\\([[:graph:]]*?\\):\\(.*\\)\r$" nil t)
+    (let ((type (match-string 1))
+          (value (match-string 2)))
+      (delete-region (match-beginning 0) (match-end 0))
+      (cons (intern (downcase type)) (bbdb-vcard-unescape-strings value)))))
+
+(defun bbdb-vcard-insert-vcard-element (type &rest values)
+  "Insert a vCard element comprising TYPE, `:', VALUES into current buffer.
+Take care of TYPE canonicalization, line folding, and closing newline.
+Do nothing if TYPE is non-nil and VALUES are empty.  Insert just a
+newline if TYPE is nil."
+  (if type
+      (let ((value (bbdb-join values "")))
+        (unless (zerop (length value))
+          (insert (bbdb-vcard-fold-line
+                   (concat (bbdb-vcard-canonicalize-vcard-type type)
+                           ":" value)))))
+    (insert (bbdb-vcard-fold-line ""))))
+
+
+
+(defun bbdb-vcard-unfold-lines ()
+  "Unfold folded vCard lines in current buffer."
+  (goto-char (point-min))
+  (while (re-search-forward "\r\n\\( \\|\t\\)" nil t) (replace-match "")))
+
+(defun bbdb-vcard-fold-line (long-line)
+  "Insert after every 75th position in LONG-LINE a newline and a space."
+  (with-temp-buffer (insert long-line)
+                    (goto-char (point-min))
+                    (while (< (goto-char (+ (point) 75))
+                              (point-max))
+                      (insert "\n "))
+                    (insert "\n")
+                    (buffer-string)))
+
+(defun bbdb-vcard-unescape-strings (escaped-strings)
+  "Unescape escaped `;', `,', `\\', and newlines in ESCAPED-STRINGS.
+ESCAPED-STRINGS may be a string or a sequence of strings."
+  (flet ((unescape (x) (replace-regexp-in-string
+                        "\\([\\\\]\\)\\([,;\\]\\)" ""
+                        (replace-regexp-in-string "\\\\n" "\n" x)
+                        nil nil 1)))
+    (bbdb-vcard-process-strings 'unescape escaped-strings)))
+
+(defun bbdb-vcard-escape-strings (unescaped-strings )
+  "Escape `;', `,', `\\', and newlines in UNESCAPED-STRINGS.
+UNESCAPED-STRINGS may be a string or a sequence of strings."
+  (flet ((escape (x) (replace-regexp-in-string
+                      "\n" "\\\\n" (replace-regexp-in-string
+                                    "\\(\\)[,;\\]" "\\\\" (or x "")
+                                    nil nil 1))))
+    (bbdb-vcard-process-strings 'escape unescaped-strings)))
+
+(defun bbdb-vcard-process-strings (string-processor strings)
+  "Apply STRING-PROCESSOR to STRINGS.
+STRINGS may be a string or a sequence of strings."
+  (if (stringp strings)
+      (funcall string-processor strings)
+    (mapcar string-processor strings)))
+
+
+
+(defun bbdb-vcard-remove-x-bbdb (vcard-element)
+  "Remove the `X-BBDB-' prefix from the type part of VCARD-ELEMENT if any."
+  (cons (intern (replace-regexp-in-string
+                 "^X-BBDB-" "" (symbol-name (car vcard-element))))
+        (cdr vcard-element)))
+
+(defun bbdb-vcard-prepend-x-bbdb-maybe (bbdb-fieldname)
+  "If BBDB-FIELDNAME is in `bbdb-vcard-x-bbdb-candidates', prepend `X-BBDB'."
+  (if (member bbdb-fieldname bbdb-vcard-x-bbdb-candidates)
+      (intern (concat "x-bbdb-" (symbol-name bbdb-fieldname)))
+    bbdb-fieldname))                  ; lowercase more consistent here
 
 (defun bbdb-vcard-unvcardize-name (vcard-name)
   "Convert VCARD-NAME (type N) into (FIRSTNAME LASTNAME)."
@@ -801,53 +878,21 @@ COUNTRY)."
             (or (elt non-streets 2) "")    ; Zip
             (or (elt non-streets 3) "")))) ; Country
 
-(defun bbdb-vcard-canonicalize-vcard-type (&rest strings)
-  "Concatenate STRINGS and apply `bbdb-vcard-type-canonicalizer' to them."
-  (funcall bbdb-vcard-type-canonicalizer (bbdb-join strings "")))
+(defun bbdb-vcard-vcardize-address-element (address-element)
+  "Replace escaped newlines in ADDRESS-ELEMENT by commas."
+  (replace-regexp-in-string "\\\\n" "," address-element))
 
-(defun bbdb-vcard-entries-of-type (type &optional one-is-enough-p)
-  "From current buffer read and delete the vCard entries of TYPE.
-The current buffer is supposed to contain a single vCard.  If
-ONE-IS-ENOUGH-P is t, read and delete only the first entry of TYPE."
-  (goto-char (point-min))
-  (let (values parameters read-enough)
-    (while
-        (and
-         (not read-enough)
-         (re-search-forward
-          (concat
-           "^\\([[:alnum:]-]*\\.\\)?\\(" type "\\)\\(;.*\\)?:\\(.*\\)\r$")
-          nil t))
-      (goto-char (match-end 2))
-      (setq parameters nil)
-      (push (cons "value" (bbdb-vcard-split-structured-text
-                           (match-string 4) ";")) parameters)
-      (while (re-search-forward "\\([^;:=]+\\)=\\([^;:]+\\)"
-                                (line-end-position) t)
-        (let* ((parameter-key (downcase (match-string 1)))
-               (parameter-value (downcase (match-string 2)))
-               (parameter-sibling (assoc parameter-key parameters)))
-          (if parameter-sibling         ; i.e., pair with equal key
-              ;; collect vCard parameter list `;a=x;a=y;a=z'
-              ;; into vCard value list `;a=x,y,z'; becoming ("a" . "x,y,z")
-              (setf (cdr parameter-sibling)
-                    (concat (cdr parameter-sibling) "," parameter-value))
-            ;; vCard parameter pair `;key=value;' with new key
-            (push (cons parameter-key parameter-value) parameters))))
-      (push parameters values)
-      (delete-region (line-end-position 0) (line-end-position))
-      (when one-is-enough-p (setq read-enough t)))
-    (nreverse values)))
-
-(defun bbdb-vcard-other-entry ()
-  "From current buffer read and delete the topmost vCard entry.
-Buffer is supposed to contain a single vCard.  Return (TYPE . ENTRY)."
-  (goto-char (point-min))
-  (when (re-search-forward "^\\([[:graph:]]*?\\):\\(.*\\)\r$" nil t)
-    (let ((type (match-string 1))
-          (value (match-string 2)))
-      (delete-region (match-beginning 0) (match-end 0))
-      (cons (intern (downcase type)) (bbdb-vcard-unescape-strings value)))))
+(defun bbdb-vcard-translate (label &optional exportp)
+  "Translate LABEL from vCard to BBDB or, if EXPORTP is non-nil, vice versa.
+Translations are defined in `bbdb-vcard-import-translation-table' and
+`bbdb-vcard-export-translation-table' respectively."
+  (when label
+    (capitalize
+     (or (assoc-default label
+                        (if exportp
+                            bbdb-vcard-export-translation-table
+                          bbdb-vcard-import-translation-table) 'string-match)
+         label))))
 
 (defun bbdb-vcard-merge-strings (old-string new-string separator)
   "Merge string NEW-STRING into string OLD-STRING.
@@ -878,73 +923,14 @@ is nil."
           (car string-elements)
         string-elements))))
 
-(defun bbdb-vcard-unfold-lines ()
-  "Unfold folded vCard lines in current buffer."
-  (goto-char (point-min))
-  (while (re-search-forward "\r\n\\( \\|\t\\)" nil t) (replace-match "")))
+(defun bbdb-vcard-canonicalize-vcard-type (&rest strings)
+  "Concatenate STRINGS and apply `bbdb-vcard-type-canonicalizer' to them."
+  (funcall bbdb-vcard-type-canonicalizer (bbdb-join strings "")))
 
-(defun bbdb-vcard-unescape-strings (escaped-strings)
-  "Unescape escaped `;', `,', `\\', and newlines in ESCAPED-STRINGS.
-ESCAPED-STRINGS may be a string or a sequence of strings."
-  (flet ((unescape (x) (replace-regexp-in-string
-                        "\\([\\\\]\\)\\([,;\\]\\)" ""
-                        (replace-regexp-in-string "\\\\n" "\n" x)
-                        nil nil 1)))
-    (bbdb-vcard-process-strings 'unescape escaped-strings)))
-
-(defun bbdb-vcard-escape-strings (unescaped-strings )
-  "Escape `;', `,', `\\', and newlines in UNESCAPED-STRINGS.
-UNESCAPED-STRINGS may be a string or a sequence of strings."
-  (flet ((escape (x) (replace-regexp-in-string
-                      "\n" "\\\\n" (replace-regexp-in-string
-                                    "\\(\\)[,;\\]" "\\\\" (or x "")
-                                    nil nil 1))))
-    (bbdb-vcard-process-strings 'escape unescaped-strings)))
-
-(defun bbdb-vcard-vcardize-address-element (address-element)
-  "Replace escaped newlines in ADDRESS-ELEMENT by commas."
-  (replace-regexp-in-string "\\\\n" "," address-element))
-
-
-(defun bbdb-vcard-process-strings (string-processor strings)
-  "Apply STRING-PROCESSOR to STRINGS.
-STRINGS may be a string or a sequence of strings."
-  (if (stringp strings)
-      (funcall string-processor strings)
-    (mapcar string-processor strings)))
-
-(defun bbdb-vcard-translate (label &optional exportp)
-  "Translate LABEL from vCard to BBDB or, if EXPORTP is non-nil, vice versa.
-Translations are defined in `bbdb-vcard-import-translation-table' and
-`bbdb-vcard-export-translation-table' respectively."
-  (when label
-    (capitalize
-     (or (assoc-default label
-                        (if exportp
-                            bbdb-vcard-export-translation-table
-                          bbdb-vcard-import-translation-table) 'string-match)
-         label))))
-
-(defmacro bbdb-vcard-search-intersection
-  (records &optional name company net notes phone)
-  "Search RECORDS for records that match each non-nil argument."
-  (let*
-      ((phone-search
-        (if phone `(when ,phone (bbdb-search ,records nil nil nil nil ,phone))
-          records))
-       (notes-search
-        (if notes `(when ,notes (bbdb-search ,phone-search nil nil nil ,notes))
-          phone-search))
-       (net-search
-        (if net `(when ,net (bbdb-search ,notes-search nil nil ,net))
-          notes-search))
-       (company-search
-        (if company `(when ,company (bbdb-search ,net-search nil ,company))
-          net-search))
-       (name-search
-        (if name `(when ,name (bbdb-search ,company-search ,name))
-          company-search)))
-    name-search))
+(defun bbdb-vcard-write-buffer (vcard-file-name)
+  "Write current buffer to VCARD-FILE-NAME."
+  (let ((buffer-file-coding-system bbdb-vcard-export-coding-system))
+    (write-region nil nil vcard-file-name nil nil nil t)))
 
 (defun bbdb-vcard-make-file-name (bbdb-record &optional used-up-basenames)
   "Come up with a vCard filename given a BBDB-RECORD.
@@ -967,6 +953,27 @@ Make it unique against the list USED-UP-BASENAMES."
             used-up-basenames)
       (incf unique-number))
     filename))
+
+(defmacro bbdb-vcard-search-intersection
+  (records &optional name company net notes phone)
+  "Search RECORDS for records that match each non-nil argument."
+  (let*
+      ((phone-search
+        (if phone `(when ,phone (bbdb-search ,records nil nil nil nil ,phone))
+          records))
+       (notes-search
+        (if notes `(when ,notes (bbdb-search ,phone-search nil nil nil ,notes))
+          phone-search))
+       (net-search
+        (if net `(when ,net (bbdb-search ,notes-search nil nil ,net))
+          notes-search))
+       (company-search
+        (if company `(when ,company (bbdb-search ,net-search nil ,company))
+          net-search))
+       (name-search
+        (if name `(when ,name (bbdb-search ,company-search ,name))
+          company-search)))
+    name-search))
 
 
 
