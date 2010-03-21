@@ -299,7 +299,7 @@ corresponds to unlabelled vCard entries."
 
 (defcustom bbdb-vcard-export-coding-system
   'utf-8-dos                  ; dos line endings mandatory in RFC 2426
-  "Coding system to use when writing vcard files."
+  "Coding system to use when writing vCard files."
   :group 'bbdb-vcard
   :type 'symbol)
 
@@ -421,12 +421,13 @@ in individual files."
 stripped off.) Extend existing BBDB entries where possible."
   (with-temp-buffer
     (insert entry)
-    (unless
-        (string=
-         (cdr (assoc "value"
-                     (car (bbdb-vcard-entries-of-type "version")))) "3.0")
-      (display-warning '(bbdb-vcard xy) "Not a version 3.0 vCard."))
-    (let* ((raw-name
+    (let* ((record-version-info         ; user info
+            (if (string= (cdr (assoc "value" (car (bbdb-vcard-entries-of-type
+                                                   "version"))))
+                         "3.0")
+                ""
+              " (Not a version 3.0 vCard)"))
+           (raw-name
             (cdr (assoc "value" (car (bbdb-vcard-entries-of-type "N" t)))))
            ;; Name suitable for storing in BBDB:
            (name
@@ -617,12 +618,13 @@ stripped off.) Extend existing BBDB entries where possible."
        (remove-duplicates bbdb-raw-notes :test 'equal :from-end t))
       (bbdb-change-record bbdb-record t)
       ;; Tell the user what we've done.
-      (message "%s %s %s -- %s"
+      (message "%s %s %s -- %s%s"
                record-freshness-info
                (bbdb-record-firstname bbdb-record)
                (bbdb-record-lastname bbdb-record)
                (replace-regexp-in-string
-                "\n" "; " (or (bbdb-record-company bbdb-record) "-"))))))
+                "\n" "; " (or (bbdb-record-company bbdb-record) "-"))
+               record-version-info))))
 
 (defun bbdb-vcard-remove-x-bbdb (vcard-element)
   "Remove the `X-BBDB-' prefix from the type part of VCARD-ELEMENT if any."
