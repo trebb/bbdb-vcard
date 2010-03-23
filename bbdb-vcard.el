@@ -1,4 +1,4 @@
-;;; bbdb-vcard.el --- import vCards (RFC2426) into BBDB
+;;; bbdb-vcard.el --- vCard v3.0 import/export for BBDB
 
 ;; Copyright (c) 2010 Bert Burgemeister
 
