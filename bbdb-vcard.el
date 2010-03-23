@@ -928,7 +928,9 @@ is nil."
   (funcall bbdb-vcard-type-canonicalizer (bbdb-join strings "")))
 
 (defun bbdb-vcard-write-buffer (vcard-file-name)
-  "Write current buffer to VCARD-FILE-NAME."
+  "Write current buffer to VCARD-FILE-NAME.
+Create directories where necessary."
+  (make-directory (file-name-directory vcard-file-name) t)
   (let ((buffer-file-coding-system bbdb-vcard-export-coding-system))
     (write-region nil nil vcard-file-name nil nil nil t)))
 
