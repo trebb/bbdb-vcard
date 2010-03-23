@@ -48,8 +48,12 @@
 ;; ------------
 ;;
 ;; In buffer *BBDB*, press v to export the record under point.  Press
-;; *v to export all records in buffer into one vCard file.
-;; Press * C-u v to export them into one file each.
+;; * v to export all records in buffer into one vCard file.  Press *
+;; C-u v to export them into one file each.
+;;
+;; To put one or all vCard(s) into the kill ring, press V or * V
+;; respectively.
+;;
 ;;
 ;; There are a few customization variables grouped under `bbdb-vcard'.
 ;;
@@ -346,7 +350,7 @@ records may be altered."
   "From Buffer *BBDB*, write one or more record(s) as vCard(s) to file(s).
 \\<bbdb-mode-map>\
 If \"\\[bbdb-apply-next-command-to-all-records]\\[bbdb-vcard-export]\"\
-is used instead of simply \"\\[bbdb-vcard-export]\", then export all\
+is used instead of simply \"\\[bbdb-vcard-export]\", then export all \
 records currently
 in the *BBDB* buffer.  If used with prefix argument, store records
 in individual files."
@@ -394,8 +398,30 @@ in individual files."
         (insert vcard)
         (bbdb-vcard-write-buffer filename-or-directory)))))
 
+(defun bbdb-vcard-export-to-kill-ring (all-records-p)
+  "From Buffer *BBDB*, copy one or more record(s) as vCard(s) to the kill ring.
+\\<bbdb-mode-map>\
+If \"\\[bbdb-apply-next-command-to-all-records]\
+\\[bbdb-vcard-export-to-kill-ring]\"\
+is used instead of simply \"\\[bbdb-vcard-export-to-kill-ring]\", \
+then export all records currently in
+the *BBDB* buffer."
+  (interactive (let ((all-records-p (bbdb-do-all-records-p)))
+                 (list all-records-p)))
+  (if all-records-p
+      (let ((records (progn (set-buffer bbdb-buffer-name)
+                            (mapcar 'car bbdb-records))))
+        (kill-new "")
+        (dolist (record records)
+          (kill-append (bbdb-vcard-from record) nil))
+        (message "Saved %d records as vCards" (length records)))
+    (kill-new (bbdb-vcard-from (bbdb-current-record nil)))
+    (message "Saved record as vCard")))
+
 ;;;###autoload (define-key bbdb-mode-map [(v)] 'bbdb-vcard-export)
 (define-key bbdb-mode-map [(v)] 'bbdb-vcard-export)
+;;;###autoload (define-key bbdb-mode-map [(V)] 'bbdb-vcard-export-to-kill-ring)
+(define-key bbdb-mode-map [(V)] 'bbdb-vcard-export-to-kill-ring)
 
 
 
