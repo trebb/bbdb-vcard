@@ -655,26 +655,40 @@ stripped off.)  Extend existing BBDB records where possible."
 (defun bbdb-vcard-from (record)
   "Return BBDB RECORD as a vCard."
   (with-temp-buffer
-    (let ((name (bbdb-record-name record))
-          (first-name (bbdb-record-firstname record))
-          (last-name (bbdb-record-lastname record))
-          (aka (bbdb-record-aka record))
-          (company (bbdb-record-company record))
-          (net (bbdb-record-net record))
-          (phones (bbdb-record-phones record))
-          (addresses (bbdb-record-addresses record))
-          (www (bbdb-get-field record 'www))
-          (notes
-           (bbdb-vcard-split-structured-text (bbdb-record-notes record)
-                                             ";\n" t))
-          (anniversary
-           (replace-regexp-in-string
-            "\\([0-9]\\{4\\}-[01][0-9]-[0-3][0-9]\\) birthday" "\\1"
-            (bbdb-get-field record 'anniversary)))
-          (creation-date (bbdb-get-field record 'creation-date))
-          (mail-aliases (bbdb-record-getprop record
-                                             bbdb-define-all-aliases-field))
-          (raw-notes (copy-alist (bbdb-record-raw-notes record))))
+    (let* ((name (bbdb-record-name record))
+           (first-name (bbdb-record-firstname record))
+           (last-name (bbdb-record-lastname record))
+           (aka (bbdb-record-aka record))
+           (company (bbdb-record-company record))
+           (net (bbdb-record-net record))
+           (phones (bbdb-record-phones record))
+           (addresses (bbdb-record-addresses record))
+           (www (bbdb-get-field record 'www))
+           (notes
+            (bbdb-vcard-split-structured-text (bbdb-record-notes record)
+                                              ";\n" t))
+           (raw-anniversaries (bbdb-vcard-split-structured-text
+                               (bbdb-get-field record 'anniversary) "\n" t))
+           (birthday
+            (car (bbdb-vcard-split-structured-text
+                  (find-if
+                   (lambda (x)
+                     (string-match
+                      "\\([0-9]\\{4\\}-[01][0-9]-[0-3][0-9]\\)\\([[:blank:]]+birthday\\)?\\'" ; TODO: factor regexp out
+                      x))
+                   raw-anniversaries)
+                  " " t)))
+           (other-anniversaries 
+            (remove-if
+             (lambda (x)
+               (string-match
+                "\\([0-9]\\{4\\}-[01][0-9]-[0-3][0-9]\\)\\([[:blank:]]+birthday\\)?\\'" ; TODO: factor regexp out
+                x))
+             raw-anniversaries :count 1))
+           (creation-date (bbdb-get-field record 'creation-date))
+           (mail-aliases (bbdb-record-getprop record
+                                              bbdb-define-all-aliases-field))
+           (raw-notes (copy-alist (bbdb-record-raw-notes record))))
       (bbdb-vcard-insert-vcard-element "BEGIN" "VCARD")
       (bbdb-vcard-insert-vcard-element "VERSION" "3.0")
       (bbdb-vcard-insert-vcard-element "FN" (bbdb-vcard-escape-strings name))
@@ -717,7 +731,9 @@ stripped off.)  Extend existing BBDB records where possible."
       (dolist (note notes)
         (bbdb-vcard-insert-vcard-element
          "NOTE" (bbdb-vcard-escape-strings note)))
-      (bbdb-vcard-insert-vcard-element "BDAY" anniversary)
+      (bbdb-vcard-insert-vcard-element "BDAY" birthday)
+      (bbdb-vcard-insert-vcard-element  ; non-birthday anniversaries
+       "X-BBDB-ANNIVERSARY" (bbdb-join other-anniversaries "\\\\n"))                                                      
       (bbdb-vcard-insert-vcard-element "REV" creation-date)
       (bbdb-vcard-insert-vcard-element
        "CATEGORIES"
