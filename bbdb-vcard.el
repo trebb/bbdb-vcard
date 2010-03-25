@@ -410,6 +410,7 @@ in individual files."
         (insert vcard)
         (bbdb-vcard-write-buffer filename-or-directory)))))
 
+;;;###autoload
 (defun bbdb-vcard-export-to-kill-ring (all-records-p)
   "From Buffer *BBDB*, copy one or more record(s) as vCard(s) to the kill ring.
 \\<bbdb-mode-map>\
