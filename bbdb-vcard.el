@@ -460,13 +460,11 @@ stripped off.)  Extend existing BBDB records where possible."
   (with-temp-buffer
     (insert vcard)
     (let* ((record-version-info         ; user info
-            (if (string= (cdr (assoc "value" (car (bbdb-vcard-elements-of-type
-                                                   "version"))))
+            (if (string= (car (bbdb-vcard-values-of-type "version" "value"))
                          "3.0")
                 ""
               " (Not a version 3.0 vCard)"))
-           (raw-name
-            (cdr (assoc "value" (car (bbdb-vcard-elements-of-type "N" t)))))
+           (raw-name (car (bbdb-vcard-values-of-type "N" "value" t)))
            ;; Name suitable for storing in BBDB:
            (name
             (bbdb-vcard-unescape-strings (bbdb-vcard-unvcardize-name raw-name)))
@@ -484,28 +482,22 @@ stripped off.)  Extend existing BBDB records where possible."
                (bbdb-join (bbdb-vcard-unvcardize-name (cdr (assoc "value" n)))
                           " "))
              (bbdb-vcard-elements-of-type "N")))
-           (vcard-formatted-names
-            (bbdb-vcard-unescape-strings
-             (mapcar (lambda (fn) (cdr (assoc "value" fn)))
-                     (bbdb-vcard-elements-of-type "FN"))))
+           (vcard-formatted-names (bbdb-vcard-unescape-strings
+                                   (bbdb-vcard-values-of-type "FN" "value")))
            (vcard-nicknames
             (bbdb-vcard-unescape-strings
              (bbdb-vcard-split-structured-text
-              (cdr (assoc "value"
-                          (car (bbdb-vcard-elements-of-type "NICKNAME"))))
+              (car (bbdb-vcard-values-of-type "NICKNAME" "value"))
               "," t)))
            ;; Company suitable for storing in BBDB:
            (vcard-org
             (bbdb-vcard-unescape-strings
              (bbdb-vcard-unvcardize-org
-              (cdr (assoc "value"
-                          (car (bbdb-vcard-elements-of-type "ORG" t)))))))
+              (car (bbdb-vcard-values-of-type "ORG" "value" t)))))
            ;; Company to search for in BBDB now:
            (org-to-search-for vcard-org) ; sorry
            ;; Email suitable for storing in BBDB:
-           (vcard-email
-            (mapcar (lambda (email) (cdr (assoc "value" email)))
-                    (bbdb-vcard-elements-of-type "EMAIL")))
+           (vcard-email (bbdb-vcard-values-of-type "EMAIL" "value"))
            ;; Email to search for in BBDB now:
            (email-to-search-for
             (when vcard-email
@@ -527,11 +519,9 @@ stripped off.)  Extend existing BBDB records where possible."
            (vcard-adrs
             (mapcar 'bbdb-vcard-unvcardize-adr
                     (bbdb-vcard-elements-of-type "ADR")))
-           (vcard-url
-            (cdr (assoc "value" (car (bbdb-vcard-elements-of-type "URL" t)))))
-           (vcard-notes (bbdb-vcard-elements-of-type "NOTE"))
-           (raw-bday
-            (cdr (assoc "value" (car (bbdb-vcard-elements-of-type "BDAY" t)))))
+           (vcard-url (car (bbdb-vcard-values-of-type "URL" "value" t)))
+           (vcard-notes (bbdb-vcard-values-of-type "NOTE" "value"))
+           (raw-bday (car (bbdb-vcard-values-of-type "BDAY" "value" t)))
            ;; Birthday suitable for storing in BBDB (usable by org-mode):
            (vcard-bday (when raw-bday (concat raw-bday " birthday")))
            ;; Birthday to search for in BBDB now:
@@ -539,11 +529,10 @@ stripped off.)  Extend existing BBDB records where possible."
            ;; Non-birthday anniversaries, probably exported by ourselves:
            (vcard-x-bbdb-anniversaries
             (bbdb-vcard-split-structured-text
-             (cdr (assoc "value" (car (bbdb-vcard-elements-of-type "X-BBDB-ANNIVERSARY"))))
+             (car (bbdb-vcard-values-of-type "X-BBDB-ANNIVERSARY" "value"))
              "\\\\n" t))
-           (vcard-rev
-            (cdr (assoc "value" (car (bbdb-vcard-elements-of-type "REV")))))
-           (vcard-categories (bbdb-vcard-elements-of-type "CATEGORIES"))
+           (vcard-rev (car (bbdb-vcard-values-of-type "REV" "value")))
+           (vcard-categories (bbdb-vcard-values-of-type "CATEGORIES" "value"))
            ;; The BBDB record to change:
            (record-freshness-info "BBDB record changed:") ; default user info
            (bbdb-record
@@ -622,13 +611,8 @@ stripped off.)  Extend existing BBDB records where possible."
         (setf (cdr (assq 'notes bbdb-raw-notes))
               (bbdb-vcard-merge-strings
                (cdr (assq 'notes bbdb-raw-notes))
-               (list
-                (bbdb-vcard-unescape-strings
-                 (mapconcat (lambda (element) (cdr (assoc "value" element)))
-                            vcard-notes
-                            ";\n"))) ; TODO: use bbdb-vcard-merge-strings properly
+               (bbdb-vcard-unescape-strings vcard-notes)
                ";\n")))
-
       (when (or vcard-bday vcard-x-bbdb-anniversaries)
         ;; Put vCard BDAY and vCard X-BBDB-ANNIVERSARY's under key
         ;; 'anniversary (append if necessary) where org-mode can find it.
@@ -638,8 +622,7 @@ stripped off.)  Extend existing BBDB records where possible."
         (setf (cdr (assq 'anniversary bbdb-raw-notes))
               (bbdb-vcard-merge-strings
                (cdr (assq 'anniversary bbdb-raw-notes))
-               (bbdb-vcard-unescape-strings
-                vcard-x-bbdb-anniversaries)
+               (bbdb-vcard-unescape-strings vcard-x-bbdb-anniversaries)
                "\n")))
       (when vcard-categories
         ;; Put vCard CATEGORIES under key 'mail-alias (append if necessary).
@@ -648,10 +631,7 @@ stripped off.)  Extend existing BBDB records where possible."
         (setf (cdr (assq 'mail-alias bbdb-raw-notes))
               (bbdb-vcard-merge-strings
                (cdr (assq 'mail-alias bbdb-raw-notes))
-               (list (bbdb-vcard-unescape-strings ; TODO: use bbdb-vcard-merge-strings properly
-                (mapconcat (lambda (element) (cdr (assoc "value" element)))
-                           vcard-categories
-                           ",")))
+               vcard-categories
                ",")))
       (while (setq other-vcard-type (bbdb-vcard-other-element))
         (when (string-match "^\\([[:alnum:]-]*\\.\\)?AGENT"
@@ -695,22 +675,16 @@ stripped off.)  Extend existing BBDB records where possible."
                                               ";\n" t))
            (raw-anniversaries (bbdb-vcard-split-structured-text
                                (bbdb-get-field record 'anniversary) "\n" t))
+           (birthday-regexp
+            "\\([0-9]\\{4\\}-[01][0-9]-[0-3][0-9]\\)\\([[:blank:]]+birthday\\)?\\'")
            (birthday
             (car (bbdb-vcard-split-structured-text
-                  (find-if
-                   (lambda (x)
-                     (string-match
-                      "\\([0-9]\\{4\\}-[01][0-9]-[0-3][0-9]\\)\\([[:blank:]]+birthday\\)?\\'" ; TODO: factor regexp out
-                      x))
-                   raw-anniversaries)
+                  (find-if (lambda (x) (string-match birthday-regexp x))
+                           raw-anniversaries)
                   " " t)))
            (other-anniversaries 
-            (remove-if
-             (lambda (x)
-               (string-match
-                "\\([0-9]\\{4\\}-[01][0-9]-[0-3][0-9]\\)\\([[:blank:]]+birthday\\)?\\'" ; TODO: factor regexp out
-                x))
-             raw-anniversaries :count 1))
+            (remove-if (lambda (x) (string-match birthday-regexp x))
+                       raw-anniversaries :count 1))
            (creation-date (bbdb-get-field record 'creation-date))
            (mail-aliases (bbdb-record-getprop record
                                               bbdb-define-all-aliases-field))
@@ -778,6 +752,15 @@ stripped off.)  Extend existing BBDB records where possible."
     (buffer-string)))
 
 
+
+(defun bbdb-vcard-values-of-type
+  (type parameter &optional one-is-enough-p)
+  "Return in a list the values of PARAMETER of vCard element of TYPE.
+The VCard element is read and deleted from current buffer which is
+supposed to contain a single vCard.  If ONE-IS-ENOUGH-P is t, read and
+delete only the first element of TYPE."
+  (mapcar (lambda (x) (cdr (assoc parameter x)))
+          (bbdb-vcard-elements-of-type type one-is-enough-p)))
 
 (defun bbdb-vcard-elements-of-type (type &optional one-is-enough-p)
   "From current buffer read and delete the vCard elements of TYPE.
