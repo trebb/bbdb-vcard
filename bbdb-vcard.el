@@ -109,6 +109,10 @@
 ;; VCard types that are prefixed `X-BBDB-' are stored in BBDB without
 ;; the prefix.
 ;;
+;; VCard type X-BBDB-ANNIVERSARY may contain (previously exported)
+;; newline-separated non-birthday anniversaries that are meant to be
+;; read by org-mode.
+;;
 ;; All remaining vCard types that don't match the regexp in
 ;; `bbdb-vcard-skip' and that have a non-empty value are stored
 ;; unaltered in the BBDB Notes alist where, for instance,
@@ -123,74 +127,76 @@
 ;; Handling of the individual types defined in RFC2426 during import
 ;; (assuming default label translation and no vCard type exclusion):
 ;; "
-;; |-------------+-------------------+---------------------------|
-;; | TYPE FROM   | VCARD             | STORAGE IN BBDB           |
-;; | VCARD       | PARAMETERS        |                           |
-;; |             |                   |                           |
-;; |-------------+-------------------+---------------------------|
-;; | VERSION     |                   | -                         |
-;; |-------------+-------------------+---------------------------|
-;; | N           |                   | First occurence:          |
-;; |             |                   | Firstname                 |
-;; |             |                   | Lastname                  |
-;; |             |                   |                           |
-;; |             |                   | Rest:                     |
-;; |             |                   | AKAs (append)             |
-;; |-------------+-------------------+---------------------------|
-;; | FN          |                   | AKAs (append)             |
-;; | NICKNAME    |                   | AKAs (append)             |
-;; |-------------+-------------------+---------------------------|
-;; | ORG         |                   | First occurence:          |
-;; |             |                   | Company                   |
-;; |             |                   |                           |
-;; |             |                   | Rest:                     |
-;; |             |                   | Notes<org                 |
-;; |             |                   | (repeatedly)              |
-;; |-------------+-------------------+---------------------------|
-;; | ADR         | ;TYPE=x,HOME,y    | Addresses<Home            |
-;; |             | ;TYPE=x;TYPE=HOME | Addresses<Home            |
-;; |             | ;TYPE=x,WORK,y    | Addresses<Office          |
-;; |             | ;TYPE=x;TYPE=WORK | Addresses<Office          |
-;; |             | ;TYPE=x,y,z       | Addresses<x,y,z           |
-;; |             | ;TYPE=x;TYPE=y    | Addresses<x,y             |
-;; |             | (none)            | Addresses<Office          |
-;; |-------------+-------------------+---------------------------|
-;; | TEL         | ;TYPE=x,HOME,y    | Phones<Home (append)      |
-;; |             | ;TYPE=x;TYPE=HOME | Phones<Home (append)      |
-;; |             | ;TYPE=x,WORK,y    | Phones<Office (append)    |
-;; |             | ;TYPE=x;TYPE=WORK | Phones<Office (append)    |
-;; |             | ;TYPE=x,CELL,y    | Phones<Mobile (append)    |
-;; |             | ;TYPE=x;TYPE=CELL | Phones<Mobile (append)    |
-;; |             | ;TYPE=x,y,z       | Phones<x,y,z (append)     |
-;; |             | ;TYPE=x;TYPE=y    | Phones<x,y (append)       |
-;; |             | (none)            | Phones<Office (append)    |
-;; |-------------+-------------------+---------------------------|
-;; | EMAIL       | ;TYPE=x,y,z       | Net-Addresses (append)    |
-;; | URL         |                   | Notes<www                 |
-;; | BDAY        |                   | Notes<anniversary         |
-;; | NOTE        |                   | Notes<notes (append)      |
-;; | REV         |                   | Notes<creation-date       |
-;; | CATEGORIES  |                   | Notes<mail-alias (append) |
-;; | SORT-STRING |                   | Notes<sort-string         |
-;; | KEY         |                   | Notes<key                 |
-;; | GEO         |                   | Notes<geo                 |
-;; | TZ          |                   | Notes<tz                  |
-;; | PHOTO       |                   | Notes<photo               |
-;; | LABEL       |                   | Notes<label               |
-;; | LOGO        |                   | Notes<logo                |
-;; | SOUND       |                   | Notes<sound               |
-;; | TITLE       |                   | Notes<title               |
-;; | ROLE        |                   | Notes<role                |
-;; | AGENT       |                   | Notes<agent               |
-;; | MAILER      |                   | Notes<mailer              |
-;; | UID         |                   | Notes<uid                 |
-;; | PRODID      |                   | Notes<prodid              |
-;; | CLASS       |                   | Notes<class               |
-;; | X-foo       |                   | Notes<x-foo               |
-;; | X-BBDB-bar  |                   | Notes<bar                 |
-;; |-------------+-------------------+---------------------------|
-;; | anyJunK     | ;a=x;b=y          | Notes<anyjunk;a=x;b=y     |
-;; |-------------+-------------------+---------------------------|
+;; |----------------------+----------------------------------------|
+;; | VCARD TYPE;          | STORAGE IN BBDB                        |
+;; | PARAMETERS           |                                        |
+;; |----------------------+----------------------------------------|
+;; | VERSION              | -                                      |
+;; |----------------------+----------------------------------------|
+;; | N                    | First occurence:                       |
+;; |                      | Firstname                              |
+;; |                      | Lastname                               |
+;; |                      |                                        |
+;; |                      | Rest:                                  |
+;; |                      | AKAs (append)                          |
+;; |----------------------+----------------------------------------|
+;; | FN                   | AKAs (append)                          |
+;; | NICKNAME             | AKAs (append)                          |
+;; |----------------------+----------------------------------------|
+;; | ORG                  | First occurence:                       |
+;; |                      | Company                                |
+;; |                      |                                        |
+;; |                      | Rest:                                  |
+;; |                      | Notes<org                              |
+;; |                      | (repeatedly)                           |
+;; |----------------------+----------------------------------------|
+;; | ADR;TYPE=x,HOME,y    | Addresses<Home                         |
+;; | ADR;TYPE=x;TYPE=HOME | Addresses<Home                         |
+;; | ADR;TYPE=x,WORK,y    | Addresses<Office                       |
+;; | ADR;TYPE=x;TYPE=WORK | Addresses<Office                       |
+;; | ADR;TYPE=x,y,z       | Addresses<x,y,z                        |
+;; | ADR;TYPE=x;TYPE=y    | Addresses<x,y                          |
+;; | ADR                  | Addresses<Office                       |
+;; |----------------------+----------------------------------------|
+;; | TEL;TYPE=x,HOME,y    | Phones<Home (append)                   |
+;; | TEL;TYPE=x;TYPE=HOME | Phones<Home (append)                   |
+;; | TEL;TYPE=x,WORK,y    | Phones<Office (append)                 |
+;; | TEL;TYPE=x;TYPE=WORK | Phones<Office (append)                 |
+;; | TEL;TYPE=x,CELL,y    | Phones<Mobile (append)                 |
+;; | TEL;TYPE=x;TYPE=CELL | Phones<Mobile (append)                 |
+;; | TEL;TYPE=x,y,z       | Phones<x,y,z (append)                  |
+;; | TEL;TYPE=x;TYPE=y    | Phones<x,y (append)                    |
+;; | TEL                  | Phones<Office (append)                 |
+;; |----------------------+----------------------------------------|
+;; | EMAIL;TYPE=x,y,z     | Net-Addresses (append)                 |
+;; | URL                  | Notes<www                              |
+;; |----------------------+----------------------------------------|
+;; | BDAY                 | Notes<anniversary (append as birthday) |
+;; | X-BBDB-ANNIVERSARY   | Notes<anniversary (append)             |
+;; |----------------------+----------------------------------------|
+;; | NOTE                 | Notes<notes (append)                   |
+;; | REV                  | Notes<creation-date                    |
+;; | CATEGORIES           | Notes<mail-alias (append)              |
+;; | SORT-STRING          | Notes<sort-string                      |
+;; | KEY                  | Notes<key                              |
+;; | GEO                  | Notes<geo                              |
+;; | TZ                   | Notes<tz                               |
+;; | PHOTO                | Notes<photo                            |
+;; | LABEL                | Notes<label                            |
+;; | LOGO                 | Notes<logo                             |
+;; | SOUND                | Notes<sound                            |
+;; | TITLE                | Notes<title                            |
+;; | ROLE                 | Notes<role                             |
+;; | AGENT                | Notes<agent                            |
+;; | MAILER               | Notes<mailer                           |
+;; | UID                  | Notes<uid                              |
+;; | PRODID               | Notes<prodid                           |
+;; | CLASS                | Notes<class                            |
+;; | X-foo                | Notes<x-foo                            |
+;; | X-BBDB-bar           | Notes<bar                              |
+;; |----------------------+----------------------------------------|
+;; | anyJunK;a=x;b=y      | Notes<anyjunk;a=x;b=y                  |
+;; |----------------------+----------------------------------------|
 ;; "
 ;;
 ;; vCard Export
@@ -209,6 +215,12 @@
 ;; In vCard type ADR, fields postbox and extended address are always
 ;; empty.  Newlines which subdivide BBDB Address fields are converted
 ;; into commas subdividing vCard ADR fields.
+;;
+;; The value of 'anniversary in Notes is supposed to be subdivided by
+;; newlines. The birthday part (either just a date or a date followed
+;; by \"birthday\") is stored under vCard type BDAY. The rest is
+;; stored newline-separated in the non-standard vCard type
+;; X-BBDB-ANNIVERSARY.
 ;;
 ;; Field names listed in `bbdb-vcard-x-bbdb-candidates' are in the
 ;; exported vCard prepended by `X-BBDB-'.
@@ -524,6 +536,11 @@ stripped off.)  Extend existing BBDB records where possible."
            (vcard-bday (when raw-bday (concat raw-bday " birthday")))
            ;; Birthday to search for in BBDB now:
            (bday-to-search-for vcard-bday)
+           ;; Non-birthday anniversaries, probably exported by ourselves:
+           (vcard-x-bbdb-anniversaries
+            (bbdb-vcard-split-structured-text
+             (cdr (assoc "value" (car (bbdb-vcard-elements-of-type "X-BBDB-ANNIVERSARY"))))
+             "\\\\n" t))
            (vcard-rev
             (cdr (assoc "value" (car (bbdb-vcard-elements-of-type "REV")))))
            (vcard-categories (bbdb-vcard-elements-of-type "CATEGORIES"))
@@ -605,16 +622,25 @@ stripped off.)  Extend existing BBDB records where possible."
         (setf (cdr (assq 'notes bbdb-raw-notes))
               (bbdb-vcard-merge-strings
                (cdr (assq 'notes bbdb-raw-notes))
-               (bbdb-vcard-unescape-strings
-                (mapconcat (lambda (element) (cdr (assoc "value" element)))
-                           vcard-notes
-                           ";\n"))
+               (list
+                (bbdb-vcard-unescape-strings
+                 (mapconcat (lambda (element) (cdr (assoc "value" element)))
+                            vcard-notes
+                            ";\n"))) ; TODO: use bbdb-vcard-merge-strings properly
                ";\n")))
-      (when vcard-bday
+
+      (when (or vcard-bday vcard-x-bbdb-anniversaries)
+        ;; Put vCard BDAY and vCard X-BBDB-ANNIVERSARY's under key
+        ;; 'anniversary (append if necessary) where org-mode can find it.
+        (when vcard-bday (push vcard-bday vcard-x-bbdb-anniversaries))
         (unless (assq 'anniversary bbdb-raw-notes)
           (push (cons 'anniversary "") bbdb-raw-notes))
         (setf (cdr (assq 'anniversary bbdb-raw-notes))
-              vcard-bday))              ; for consumption by org-mode
+              (bbdb-vcard-merge-strings
+               (cdr (assq 'anniversary bbdb-raw-notes))
+               (bbdb-vcard-unescape-strings
+                vcard-x-bbdb-anniversaries)
+               "\n")))
       (when vcard-categories
         ;; Put vCard CATEGORIES under key 'mail-alias (append if necessary).
         (unless (assq 'mail-alias bbdb-raw-notes)
@@ -622,10 +648,10 @@ stripped off.)  Extend existing BBDB records where possible."
         (setf (cdr (assq 'mail-alias bbdb-raw-notes))
               (bbdb-vcard-merge-strings
                (cdr (assq 'mail-alias bbdb-raw-notes))
-               (bbdb-vcard-unescape-strings
+               (list (bbdb-vcard-unescape-strings ; TODO: use bbdb-vcard-merge-strings properly
                 (mapconcat (lambda (element) (cdr (assoc "value" element)))
                            vcard-categories
-                           ","))
+                           ",")))
                ",")))
       (while (setq other-vcard-type (bbdb-vcard-other-element))
         (when (string-match "^\\([[:alnum:]-]*\\.\\)?AGENT"
@@ -733,7 +759,7 @@ stripped off.)  Extend existing BBDB records where possible."
          "NOTE" (bbdb-vcard-escape-strings note)))
       (bbdb-vcard-insert-vcard-element "BDAY" birthday)
       (bbdb-vcard-insert-vcard-element  ; non-birthday anniversaries
-       "X-BBDB-ANNIVERSARY" (bbdb-join other-anniversaries "\\\\n"))                                                      
+       "X-BBDB-ANNIVERSARY" (bbdb-join other-anniversaries "\\n"))                                                      
       (bbdb-vcard-insert-vcard-element "REV" creation-date)
       (bbdb-vcard-insert-vcard-element
        "CATEGORIES"
@@ -936,16 +962,17 @@ Translations are defined in `bbdb-vcard-import-translation-table' and
                           bbdb-vcard-import-translation-table) 'string-match)
          label))))
 
-(defun bbdb-vcard-merge-strings (old-string new-string separator)
-  "Merge string NEW-STRING into string OLD-STRING.
-If NEW-STRING is already in OLD-STRING, return OLD-STRING.  Otherwise
-append SEPARATOR and NEW-STRING."
+(defun bbdb-vcard-merge-strings (old-string new-strings separator)
+  "Merge strings successively from list NEW-STRINGS into OLD-STRING.
+If an element of NEW-STRINGS is already in OLD-STRING, leave
+OLD-STRING unchanged.  Otherwise append SEPARATOR and NEW-STRING."
   (with-temp-buffer
     (insert old-string)
-    (unless (search-backward new-string nil t)
-      (goto-char (point-max))
-      (unless (zerop (buffer-size)) (insert separator))
-      (insert new-string))
+    (dolist (new-string new-strings)
+      (unless (prog1 (search-backward new-string nil t)
+                (goto-char (point-max)))
+        (unless (zerop (buffer-size)) (insert separator))
+        (insert new-string)))
     (buffer-string)))
 
 (defun bbdb-vcard-split-structured-text

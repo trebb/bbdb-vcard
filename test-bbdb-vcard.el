@@ -18,7 +18,7 @@ SEARCH-COMPANY, (perhaps later) SEARCH-NET.  If search result
 disagrees with BBDB-ENTRY, talk about it in buffer
 bbdb-vcard-test-result. timestamp and, if CHECK-CREATION-DATE-P is
 nil, creation-date are not taken into account."
-  (bbdb-vcard-iterate-vcards vcard 'bbdb-vcard-process-vcard)
+  (bbdb-vcard-iterate-vcards vcard 'bbdb-vcard-import-vcard)
   (let* ((search-company (or search-company ""))
          (bbdb-search-result
           (car (bbdb-search (bbdb-search (bbdb-records) search-name)
@@ -1175,6 +1175,76 @@ END:VCARD
    (creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
  "FirstK FamilyK"
  "CompanyK1")
+
+
+
+(bbdb-vcard-import-test
+ "
+*** Anniversaries
+** Non-birthday anniversaries
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyM;FirstM
+BDAY:1927-03-27
+X-BBDB-ANNIVERSARY:1960-12-12 wedding\\n1970-11-11 blah\\n1998-03-12 %s created bbdb-anniv.el %d years ago
+END:VCARD
+"
+ ["FirstM" "FamilyM"
+  nil
+  nil
+  nil
+  nil
+  nil
+  ((anniversary . "1927-03-27 birthday\n1960-12-12 wedding\n1970-11-11 blah\n1998-03-12 %s created bbdb-anniv.el %d years ago")
+   (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
+ "FirstM FamilyM")
+
+
+(bbdb-vcard-import-test
+ "
+** Non-birthday anniversaries, no BDAY
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyN;FirstN
+X-BBDB-ANNIVERSARY:1960-12-12 wedding\\n1970-11-11 blah
+END:VCARD
+"
+ ["FirstN" "FamilyN"
+  nil
+  nil
+  nil
+  nil
+  nil
+  ((anniversary . "1960-12-12 wedding\n1970-11-11 blah")
+   (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
+ "FirstN FamilyN")
+
+
+
+(bbdb-vcard-import-test
+ "
+** No BDAY, but unlabelled birthday in anniversary
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyO;FirstO
+X-BBDB-ANNIVERSARY:1960-12-12\\n1970-11-11 blah
+NOTE:On re-import, birthday gets labelled.
+  Therefore, re-import test of this one should fail.
+END:VCARD
+"
+ ["FirstO" "FamilyO"
+  nil
+  nil
+  nil
+  nil
+  nil
+  ((anniversary . "1960-12-12\n1970-11-11 blah")
+   (notes . "On re-import, birthday gets labelled. Therefore, re-import test of this one should fail.")
+   (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
+ "FirstO FamilyO")
 
 
 
