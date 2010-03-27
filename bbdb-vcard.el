@@ -73,6 +73,7 @@
 ;; vCards are being fed into the v3.0 parser which works reasonably in
 ;; many (simple) cases.
 ;;
+;;
 ;; Implementation
 ;; ==============
 ;;
@@ -168,7 +169,7 @@
 ;; | TEL;TYPE=x;TYPE=HOME | Phones<Home (append)                   |
 ;; | TEL;TYPE=x,WORK,y    | Phones<Office (append)                 |
 ;; | TEL;TYPE=x;TYPE=WORK | Phones<Office (append)                 |
-;; | TEL;TYPEp=x,CELL,y    | Phones<Mobile (append)                 |
+;; | TEL;TYPEp=x,CELL,y   | Phones<Mobile (append)                 |
 ;; | TEL;TYPE=x;TYPE=CELL | Phones<Mobile (append)                 |
 ;; | TEL;TYPE=x,y,z       | Phones<x,y,z (append)                  |
 ;; | TEL;TYPE=x;TYPE=y    | Phones<x,y (append)                    |
@@ -257,20 +258,22 @@
   'bbdb-vcard-convert-buffer-to-3.0
   "Function of no arguments that converts vCard in current buffer to v3.0.
 The vCard in current buffer is assumed to be of version 2.1.  A
-\"VERSION:2.1\" line is already removed.  \"External command\" is
-customized with `bbdb-vcard-version-converter'."
+\"VERSION:2.1\" line is already removed.  If \"External command\" is
+chosen, see `bbdb-vcard-version-converter' for further customization."
   :group 'bbdb-vcard
-  :type '(choice function (const :tag "External command"
-                                 bbdb-vcard-convert-buffer-to-3.0)))
+  :type '(choice function 
+                 (const :tag "External command"
+                        bbdb-vcard-convert-buffer-to-3.0)))
 
-(defcustom bbdb-vcard-version-converter '("convcard" "--from-vcard2.1")
-  "External vcard version converter command and its arguments.
+(defcustom bbdb-vcard-version-converter '("convcard" t "--from-vcard2.1")
+  "External vCard version converter command and its arguments.
 This is used only if `bbdb-vcard-convert-buffer-to-3.0-function' is
-set to \"external command\".  Arguments must be specified separately.
-The last argument (not to be given here) will be the name of a file
-containing the vCard."
+set to \"external command\" (`bbdb-vcard-convert-buffer-to-3.0').
+Arguments must be specified separately.  Choose \"input-file-name\"
+where the name of a file containing the vCard is to be passed."
   :group 'bbdb-vcard
-  :type '(repeat string))
+  :type '(repeat (choice string
+                         (const :tag "input-file-name" t))))
 
 (defcustom bbdb-vcard-skip "X-GSM-"
   "Regexp describing vCard elements that are to be discarded during import.
@@ -279,7 +282,7 @@ Example: `X-GSM-\\|X-MS-'."
   :type 'regexp)
 
 (defcustom bbdb-vcard-skip-valueless t
-  "Skip vCard elements types with an empty value.
+  "Skip vCard element types with an empty value.
 Nil means insert empty types into BBDB."
   :group 'bbdb-vcard
   :type 'boolean)
@@ -790,8 +793,9 @@ the *BBDB* buffer."
 Return nil and leave buffer unchanged if conversion fails."
   (let* ((vcard-file (make-temp-file "bbdb-vcard-"))
          (command (car bbdb-vcard-version-converter))
-         (arguments (cons vcard-file (cdr bbdb-vcard-version-converter)))
-         (buffer-content (buffer-string))
+         (arguments
+          (substitute vcard-file t (cdr bbdb-vcard-version-converter)))
+         (Buffer-content (buffer-string))
          success)
     (write-region nil nil vcard-file)
     (erase-buffer)
