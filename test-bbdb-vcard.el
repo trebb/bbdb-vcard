@@ -1395,6 +1395,112 @@ END:vCard
  "Tim Howes")
 
 
+
+
+(bbdb-vcard-import-test
+ "
+** vCard version 2.1 (coverted by convcard)
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:2.1
+N:Friday;Fred
+TEL;WORK;VOICE:+1-213-555-1234
+TEL;WORK;FAX:+1-213-555-5678
+END:VCARD
+"
+ ["Fred" "Friday"
+  nil
+  nil
+  (["Office" "+1-213-555-1234"]
+   ["Office" "+1-213-555-5678"])
+  nil
+  nil
+  ((creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
+ "Fred Friday")
+
+
+
+
+(bbdb-vcard-import-test
+ "
+** vCard version 2.1 (coverted by convcard)
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:2.1
+N:Smith;John;M.;Mr.;Esq.
+TEL;WORK;VOICE;MSG:+1 (919) 555-1234
+TEL;CELL:+1 (919) 554-6758
+TEL;WORK;FAX:+1 (919) 555-9876
+PHOTO;GIF;MIME:<<JOHNSMITH.part3.960129T083020.xyzMail@host3.com>
+ADR;WORK;PARCEL;POSTAL;DOM:Suite 101;1 Central St.;AnyTown;NC;27654
+END:VCARD
+"
+ ["Mr. John M." "Smith Esq."
+  nil
+  nil
+  (["Office" "+1 (919) 555-1234"]
+   ["Mobile" "+1 (919) 554-6758"]
+   ["Office" "+1 (919) 555-9876"])
+  (["Office" ("Suite 101" "1 Central St." "Any Town") "" "" "" ""])
+  nil
+  ((photo\;type=image/gif . "<<JOHNSMITH.part3.960129T083020.xyzMail@host3.com>")
+   (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
+ "Smith")
+
+
+
+
+(bbdb-vcard-import-test
+ "
+** vCard version 2.1 (coverted by convcard)
+*** Quoted-printable
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:2.1
+N:Doe;John;;;
+FN:John Doe
+ORG:Doe Company, The;
+TITLE: President
+NOTE;ENCODING=QUOTED-PRINTABLE: This is a note associated
+  with this contact=0D=0A
+TEL;WORK;VOICE:(987) 123-4567
+TEL;HOME;VOICE:(987) 765-4321
+TEL;CELL;VOICE:(987) 135-8642
+TEL;WORK;FAX:(987) 246-1357
+ADR;WORK:;;1234 North Street;Anytown;TX 751234;;United States
+  of America
+LABEL;WORK;ENCODING=QUOTED-PRINTABLE:1234 North Street=0D=0AAnytown,
+  TX 751234 =0D=0AUnited States of America
+URL:
+URL:<WWLINK TYPE=\"GENERIC\"
+ VALUE=\"http://www.doeweb.com\">http://www.doeweb.com</WWLINK>
+EMAIL;PREF;INTERNET:jdoe@nowhere.com
+REV:19980114T170559Z
+END:VCARD
+"
+ ["John" "Doe"
+  nil
+  "Doe Company, The"
+  (["Office" "(987) 123-4567"]
+   ["Home" "(987) 765-4321"]
+   ["Mobile" "(987) 135-8642"]
+   ["Office" "(987) 246-1357"])
+  (["Office" ("1234 North Street") "Anytown" "TX 751234" "" "United States of America"])
+  ("jdoe@nowhere.com")
+  ((label\;type=work . "1234 North Street
+Anytown, TX 751234 
+United States of America")
+   (title . " President")
+   (notes . " This is a note associated with this contact
+")
+   (www . "<WWLINK TYPE=\"GENERIC\"VALUE=\"http://www.doeweb.com\">http://www.doeweb.c.com</WWLINK>")
+   (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
+ "John Doe")
+
+
+
+
+
 ;;;; The Export/Re-Import Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
