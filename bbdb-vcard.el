@@ -486,230 +486,237 @@ the *BBDB* buffer."
 
 
 (defun bbdb-vcard-iterate-vcards (vcard-processor vcards)
-  "Apply VCARD-PROCESSOR successively to each vCard in string VCARDS."
-  (with-temp-buffer
-    (insert vcards)
-    (goto-char (point-min))
-    ;; Change CR into CRLF if necessary, dealing with inconsistent line
-    ;; endings.
-    (while (re-search-forward "[^\r]\\(\n\\)" nil t)
-      (replace-match "\r\n" nil nil nil 1))
-    (bbdb-vcard-unfold-lines)
-    (goto-char (point-min))
-    (while (re-search-forward
-            "^\\([[:alnum:]-]*\\.\\)?*BEGIN:VCARD[\r\n[:print:][:cntrl:]]*?\\(^\\([[:alnum:]-]*\\.\\)?END:VCARD\\)"
-            nil t)
-      (funcall vcard-processor (match-string 0)))))
+  "Apply VCARD-PROCESSOR successively to each vCard in string VCARDS.
+When VCARDS is nil, return nil.  Otherwise, return t."
+  (if (null vcards)
+      nil
+    (with-temp-buffer
+      (insert vcards)
+      (goto-char (point-min))
+      ;; Change CR into CRLF if necessary, dealing with inconsistent line
+      ;; endings.
+      (while (re-search-forward "[^\r]\\(\n\\)" nil t)
+        (replace-match "\r\n" nil nil nil 1))
+      (bbdb-vcard-unfold-lines)
+      (goto-char (point-min))
+      (while (re-search-forward
+              "^\\([[:alnum:]-]*\\.\\)?*BEGIN:VCARD[\r\n[:print:][:cntrl:]]*?\\(^\\([[:alnum:]-]*\\.\\)?END:VCARD\\)"
+              nil t)
+        (funcall vcard-processor (match-string 0))))
+    t))
 
 (defun bbdb-vcard-import-vcard (vcard)
   "Store VCARD in BBDB.  Extend existing BBDB records where possible."
   (with-temp-buffer
     (insert vcard)
-    (let ((vcard-version (car (bbdb-vcard-values-of-type "version" "value")))
-          (record-version-info ""))
-      (unless (string= vcard-version "3.0")
-        (if (funcall bbdb-vcard-convert-buffer-to-3.0-function)
-            (setq record-version-info
-                  (concat " (vCard converted to v3.0 by external helper)"))
-          (setq record-version-info
-                " (Not a version 3.0 vCard and couldn't convert properly)"))
-        (bbdb-vcard-elements-of-type "VERSION")) ; get rid of VERSION again
-      (let* ((raw-name (car (bbdb-vcard-values-of-type "N" "value" t)))
-             ;; Name suitable for storing in BBDB:
-             (name (bbdb-vcard-unescape-strings
-                    (bbdb-vcard-unvcardize-name raw-name)))
-             ;; Name to search for in BBDB now:
-             (name-to-search-for
-              (when raw-name (if (stringp raw-name)
-                                 raw-name
-                               (concat (nth 1 raw-name) ;given name
-                                       " .*"
-                                       (nth 0 raw-name))))) ; family name
-             ;; Additional names from prefixed types like A.N, B.N, etc.:
-             (other-names
-              (mapcar
-               (lambda (n)
-                 (bbdb-join (bbdb-vcard-unvcardize-name (cdr (assoc "value" n)))
-                            " "))
-               (bbdb-vcard-elements-of-type "N")))
-             (vcard-formatted-names (bbdb-vcard-unescape-strings
-                                     (bbdb-vcard-values-of-type "FN" "value")))
-             (vcard-nicknames
-              (bbdb-vcard-unescape-strings
-               (bbdb-vcard-split-structured-text
-                (car (bbdb-vcard-values-of-type "NICKNAME" "value"))
-                "," t)))
-             ;; Company suitable for storing in BBDB:
-             (vcard-org
-              (bbdb-vcard-unescape-strings
-               (bbdb-vcard-unvcardize-org
-                (car (bbdb-vcard-values-of-type "ORG" "value" t)))))
-             ;; Company to search for in BBDB now:
-             (org-to-search-for vcard-org) ; sorry
-             ;; Email suitable for storing in BBDB:
-             (vcard-email (bbdb-vcard-values-of-type "EMAIL" "value"))
-             ;; Email to search for in BBDB now:
-             (email-to-search-for
-              (when vcard-email
-                (concat "\\(" (bbdb-join vcard-email "\\)\\|\\(") "\\)")))
-             ;; Phone numbers suitable for storing in BBDB:
-             (vcard-tels
-              (mapcar (lambda (tel)
-                        (vector (bbdb-vcard-translate
-                                 (or (cdr (assoc "type" tel)) ""))
-                                (cdr (assoc "value" tel))))
-                      (bbdb-vcard-elements-of-type "TEL")))
-             ;; Phone numbers to search for in BBDB now:
-             (tel-to-search-for
-              (when vcard-tels
-                (concat "\\("
-                        (mapconcat (lambda (x) (elt x 1))
-                                   vcard-tels "\\)\\|\\(")
-                        "\\)")))
-             ;; Addresses
-             (vcard-adrs
-              (mapcar 'bbdb-vcard-unvcardize-adr
-                      (bbdb-vcard-elements-of-type "ADR")))
-             (vcard-url (car (bbdb-vcard-values-of-type "URL" "value" t)))
-             (vcard-notes (bbdb-vcard-values-of-type "NOTE" "value"))
-             (raw-bday (car (bbdb-vcard-values-of-type "BDAY" "value" t)))
-             ;; Birthday suitable for storing in BBDB (usable by org-mode):
-             (vcard-bday (when raw-bday (concat raw-bday " birthday")))
-             ;; Birthday to search for in BBDB now:
-             (bday-to-search-for vcard-bday)
-             ;; Non-birthday anniversaries, probably exported by ourselves:
-             (vcard-x-bbdb-anniversaries
-              (bbdb-vcard-split-structured-text
-               (car (bbdb-vcard-values-of-type "X-BBDB-ANNIVERSARY" "value"))
-               "\\\\n" t))
-             (vcard-rev (car (bbdb-vcard-values-of-type "REV" "value")))
-             (vcard-categories (bbdb-vcard-values-of-type "CATEGORIES" "value"))
-             ;; The BBDB record to change:
-             (record-freshness-info "BBDB record changed:") ; default user info
-             (bbdb-record
-              (or
-               ;; Try to find an existing one ...
-               ;; (a) try company and net and name:
-               (car (and bbdb-vcard-try-merge
-                         (bbdb-vcard-search-intersection
-                          (bbdb-records)
-                          name-to-search-for
-                          org-to-search-for email-to-search-for)))
-               ;; (b) try company and name:
-               (car (and bbdb-vcard-try-merge
-                         (bbdb-vcard-search-intersection
-                          (bbdb-records) name-to-search-for org-to-search-for)))
-               ;; (c) try net and name; we may change company here:
-               (car (and bbdb-vcard-try-merge
-                         (bbdb-vcard-search-intersection
-                          (bbdb-records)
-                          name-to-search-for nil email-to-search-for)))
-               ;; (d) try birthday and name; we may change company here:
-               (car (and bbdb-vcard-try-merge
-                         (bbdb-vcard-search-intersection
-                          (bbdb-records)
-                          name-to-search-for nil nil bday-to-search-for)))
-               ;; (e) try phone and name; we may change company here:
-               (car (and bbdb-vcard-try-merge
-                         (bbdb-vcard-search-intersection
-                          (bbdb-records)
-                          name-to-search-for nil nil nil tel-to-search-for)))
-               ;; No existing record found; make a fresh one:
-               (let ((fresh-record (make-vector bbdb-record-length nil)))
-                 (bbdb-record-set-cache fresh-record
-                                        (make-vector bbdb-cache-length nil))
-                 (if vcard-rev            ; For fresh records,
-                     (bbdb-record-putprop ; set creation-date from vcard-rev
-                      fresh-record 'creation-date
-                      (replace-regexp-in-string
-                       "\\([0-9]\\{4\\}-[01][0-9]-[0-3][0-9]\\).*" "\\1"
-                       vcard-rev))
-                   (bbdb-invoke-hook 'bbdb-create-hook fresh-record))
-                 (setq record-freshness-info "BBDB record added:") ; user info
-                 fresh-record)))
-             (bbdb-akas (bbdb-record-aka bbdb-record))
-             (bbdb-addresses (bbdb-record-addresses bbdb-record))
-             (bbdb-phones (bbdb-record-phones bbdb-record))
-             (bbdb-nets (bbdb-record-net bbdb-record))
-             (bbdb-raw-notes (bbdb-record-raw-notes bbdb-record))
-             notes
-             other-vcard-type)
-        (bbdb-vcard-elements-of-type "BEGIN") ; get rid of delimiter
-        (bbdb-vcard-elements-of-type "END")   ; get rid of delimiter
-        (when name ; which should be the case as N is mandatory in vCard
-          (bbdb-record-set-firstname bbdb-record (car name))
-          (bbdb-record-set-lastname bbdb-record (cadr name)))
-        (bbdb-record-set-aka
-         bbdb-record
-         (remove (concat (bbdb-record-firstname bbdb-record)
-                         " " (bbdb-record-lastname bbdb-record))
-                 (reduce (lambda (x y) (union x y :test 'string=))
-                         (list vcard-nicknames
-                               other-names
-                               vcard-formatted-names
-                               bbdb-akas))))
-        (when vcard-org (bbdb-record-set-company bbdb-record vcard-org))
-        (bbdb-record-set-net
-         bbdb-record (union vcard-email bbdb-nets :test 'string=))
-        (bbdb-record-set-addresses
-         bbdb-record (union vcard-adrs bbdb-addresses :test 'equal))
-        (bbdb-record-set-phones bbdb-record
-                                (union vcard-tels bbdb-phones :test 'equal))
-        ;; prepare bbdb's notes:
-        (when vcard-url (push (cons 'www vcard-url) bbdb-raw-notes))
-        (when vcard-notes
-          ;; Put vCard NOTEs under key 'notes (append if necessary).
-          (unless (assq 'notes bbdb-raw-notes)
-            (push (cons 'notes "") bbdb-raw-notes))
-          (setf (cdr (assq 'notes bbdb-raw-notes))
-                (bbdb-vcard-merge-strings
-                 (cdr (assq 'notes bbdb-raw-notes))
-                 (bbdb-vcard-unescape-strings vcard-notes)
-                 ";\n")))
-        (when (or vcard-bday vcard-x-bbdb-anniversaries)
-          ;; Put vCard BDAY and vCard X-BBDB-ANNIVERSARY's under key
-          ;; 'anniversary (append if necessary) where org-mode can find it.
-          (when vcard-bday (push vcard-bday vcard-x-bbdb-anniversaries))
-          (unless (assq 'anniversary bbdb-raw-notes)
-            (push (cons 'anniversary "") bbdb-raw-notes))
-          (setf (cdr (assq 'anniversary bbdb-raw-notes))
-                (bbdb-vcard-merge-strings
-                 (cdr (assq 'anniversary bbdb-raw-notes))
-                 (bbdb-vcard-unescape-strings vcard-x-bbdb-anniversaries)
-                 "\n")))
-        (when vcard-categories
-          ;; Put vCard CATEGORIES under key 'mail-alias (append if necessary).
-          (unless (assq 'mail-alias bbdb-raw-notes)
-            (push (cons 'mail-alias "") bbdb-raw-notes))
-          (setf (cdr (assq 'mail-alias bbdb-raw-notes))
-                (bbdb-vcard-merge-strings
-                 (cdr (assq 'mail-alias bbdb-raw-notes))
-                 vcard-categories
-                 ",")))
-        (while (setq other-vcard-type (bbdb-vcard-other-element))
-          (when (string-match "^\\([[:alnum:]-]*\\.\\)?AGENT"
-                              (symbol-name (car other-vcard-type)))
-            ;; Notice other vCards inside the current one.
-            (bbdb-vcard-iterate-vcards 'bbdb-vcard-import-vcard
-                                       (cdr other-vcard-type)))
-          (unless (or (and bbdb-vcard-skip
-                           (string-match bbdb-vcard-skip
-                                         (symbol-name (car other-vcard-type))))
-                      (and bbdb-vcard-skip-valueless
-                           (zerop (length (cdr other-vcard-type)))))
-            (push (bbdb-vcard-remove-x-bbdb other-vcard-type) bbdb-raw-notes)))
-        (bbdb-record-set-raw-notes
-         bbdb-record
-         (remove-duplicates bbdb-raw-notes :test 'equal :from-end t))
-        (bbdb-change-record bbdb-record t)
-        ;; Tell the user what we've done.
-        (message "%s %s %s -- %s%s"
-                 record-freshness-info
-                 (bbdb-record-firstname bbdb-record)
-                 (bbdb-record-lastname bbdb-record)
-                 (replace-regexp-in-string
-                  "\n" "; " (or (bbdb-record-company bbdb-record) "-"))
-                 record-version-info)))))
+    (let ((vcard-version (car (bbdb-vcard-values-of-type "version" "value"))))
+;;          (record-version-info ""))
+
+      (when (or (string= vcard-version "3.0")
+                (not (bbdb-vcard-iterate-vcards 'bbdb-vcard-import-vcard (funcall bbdb-vcard-convert-buffer-to-3.0-function))))
+
+;;        (if (funcall bbdb-vcard-convert-buffer-to-3.0-function)
+;;            (setq record-version-info
+;;                  (concat " (vCard converted to v3.0 by external helper)"))
+;;          (setq record-version-info
+;;                " (Not a version 3.0 vCard and couldn't convert properly)"))
+;;        (bbdb-vcard-elements-of-type "VERSION")) ; get rid of VERSION again
+
+        (let* ((raw-name (car (bbdb-vcard-values-of-type "N" "value" t)))
+               ;; Name suitable for storing in BBDB:
+               (name (bbdb-vcard-unescape-strings
+                      (bbdb-vcard-unvcardize-name raw-name)))
+               ;; Name to search for in BBDB now:
+               (name-to-search-for
+                (when raw-name (if (stringp raw-name)
+                                   raw-name
+                                 (concat (nth 1 raw-name) ;given name
+                                         " .*"
+                                         (nth 0 raw-name))))) ; family name
+               ;; Additional names from prefixed types like A.N, B.N, etc.:
+               (other-names
+                (mapcar
+                 (lambda (n)
+                   (bbdb-join (bbdb-vcard-unvcardize-name (cdr (assoc "value" n)))
+                              " "))
+                 (bbdb-vcard-elements-of-type "N")))
+               (vcard-formatted-names (bbdb-vcard-unescape-strings
+                                       (bbdb-vcard-values-of-type "FN" "value")))
+               (vcard-nicknames
+                (bbdb-vcard-unescape-strings
+                 (bbdb-vcard-split-structured-text
+                  (car (bbdb-vcard-values-of-type "NICKNAME" "value"))
+                  "," t)))
+               ;; Company suitable for storing in BBDB:
+               (vcard-org
+                (bbdb-vcard-unescape-strings
+                 (bbdb-vcard-unvcardize-org
+                  (car (bbdb-vcard-values-of-type "ORG" "value" t)))))
+               ;; Company to search for in BBDB now:
+               (org-to-search-for vcard-org) ; sorry
+               ;; Email suitable for storing in BBDB:
+               (vcard-email (bbdb-vcard-values-of-type "EMAIL" "value"))
+               ;; Email to search for in BBDB now:
+               (email-to-search-for
+                (when vcard-email
+                  (concat "\\(" (bbdb-join vcard-email "\\)\\|\\(") "\\)")))
+               ;; Phone numbers suitable for storing in BBDB:
+               (vcard-tels
+                (mapcar (lambda (tel)
+                          (vector (bbdb-vcard-translate
+                                   (or (cdr (assoc "type" tel)) ""))
+                                  (cdr (assoc "value" tel))))
+                        (bbdb-vcard-elements-of-type "TEL")))
+               ;; Phone numbers to search for in BBDB now:
+               (tel-to-search-for
+                (when vcard-tels
+                  (concat "\\("
+                          (mapconcat (lambda (x) (elt x 1))
+                                     vcard-tels "\\)\\|\\(")
+                          "\\)")))
+               ;; Addresses
+               (vcard-adrs
+                (mapcar 'bbdb-vcard-unvcardize-adr
+                        (bbdb-vcard-elements-of-type "ADR")))
+               (vcard-url (car (bbdb-vcard-values-of-type "URL" "value" t)))
+               (vcard-notes (bbdb-vcard-values-of-type "NOTE" "value"))
+               (raw-bday (car (bbdb-vcard-values-of-type "BDAY" "value" t)))
+               ;; Birthday suitable for storing in BBDB (usable by org-mode):
+               (vcard-bday (when raw-bday (concat raw-bday " birthday")))
+               ;; Birthday to search for in BBDB now:
+               (bday-to-search-for vcard-bday)
+               ;; Non-birthday anniversaries, probably exported by ourselves:
+               (vcard-x-bbdb-anniversaries
+                (bbdb-vcard-split-structured-text
+                 (car (bbdb-vcard-values-of-type "X-BBDB-ANNIVERSARY" "value"))
+                 "\\\\n" t))
+               (vcard-rev (car (bbdb-vcard-values-of-type "REV" "value")))
+               (vcard-categories (bbdb-vcard-values-of-type "CATEGORIES" "value"))
+               ;; The BBDB record to change:
+               (record-freshness-info "BBDB record changed:") ; default user info
+               (bbdb-record
+                (or
+                 ;; Try to find an existing one ...
+                 ;; (a) try company and net and name:
+                 (car (and bbdb-vcard-try-merge
+                           (bbdb-vcard-search-intersection
+                            (bbdb-records)
+                            name-to-search-for
+                            org-to-search-for email-to-search-for)))
+                 ;; (b) try company and name:
+                 (car (and bbdb-vcard-try-merge
+                           (bbdb-vcard-search-intersection
+                            (bbdb-records) name-to-search-for org-to-search-for)))
+                 ;; (c) try net and name; we may change company here:
+                 (car (and bbdb-vcard-try-merge
+                           (bbdb-vcard-search-intersection
+                            (bbdb-records)
+                            name-to-search-for nil email-to-search-for)))
+                 ;; (d) try birthday and name; we may change company here:
+                 (car (and bbdb-vcard-try-merge
+                           (bbdb-vcard-search-intersection
+                            (bbdb-records)
+                            name-to-search-for nil nil bday-to-search-for)))
+                 ;; (e) try phone and name; we may change company here:
+                 (car (and bbdb-vcard-try-merge
+                           (bbdb-vcard-search-intersection
+                            (bbdb-records)
+                            name-to-search-for nil nil nil tel-to-search-for)))
+                 ;; No existing record found; make a fresh one:
+                 (let ((fresh-record (make-vector bbdb-record-length nil)))
+                   (bbdb-record-set-cache fresh-record
+                                          (make-vector bbdb-cache-length nil))
+                   (if vcard-rev          ; For fresh records,
+                       (bbdb-record-putprop ; set creation-date from vcard-rev
+                        fresh-record 'creation-date
+                        (replace-regexp-in-string
+                         "\\([0-9]\\{4\\}-[01][0-9]-[0-3][0-9]\\).*" "\\1"
+                         vcard-rev))
+                     (bbdb-invoke-hook 'bbdb-create-hook fresh-record))
+                   (setq record-freshness-info "BBDB record added:") ; user info
+                   fresh-record)))
+               (bbdb-akas (bbdb-record-aka bbdb-record))
+               (bbdb-addresses (bbdb-record-addresses bbdb-record))
+               (bbdb-phones (bbdb-record-phones bbdb-record))
+               (bbdb-nets (bbdb-record-net bbdb-record))
+               (bbdb-raw-notes (bbdb-record-raw-notes bbdb-record))
+               notes
+               other-vcard-type)
+          (bbdb-vcard-elements-of-type "BEGIN") ; get rid of delimiter
+          (bbdb-vcard-elements-of-type "END")   ; get rid of delimiter
+          (when name ; which should be the case as N is mandatory in vCard
+            (bbdb-record-set-firstname bbdb-record (car name))
+            (bbdb-record-set-lastname bbdb-record (cadr name)))
+          (bbdb-record-set-aka
+           bbdb-record
+           (remove (concat (bbdb-record-firstname bbdb-record)
+                           " " (bbdb-record-lastname bbdb-record))
+                   (reduce (lambda (x y) (union x y :test 'string=))
+                           (list vcard-nicknames
+                                 other-names
+                                 vcard-formatted-names
+                                 bbdb-akas))))
+          (when vcard-org (bbdb-record-set-company bbdb-record vcard-org))
+          (bbdb-record-set-net
+           bbdb-record (union vcard-email bbdb-nets :test 'string=))
+          (bbdb-record-set-addresses
+           bbdb-record (union vcard-adrs bbdb-addresses :test 'equal))
+          (bbdb-record-set-phones bbdb-record
+                                  (union vcard-tels bbdb-phones :test 'equal))
+          ;; prepare bbdb's notes:
+          (when vcard-url (push (cons 'www vcard-url) bbdb-raw-notes))
+          (when vcard-notes
+            ;; Put vCard NOTEs under key 'notes (append if necessary).
+            (unless (assq 'notes bbdb-raw-notes)
+              (push (cons 'notes "") bbdb-raw-notes))
+            (setf (cdr (assq 'notes bbdb-raw-notes))
+                  (bbdb-vcard-merge-strings
+                   (cdr (assq 'notes bbdb-raw-notes))
+                   (bbdb-vcard-unescape-strings vcard-notes)
+                   ";\n")))
+          (when (or vcard-bday vcard-x-bbdb-anniversaries)
+            ;; Put vCard BDAY and vCard X-BBDB-ANNIVERSARY's under key
+            ;; 'anniversary (append if necessary) where org-mode can find it.
+            (when vcard-bday (push vcard-bday vcard-x-bbdb-anniversaries))
+            (unless (assq 'anniversary bbdb-raw-notes)
+              (push (cons 'anniversary "") bbdb-raw-notes))
+            (setf (cdr (assq 'anniversary bbdb-raw-notes))
+                  (bbdb-vcard-merge-strings
+                   (cdr (assq 'anniversary bbdb-raw-notes))
+                   (bbdb-vcard-unescape-strings vcard-x-bbdb-anniversaries)
+                   "\n")))
+          (when vcard-categories
+            ;; Put vCard CATEGORIES under key 'mail-alias (append if necessary).
+            (unless (assq 'mail-alias bbdb-raw-notes)
+              (push (cons 'mail-alias "") bbdb-raw-notes))
+            (setf (cdr (assq 'mail-alias bbdb-raw-notes))
+                  (bbdb-vcard-merge-strings
+                   (cdr (assq 'mail-alias bbdb-raw-notes))
+                   vcard-categories
+                   ",")))
+          (while (setq other-vcard-type (bbdb-vcard-other-element))
+            (when (string-match "^\\([[:alnum:]-]*\\.\\)?AGENT"
+                                (symbol-name (car other-vcard-type)))
+              ;; Notice other vCards inside the current one.
+              (bbdb-vcard-iterate-vcards 'bbdb-vcard-import-vcard
+                                         (cdr other-vcard-type)))
+            (unless (or (and bbdb-vcard-skip
+                             (string-match bbdb-vcard-skip
+                                           (symbol-name (car other-vcard-type))))
+                        (and bbdb-vcard-skip-valueless
+                             (zerop (length (cdr other-vcard-type)))))
+              (push (bbdb-vcard-remove-x-bbdb other-vcard-type) bbdb-raw-notes)))
+          (bbdb-record-set-raw-notes
+           bbdb-record
+           (remove-duplicates bbdb-raw-notes :test 'equal :from-end t))
+          (bbdb-change-record bbdb-record t)
+          ;; Tell the user what we've done.
+          (message "%s %s %s -- %s"
+                   record-freshness-info
+                   (bbdb-record-firstname bbdb-record)
+                   (bbdb-record-lastname bbdb-record)
+                   (replace-regexp-in-string
+                    "\n" "; " (or (bbdb-record-company bbdb-record) "-"))))))))
 
 (defun bbdb-vcard-from (record)
   "Return BBDB RECORD as a vCard."
@@ -806,23 +813,40 @@ the *BBDB* buffer."
 
 
 
+;;(defun bbdb-vcard-convert-buffer-to-3.0 ()
+;;  "Convert vCard in current buffer from version 2.1 to 3.0.
+;;Return nil and leave buffer unchanged if conversion fails."
+;;  (let* ((vcard-file (make-temp-file "bbdb-vcard-"))
+;;         (command (car bbdb-vcard-version-converter))
+;;         (arguments
+;;          (substitute vcard-file t (cdr bbdb-vcard-versionconverter)))
+;;         (buffer-content (buffer-string))
+;;         success)
+;;    (write-region nil nil vcard-file)
+;;    (erase-buffer)
+;;    (setq success (condition-case nil
+;;                      (apply 'call-process command nil t nil arguments)
+;;                    (error (progn (erase-buffer)
+;;                                  (insert buffer-content)))))
+;;    (delete-file vcard-file)
+;;    success))
+
 (defun bbdb-vcard-convert-buffer-to-3.0 ()
   "Convert vCard in current buffer from version 2.1 to 3.0.
-Return nil and leave buffer unchanged if conversion fails."
+Return vCard version 3.0 as a string.  Return nil if conversion
+fails."
   (let* ((vcard-file (make-temp-file "bbdb-vcard-"))
          (command (car bbdb-vcard-version-converter))
          (arguments
-          (substitute vcard-file t (cdr bbdb-vcard-version-converter)))
-         (Buffer-content (buffer-string))
-         success)
+          (substitute vcard-file t (cdr bbdb-vcard-version-converter))))
     (write-region nil nil vcard-file)
-    (erase-buffer)
-    (setq success (condition-case nil
-                      (apply 'call-process command nil t nil arguments)
-                    (error (progn (erase-buffer)
-                                  (insert buffer-content)))))
-    (delete-file vcard-file)
-    success))
+    (prog1
+        (condition-case nil
+            (with-temp-buffer
+              (apply 'call-process command nil t nil arguments)
+              (buffer-string))
+          (error nil))
+      (delete-file vcard-file))))
 
 
 

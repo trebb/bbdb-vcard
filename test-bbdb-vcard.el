@@ -1441,11 +1441,11 @@ END:VCARD
   (["Office" "+1 (919) 555-1234"]
    ["Mobile" "+1 (919) 554-6758"]
    ["Office" "+1 (919) 555-9876"])
-  (["Office" ("Suite 101" "1 Central St." "Any Town") "" "" "" ""])
+  (["Office" ("Suite 101" "1 Central St." "AnyTown") "NC" "27654" "" ""])
   nil
   ((photo\;type=image/gif . "<<JOHNSMITH.part3.960129T083020.xyzMail@host3.com>")
    (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
- "Smith")
+  "Smith")
 
 
 
@@ -1493,7 +1493,7 @@ United States of America")
    (title . " President")
    (notes . " This is a note associated with this contact
 ")
-   (www . "<WWLINK TYPE=\"GENERIC\"VALUE=\"http://www.doeweb.com\">http://www.doeweb.c.com</WWLINK>")
+   (www . "<WWLINK TYPE=\"GENERIC\"VALUE=\"http://www.doeweb.com\">http://www.doeweb.com</WWLINK>")
    (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
  "John Doe")
 
