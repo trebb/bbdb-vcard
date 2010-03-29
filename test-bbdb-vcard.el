@@ -18,7 +18,7 @@ SEARCH-COMPANY, (perhaps later) SEARCH-NET.  If search result
 disagrees with BBDB-ENTRY, talk about it in buffer
 bbdb-vcard-test-result. timestamp and, if CHECK-CREATION-DATE-P is
 nil, creation-date are not taken into account."
-  (bbdb-vcard-iterate-vcards vcard 'bbdb-vcard-import-vcard)
+  (bbdb-vcard-iterate-vcards 'bbdb-vcard-import-vcard vcard)
   (let* ((search-company (or search-company ""))
          (bbdb-search-result
           (car (bbdb-search (bbdb-search (bbdb-records) search-name)
@@ -1232,7 +1232,7 @@ VERSION:3.0
 N:FamilyO;FirstO
 X-BBDB-ANNIVERSARY:1960-12-12\\n1970-11-11 blah
 NOTE:On re-import, birthday gets labelled.
-  Therefore, re-import test of this one should fail.
+   Therefore, re-import test of this one should fail.
 END:VCARD
 "
  ["FirstO" "FamilyO"
@@ -1242,7 +1242,7 @@ END:VCARD
   nil
   nil
   ((anniversary . "1960-12-12\n1970-11-11 blah")
-   (notes . "On re-import, birthday gets labelled. Therefore, re-import test of this one should fail.")
+   (notes . "On re-import, birthday gets labelled.  Therefore, re-import test of this one should fail.")
    (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
  "FirstO FamilyO")
 

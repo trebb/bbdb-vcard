@@ -4,6 +4,8 @@
 
 ;; Author: Bert Burgemeister <trebbu@googlemail.com>
 ;; Keywords: data calendar mail news
+;; URL: http://github.com/trebb/bbdb-vcard
+;; Version:
 
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
@@ -44,6 +46,10 @@
 ;; `bbdb-vcard-import-file', `bbdb-vcard-import-buffer', or
 ;; `bbdb-vcard-import-region' respectively to import them into BBDB.
 ;;
+;; Preferred input format is vCard version 3.0.  For version 2.1, an
+;; external conversion tool is relied upon.
+;;
+;;
 ;; vCard Export
 ;; ------------
 ;;
@@ -53,6 +59,10 @@
 ;;
 ;; To put one or all vCard(s) into the kill ring, press V or * V
 ;; respectively.
+;;
+;; Exported vcards are always version 3.0.  They can be re-imported
+;; without data loss with one exception: North American phone numbers
+;; lose their structure and are stored as flat strings.
 ;;
 ;;
 ;; There are a few customization variables grouped under `bbdb-vcard'.
@@ -67,11 +77,12 @@
 ;;   (require 'bbdb-vcard)
 ;;
 ;; To automatically convert vCards version 2.1 into version 3.0 on
-;; import, an external conversion tool is used the choice of which can
-;; be customized.  By default convcard (Package multisync-tools on
-;; Debian) is used.  If no external conversion tool can be found, v2.1
-;; vCards are being fed into the v3.0 parser which works reasonably in
-;; many (simple) cases.
+;; import, an external conversion tool (either a Lisp function or a
+;; shell command) can be deployed the choice of which is customizable.
+;; By default convcard (Package multisync-tools on Debian) is used.
+;; If no external conversion tool can be found, v2.1 vCards are being
+;; fed into the v3.0 parser which works reasonably in many (simple)
+;; cases.
 ;;
 ;;
 ;; Implementation
@@ -111,7 +122,7 @@
 ;;
 ;; VCard type prefixes (A.ADR:..., B.ADR:... etc.) are stripped off
 ;; and discarded from the following types: N, FN, NICKNAME, ORG (first
-;; occurence), ADR, TEL, EMAIL, URL, BDAY (first occurence), NOTE.
+;; occurrence), ADR, TEL, EMAIL, URL, BDAY (first occurrence), NOTE.
 ;;
 ;; VCard types that are prefixed `X-BBDB-' are stored in BBDB without
 ;; the prefix.
@@ -140,7 +151,7 @@
 ;; |----------------------+----------------------------------------|
 ;; | VERSION              | -                                      |
 ;; |----------------------+----------------------------------------|
-;; | N                    | First occurence:                       |
+;; | N                    | First occurrence:                      |
 ;; |                      | Firstname                              |
 ;; |                      | Lastname                               |
 ;; |                      |                                        |
@@ -150,7 +161,7 @@
 ;; | FN                   | AKAs (append)                          |
 ;; | NICKNAME             | AKAs (append)                          |
 ;; |----------------------+----------------------------------------|
-;; | ORG                  | First occurence:                       |
+;; | ORG                  | First occurrence:                      |
 ;; |                      | Company                                |
 ;; |                      |                                        |
 ;; |                      | Rest:                                  |
@@ -224,7 +235,7 @@
 ;; into commas subdividing vCard ADR fields.
 ;;
 ;; The value of 'anniversary in Notes is supposed to be subdivided by
-;; newlines. The birthday part (either just a date or a date followed
+;; newlines.  The birthday part (either just a date or a date followed
 ;; by \"birthday\") is stored under vCard type BDAY. The rest is
 ;; stored newline-separated in the non-standard vCard type
 ;; X-BBDB-ANNIVERSARY.
@@ -248,6 +259,11 @@
 (require 'bbdb)
 (require 'cl)
 
+(defconst bbdb-vcard-version ""
+  "Version of the vCard importer/exporter.")
+
+
+
 ;;;; User Variables
 
 (defgroup bbdb-vcard nil
@@ -258,14 +274,17 @@
   'bbdb-vcard-convert-buffer-to-3.0
   "Function of no arguments that converts vCard in current buffer to v3.0.
 The vCard in current buffer is assumed to be of version 2.1.  A
-\"VERSION:2.1\" line is already removed.  If \"External command\" is
-chosen, see `bbdb-vcard-version-converter' for further customization."
+\"VERSION:2.1\" line has been removed already.  If \"External
+command\" is chosen, see `bbdb-vcard-version-converter' for further
+customization."
   :group 'bbdb-vcard
-  :type '(choice function 
+  :type '(choice function
                  (const :tag "External command"
                         bbdb-vcard-convert-buffer-to-3.0)))
 
 (defcustom bbdb-vcard-version-converter '("convcard" t "--from-vcard2.1")
+  ;; The current version of convcard takes its arguments in the wrong
+  ;; order which is reflected here.
   "External vCard version converter command and its arguments.
 This is used only if `bbdb-vcard-convert-buffer-to-3.0-function' is
 set to \"external command\" (`bbdb-vcard-convert-buffer-to-3.0').
@@ -362,8 +381,8 @@ Nil means current directory."
   "Import the vCards between BEGIN and END into BBDB.
 Existing BBDB records may be altered."
   (interactive "r")
-  (bbdb-vcard-iterate-vcards (buffer-substring-no-properties begin end)
-                             'bbdb-vcard-import-vcard))
+  (bbdb-vcard-iterate-vcards 'bbdb-vcard-import-vcard
+                             (buffer-substring-no-properties begin end)))
 
 ;;;###autoload
 (defun bbdb-vcard-import-buffer (vcard-buffer)
@@ -466,7 +485,7 @@ the *BBDB* buffer."
 
 
 
-(defun bbdb-vcard-iterate-vcards (vcards vcard-processor)
+(defun bbdb-vcard-iterate-vcards (vcard-processor vcards)
   "Apply VCARD-PROCESSOR successively to each vCard in string VCARDS."
   (with-temp-buffer
     (insert vcards)
@@ -491,8 +510,7 @@ the *BBDB* buffer."
       (unless (string= vcard-version "3.0")
         (if (funcall bbdb-vcard-convert-buffer-to-3.0-function)
             (setq record-version-info
-                  (concat " (vCard converted to v3.0 by "
-                          (car bbdb-vcard-version-converter) ")"))
+                  (concat " (vCard converted to v3.0 by external helper)"))
           (setq record-version-info
                 " (Not a version 3.0 vCard and couldn't convert properly)"))
         (bbdb-vcard-elements-of-type "VERSION")) ; get rid of VERSION again
@@ -672,8 +690,8 @@ the *BBDB* buffer."
           (when (string-match "^\\([[:alnum:]-]*\\.\\)?AGENT"
                               (symbol-name (car other-vcard-type)))
             ;; Notice other vCards inside the current one.
-            (bbdb-vcard-iterate-vcards (cdr other-vcard-type)
-                                       'bbdb-vcard-import-vcard))
+            (bbdb-vcard-iterate-vcards 'bbdb-vcard-import-vcard
+                                       (cdr other-vcard-type)))
           (unless (or (and bbdb-vcard-skip
                            (string-match bbdb-vcard-skip
                                          (symbol-name (car other-vcard-type))))
@@ -717,7 +735,7 @@ the *BBDB* buffer."
                   (find-if (lambda (x) (string-match birthday-regexp x))
                            raw-anniversaries)
                   " " t)))
-           (other-anniversaries 
+           (other-anniversaries
             (remove-if (lambda (x) (string-match birthday-regexp x))
                        raw-anniversaries :count 1))
            (creation-date (bbdb-get-field record 'creation-date))
@@ -768,7 +786,7 @@ the *BBDB* buffer."
          "NOTE" (bbdb-vcard-escape-strings note)))
       (bbdb-vcard-insert-vcard-element "BDAY" birthday)
       (bbdb-vcard-insert-vcard-element  ; non-birthday anniversaries
-       "X-BBDB-ANNIVERSARY" (bbdb-join other-anniversaries "\\n"))                                                      
+       "X-BBDB-ANNIVERSARY" (bbdb-join other-anniversaries "\\n"))
       (bbdb-vcard-insert-vcard-element "REV" creation-date)
       (bbdb-vcard-insert-vcard-element
        "CATEGORIES"
@@ -800,9 +818,9 @@ Return nil and leave buffer unchanged if conversion fails."
     (write-region nil nil vcard-file)
     (erase-buffer)
     (setq success (condition-case nil
-        (apply 'call-process command nil t nil arguments)
-      (error (progn (erase-buffer)
-                    (insert buffer-content)))))
+                      (apply 'call-process command nil t nil arguments)
+                    (error (progn (erase-buffer)
+                                  (insert buffer-content)))))
     (delete-file vcard-file)
     success))
 
