@@ -760,7 +760,7 @@ UnitF"
 
 (bbdb-vcard-import-test
  "
-*** Skip types from bbdb-vcard-skip
+*** Skip types from bbdb-vcard-skip-on-import
 ------------------------------------------------------------
 BEGIN:VCARD
 VERSION:3.0
@@ -1396,7 +1396,6 @@ END:vCard
 
 
 
-
 (bbdb-vcard-import-test
  "
 ** vCard version 2.1 (coverted by convcard)
@@ -1417,8 +1416,6 @@ END:VCARD
   nil
   ((creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
  "Fred Friday")
-
-
 
 
 (bbdb-vcard-import-test
@@ -1446,8 +1443,6 @@ END:VCARD
   ((photo\;type=image/gif . "<<JOHNSMITH.part3.960129T083020.xyzMail@host3.com>")
    (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
   "Smith")
-
-
 
 
 (bbdb-vcard-import-test
@@ -1496,7 +1491,6 @@ United States of America")
    (www . "<WWLINK TYPE=\"GENERIC\"VALUE=\"http://www.doeweb.com\">http://www.doeweb.com</WWLINK>")
    (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
  "John Doe")
-
 
 
 

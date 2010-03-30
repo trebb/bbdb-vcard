@@ -3,7 +3,8 @@ bbdb-vcard.el
 
 bbdb-vcard.el imports and exports vCards (version 3.0) as defined in
 RFC 2425 and RFC 2426 to/from The Insidious Big Brother Database
-(BBDB).
+(BBDB).  Import of version 2.1 vCards is possible as well if an
+external conversion tool (e.g. convcard) is available.
 
 On a file, a buffer or a region containing one or more vCards, use
 `bbdb-vcard-import-file', `bbdb-vcard-import-buffer', or
