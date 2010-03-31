@@ -71,8 +71,8 @@
 ;; Installation
 ;; ============
 ;;
-;; Put this file into your `load-path' and add the following line to
-;; your Emacs initialization file:
+;; Put this file and file vcard.el into your `load-path' and add the
+;; following line to your Emacs initialization file:
 ;;
 ;;   (require 'bbdb-vcard)
 ;;
@@ -256,8 +256,9 @@
 
 ;;; Code:
 
-(require 'bbdb)
 (require 'cl)
+(require 'bbdb)
+(require 'vcard)
 
 (defconst bbdb-vcard-version "0.1"
   "Version of the vCard importer/exporter.
@@ -271,28 +272,28 @@ The major part increases on user-visible changes.")
   "Customizations for vCards"
   :group 'bbdb)
 
-(defcustom bbdb-vcard-convert-to-3.0-function
-  'bbdb-vcard-convert-to-3.0
-  "Function of one argument that converts a vCard to v3.0.
-The argument is assumed to be a vCard of version 2.1.  If \"External
-command\" is chosen, refer to `bbdb-vcard-version-converter' for
-further customization."
-  :group 'bbdb-vcard
-  :type '(choice function
-                 (const :tag "External command"
-                        bbdb-vcard-convert-to-3.0)))
-
-(defcustom bbdb-vcard-version-converter '("convcard" t "--from-vcard2.1")
-  ;; The current version of convcard takes its arguments in the wrong
-  ;; order which is reflected here.
-  "External vCard version converter command and its arguments.
-This is used only if `bbdb-vcard-convert-to-3.0-function' is set to
-\"external command\" (`bbdb-vcard-convert-to-3.0').  Specify arguments
-separately.  Choose \"input-file-name\" where the name of a file
-containing the vCard is to be passed."
-  :group 'bbdb-vcard
-  :type '(repeat (choice string
-                         (const :tag "input-file-name" t))))
+;;(defcustom bbdb-vcard-convert-to-3.0-function
+;;  'bbdb-vcard-convert-to-3.0
+;;  "Function of one argument that converts a vCard to v3.0.
+;;The argument is assumed to be a vCard of version 2.1.  If \"External
+;;command\" is chosen, refer to `bbdb-vcard-version-converter' for
+;;further customization."
+;;  :group 'bbdb-vcard
+;;  :type '(choice function
+;;                 (const :tag "External command"
+;;                        bbdb-vcard-convert-to-3.0-external)))
+;;
+;;(defcustom bbdb-vcard-version-converter '("convcard" t "--from-vcard2.1")
+;;  ;; The current version of convcard takes its arguments in the wrong
+;;  ;; order which is reflected here.
+;;  "External vCard version converter command and its arguments.
+;;This is used only if `bbdb-vcard-convert-to-3.0-function' is set to
+;;\"external command\" (`bbdb-vcard-convert-to-3.0-external').  Specify arguments
+;;separately.  Choose \"input-file-name\" where the name of a file
+;;containing the vCard is to be passed."
+;;  :group 'bbdb-vcard
+;;  :type '(repeat (choice string
+;;                         (const :tag "input-file-name" t))))
 
 (defcustom bbdb-vcard-skip-on-import "X-GSM-"
   "Regexp describing vCard elements that are to be discarded during import.
@@ -505,7 +506,7 @@ When VCARDS is nil, return nil.  Otherwise, return t."
             (funcall vcard-processor vcard)
           (funcall vcard-processor      ; probably a v2.1 vcard
                    (bbdb-vcard-unfold-lines
-                    (funcall 'bbdb-vcard-convert-to-3.0 vcard))))))))
+                    (bbdb-vcard-convert-to-3.0 vcard))))))))
 
 (defun bbdb-vcard-version-of (vcard)
   "Return version number string of VCARD."
@@ -810,22 +811,49 @@ Extend existing BBDB records where possible."
 
 
 
+;;(defun bbdb-vcard-convert-to-3.0-external (vcard)
+;;  "Convert VCARD from v2.1 to v3.0.
+;;Use the external command defined in `bbdb-vcard-version-converter'.
+;;Return a version 3.0 vCard as a string.  Return VCARD unchanged if
+;;conversion fails."
+;;  (let* ((vcard-file (make-temp-file "bbdb-vcard-"))
+;;         (command (car bbdb-vcard-version-converter))
+;;         (arguments
+;;          (substitute vcard-file t (cdr bbdb-vcard-version-converter))))
+;;    (with-temp-buffer (insert vcard)
+;;                      (write-region nil nil vcard-file))
+;;    (prog1 (condition-case nil
+;;               (with-temp-buffer
+;;                 (apply 'call-process command nil t nil arguments)
+;;                 (buffer-string))
+;;             (error vcard))
+;;      (delete-file vcard-file))))
+
 (defun bbdb-vcard-convert-to-3.0 (vcard)
   "Convert VCARD from v2.1 to v3.0.
-Return a version 3.0 vCard as a string.  Return VCARD unchanged if
-conversion fails."
-  (let* ((vcard-file (make-temp-file "bbdb-vcard-"))
-         (command (car bbdb-vcard-version-converter))
-         (arguments
-          (substitute vcard-file t (cdr bbdb-vcard-version-converter))))
-    (with-temp-buffer (insert vcard)
-                      (write-region nil nil vcard-file))
-    (prog1 (condition-case nil
-               (with-temp-buffer
-                 (apply 'call-process command nil t nil arguments)
-                 (buffer-string))
-             (error vcard))
-      (delete-file vcard-file))))
+Return a version 3.0 vCard as a string.  Don't bother about the vCard
+v3.0 mandatory elements N and FN."
+  (with-temp-buffer
+    (bbdb-vcard-insert-vcard-element "BEGIN" "VCARD")
+    (bbdb-vcard-insert-vcard-element "VERSION" "3.0")
+    (dolist (element (remove*
+                      "VERSION" (vcard-parse-string vcard)
+                      :key (lambda (x) (upcase (caar x))) :test 'string=))
+      (bbdb-vcard-insert-vcard-element 
+       (concat (caar element)
+               (mapconcat 'bbdb-vcard-parameter-pair (cdar element) ""))
+       (bbdb-join (bbdb-vcard-escape-strings (cdr element)) ";")))
+    (bbdb-vcard-insert-vcard-element "END" "VCARD")
+    (bbdb-vcard-insert-vcard-element nil)
+    (replace-regexp-in-string "\n" "\r\n" (buffer-string))))
+
+(defun bbdb-vcard-parameter-pair (input)
+  "Return \"parameter=value\" made from INPUT.
+INPUT is its representation in vcard.el.  Return empty string if INPUT
+is nil."
+  (cond ((consp input) (concat ";" (car input) "=" (cdr input)))
+        ((stringp input) (concat ";TYPE=" input))
+        ((null input) "")))
 
 
 
@@ -927,9 +955,10 @@ ESCAPED-STRINGS may be a string or a sequence of strings."
   "Escape `;', `,', `\\', and newlines in UNESCAPED-STRINGS.
 UNESCAPED-STRINGS may be a string or a sequence of strings."
   (flet ((escape (x) (replace-regexp-in-string
-                      "\n" "\\\\n" (replace-regexp-in-string
-                                    "\\(\\)[,;\\]" "\\\\" (or x "")
-                                    nil nil 1))))
+                      "\r" "" (replace-regexp-in-string ; from 2.1 conversion
+                               "\n" "\\\\n" (replace-regexp-in-string
+                                             "\\(\\)[,;\\]" "\\\\" (or x "")
+                                             nil nil 1)))))
     (bbdb-vcard-process-strings 'escape unescaped-strings)))
 
 (defun bbdb-vcard-process-strings (string-processor strings)
