@@ -162,6 +162,75 @@ Subunit1"
 
 (bbdb-vcard-import-test
  "
+** Bad vCard: semi-colons where they don't belong
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+FN:First2; Last2
+N:Last2;First2
+NICKNAME:Firsty2,or; something
+PHOTO:The Alphabet:
+ abcdefghij;klmnop
+ qrstuvwsyz
+BDAY:1999-12-05
+ADR:Box111;Room 111;First Street,First Corner;Cityone;First State;11111;Country
+LABEL:Label 1;Label 2
+TEL:+11111111;+222222
+EMAIL:first1@provider1
+MAILER:Wanderlust1;Wanderlust2
+TZ:+01:00;Here
+GEO:37.386013;-122.082932
+TITLE:Director\\, Research; and Development
+ROLE:Programmer
+LOGO:encoded logo #1
+AGENT:CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com
+ORG:Company1;Unit1;Subunit1
+CATEGORIES:category1
+NOTE:This isn't a decent vCard. It shouldn't render our bbdb unusable. We don't expect it to re-import unchanged, though.
+REV:1995-10-31T22:27:10Z
+SORT-STRING:aaa000
+SOUND:Audible1
+UID:111-111-111-111
+URL:http://first1.host1.org; My home
+CLASS:CONFIDENTIAL
+KEY:The Key No 1
+X-foo:extended type 1
+END:VCARD
+"
+ ["First2" "Last2"
+  ("First2; Last2" "Firsty2" "or; something")
+  "Company1
+Unit1
+Subunit1"
+  (["Office" "+11111111;+222222"])
+  (["Office" ("Box111" "Room 111" "First Street" "First Corner") "Cityone" "First State" "11111" "Country"])
+  ("first1@provider1")
+  ((x-foo . "extended type 1")
+   (key . "The Key No 1")
+   (class . "CONFIDENTIAL")
+   (uid . "111-111-111-111")
+   (sound . "Audible1")
+   (sort-string . "aaa000")
+   (agent . "CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com")
+   (logo . "encoded logo #1")
+   (role . "Programmer")
+   (title . "Director, Research; and Development")
+   (geo . "37.386013;-122.082932")
+   (tz . "+01:00;Here")
+   (mailer . "Wanderlust1;Wanderlust2")
+   (label . "Label 1;Label 2")
+   (photo . "The Alphabet:abcdefghij;klmnopqrstuvwsyz")
+   (mail-alias . "category1")
+   (anniversary . "1999-12-05 birthday")
+   (notes . "This isn't a decent vCard. It shouldn't render our bbdb unusable. We don't expect it to re-import unchanged, though.")
+   (www . "http://first1.host1.org; My home")
+   (creation-date . "1995-10-31") (timestamp . "2010-03-04"))]
+  "First2 Last2"
+ nil nil t)
+
+
+(bbdb-vcard-import-test
+ "
 ** The following is made of examples from rfc2426.
 ------------------------------------------------------------
 BEGIN:VCARD
@@ -1514,6 +1583,60 @@ United States of America")
    (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
  "John Doe")
 
+
+
+(bbdb-vcard-import-test
+ "
+** A v2.1 vcard with another vcard inside; we check the outer one
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:2.1
+N:Outerlast2A; Outerfirst2A
+FN:Outerfirst2A Outerlast2A
+AGENT:BEGIN:VCARD\\nVERSION:2.1\\nN:Innerlast2A\\;Innerfirst2A\\nFN:Innerfirst2A Innerlast2A\\nTEL:+1-919-555-
+ 1234\\nEMAIL\\;TYPE=INTERNET:InnerA@hostA.com\\nEND:VCARD\\n
+NOTE:A note
+END:VCARD
+"
+ [" Outerfirst2A" "Outerlast2A"
+  ("Outerfirst2A Outerlast2A")
+  nil
+  nil
+  nil
+  nil
+  ((agent . "BEGIN:VCARD\\
+VERSION:2.1\\
+N:Innerlast2A\\;Innerfirst2A\\
+FN:Innerfirst2A Innerlast2A\\
+TEL:+1-919-555-1234\\
+EMAIL\\;TYPE=INTERNET:InnerA@hostA.com\\
+END:VCARD\\
+")
+   (notes . "A note")
+   (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
+ "Outerfirst2A Outerlast2A")
+
+
+(bbdb-vcard-import-test
+ "
+** A v2.1 vcard with another vcard inside; we check the inner one
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:2.1
+N:Outerlast2A Outerfirst2A
+AGENT:BEGIN:VCARD\\nVERSION:2.1\\nN:Innerlast2A\\;Innerfirst2A\\nFN:Innerfirst2A Innerlast2A\\nTEL:+1-919-555-
+ 1234\\nEMAIL\\;TYPE=INTERNET:InnerA@hostA.com\\nEND:VCARD\\n
+NOTE:A note
+END:VCARD
+"
+ ["Innerfirst2A" "Innerlast2A"
+  nil
+  nil
+  (["Office" "+1 919 555 1234"])
+  nil
+  ("InnerA@hostA.com")
+  ((creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
+ "Innerfirst2A Innerlast2A")
 
 
 

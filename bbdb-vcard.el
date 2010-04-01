@@ -5,7 +5,7 @@
 ;; Author: Bert Burgemeister <trebbu@googlemail.com>
 ;; Keywords: data calendar mail news
 ;; URL: http://github.com/trebb/bbdb-vcard
-;; Version: 0.1
+;; Version: 0.2
 
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
@@ -46,8 +46,8 @@
 ;; `bbdb-vcard-import-file', `bbdb-vcard-import-buffer', or
 ;; `bbdb-vcard-import-region' respectively to import them into BBDB.
 ;;
-;; Preferred input format is vCard version 3.0.  For version 2.1, an
-;; external conversion tool is relied upon.
+;; Preferred input format is vCard version 3.0.  Version 2.1 vCards
+;; are converted to version 3.0 on import.
 ;;
 ;;
 ;; vCard Export
@@ -60,7 +60,7 @@
 ;; To put one or all vCard(s) into the kill ring, press V or * V
 ;; respectively.
 ;;
-;; Exported vcards are always version 3.0.  They can be re-imported
+;; Exported vCards are always version 3.0.  They can be re-imported
 ;; without data loss with one exception: North American phone numbers
 ;; lose their structure and are stored as flat strings.
 ;;
@@ -76,20 +76,15 @@
 ;;
 ;;   (require 'bbdb-vcard)
 ;;
-;; To automatically convert vCards version 2.1 into version 3.0 on
-;; import, an external conversion tool (either a Lisp function or a
-;; shell command) can be deployed the choice of which is customizable.
-;; By default convcard (Package multisync-tools on Debian) is used.
-;; If no external conversion tool can be found, v2.1 vCards are being
-;; fed into the v3.0 parser which works reasonably in many (simple)
-;; cases.
-;;
 ;;
 ;; Implementation
 ;; ==============
 ;;
 ;; vCard Import
 ;; ------------
+;;
+;; For conversion of v2.1 vCards into v3.0 on import, Noah Friedman's
+;; vcard.el is needed.
 ;;
 ;; An existing BBDB record is extended by new information from a vCard
 ;; 
@@ -260,7 +255,7 @@
 (require 'bbdb)
 (require 'vcard)
 
-(defconst bbdb-vcard-version "0.1"
+(defconst bbdb-vcard-version "0.2"
   "Version of the vCard importer/exporter.
 The major part increases on user-visible changes.")
 
@@ -271,29 +266,6 @@ The major part increases on user-visible changes.")
 (defgroup bbdb-vcard nil
   "Customizations for vCards"
   :group 'bbdb)
-
-;;(defcustom bbdb-vcard-convert-to-3.0-function
-;;  'bbdb-vcard-convert-to-3.0
-;;  "Function of one argument that converts a vCard to v3.0.
-;;The argument is assumed to be a vCard of version 2.1.  If \"External
-;;command\" is chosen, refer to `bbdb-vcard-version-converter' for
-;;further customization."
-;;  :group 'bbdb-vcard
-;;  :type '(choice function
-;;                 (const :tag "External command"
-;;                        bbdb-vcard-convert-to-3.0-external)))
-;;
-;;(defcustom bbdb-vcard-version-converter '("convcard" t "--from-vcard2.1")
-;;  ;; The current version of convcard takes its arguments in the wrong
-;;  ;; order which is reflected here.
-;;  "External vCard version converter command and its arguments.
-;;This is used only if `bbdb-vcard-convert-to-3.0-function' is set to
-;;\"external command\" (`bbdb-vcard-convert-to-3.0-external').  Specify arguments
-;;separately.  Choose \"input-file-name\" where the name of a file
-;;containing the vCard is to be passed."
-;;  :group 'bbdb-vcard
-;;  :type '(repeat (choice string
-;;                         (const :tag "input-file-name" t))))
 
 (defcustom bbdb-vcard-skip-on-import "X-GSM-"
   "Regexp describing vCard elements that are to be discarded during import.
@@ -519,7 +491,7 @@ When VCARDS is nil, return nil.  Otherwise, return t."
 Extend existing BBDB records where possible."
   (with-temp-buffer
     (insert vcard)
-    (let* ((raw-name (car (bbdb-vcard-values-of-type "N" "value" t)))
+    (let* ((raw-name (car (bbdb-vcard-values-of-type "N" "value" t t)))
            ;; Name suitable for storing in BBDB:
            (name (bbdb-vcard-unescape-strings
                   (bbdb-vcard-unvcardize-name raw-name)))
@@ -536,7 +508,7 @@ Extend existing BBDB records where possible."
              (lambda (n)
                (bbdb-join (bbdb-vcard-unvcardize-name (cdr (assoc "value" n)))
                           " "))
-             (bbdb-vcard-elements-of-type "N")))
+             (bbdb-vcard-elements-of-type "N" nil t)))
            (vcard-formatted-names (bbdb-vcard-unescape-strings
                                    (bbdb-vcard-values-of-type "FN" "value")))
            (vcard-nicknames
@@ -548,7 +520,7 @@ Extend existing BBDB records where possible."
            (vcard-org
             (bbdb-vcard-unescape-strings
              (bbdb-vcard-unvcardize-org
-              (car (bbdb-vcard-values-of-type "ORG" "value" t)))))
+              (car (bbdb-vcard-values-of-type "ORG" "value" t t)))))
            ;; Company to search for in BBDB now:
            (org-to-search-for vcard-org) ; sorry
            ;; Email suitable for storing in BBDB:
@@ -574,7 +546,7 @@ Extend existing BBDB records where possible."
            ;; Addresses
            (vcard-adrs
             (mapcar 'bbdb-vcard-unvcardize-adr
-                    (bbdb-vcard-elements-of-type "ADR")))
+                    (bbdb-vcard-elements-of-type "ADR" nil t)))
            (vcard-url (car (bbdb-vcard-values-of-type "URL" "value" t)))
            (vcard-notes (bbdb-vcard-values-of-type "NOTE" "value"))
            (raw-bday (car (bbdb-vcard-values-of-type "BDAY" "value" t)))
@@ -696,8 +668,9 @@ Extend existing BBDB records where possible."
         (when (string-match "^\\([[:alnum:]-]*\\.\\)?AGENT"
                             (symbol-name (car other-vcard-type)))
           ;; Notice other vCards inside the current one.
-          (bbdb-vcard-iterate-vcards 'bbdb-vcard-import-vcard
-                                     (cdr other-vcard-type)))
+          (bbdb-vcard-iterate-vcards
+           'bbdb-vcard-import-vcard    ; needed for inner v2.1 vCards:
+           (replace-regexp-in-string "\\\\" "" (cdr other-vcard-type))))
         (unless (or (and bbdb-vcard-skip-on-import
                          (string-match bbdb-vcard-skip-on-import
                                        (symbol-name (car other-vcard-type))))
@@ -811,24 +784,6 @@ Extend existing BBDB records where possible."
 
 
 
-;;(defun bbdb-vcard-convert-to-3.0-external (vcard)
-;;  "Convert VCARD from v2.1 to v3.0.
-;;Use the external command defined in `bbdb-vcard-version-converter'.
-;;Return a version 3.0 vCard as a string.  Return VCARD unchanged if
-;;conversion fails."
-;;  (let* ((vcard-file (make-temp-file "bbdb-vcard-"))
-;;         (command (car bbdb-vcard-version-converter))
-;;         (arguments
-;;          (substitute vcard-file t (cdr bbdb-vcard-version-converter))))
-;;    (with-temp-buffer (insert vcard)
-;;                      (write-region nil nil vcard-file))
-;;    (prog1 (condition-case nil
-;;               (with-temp-buffer
-;;                 (apply 'call-process command nil t nil arguments)
-;;                 (buffer-string))
-;;             (error vcard))
-;;      (delete-file vcard-file))))
-
 (defun bbdb-vcard-convert-to-3.0 (vcard)
   "Convert VCARD from v2.1 to v3.0.
 Return a version 3.0 vCard as a string.  Don't bother about the vCard
@@ -839,7 +794,7 @@ v3.0 mandatory elements N and FN."
     (dolist (element (remove*
                       "VERSION" (vcard-parse-string vcard)
                       :key (lambda (x) (upcase (caar x))) :test 'string=))
-      (bbdb-vcard-insert-vcard-element 
+      (bbdb-vcard-insert-vcard-element
        (concat (caar element)
                (mapconcat 'bbdb-vcard-parameter-pair (cdar element) ""))
        (bbdb-join (bbdb-vcard-escape-strings (cdr element)) ";")))
@@ -858,21 +813,27 @@ is nil."
 
 
 (defun bbdb-vcard-values-of-type
-  (type parameter &optional one-is-enough-p)
+  (type parameter &optional one-is-enough-p split-value-at-semi-colon-p)
   "Return in a list the values of PARAMETER of vCard element of TYPE.
 The VCard element is read and deleted from current buffer which is
-supposed to contain a single vCard.  If ONE-IS-ENOUGH-P is t, read and
-delete only the first element of TYPE."
+supposed to contain a single vCard.  If ONE-IS-ENOUGH-P is non-nil,
+read and delete only the first element of TYPE.  If PARAMETER is
+\"value\" and SPLIT-VALUE-AT-SEMI-COLON-P is non-nil, split the value
+at semi-colons into a list."
   (mapcar (lambda (x) (cdr (assoc parameter x)))
-          (bbdb-vcard-elements-of-type type one-is-enough-p)))
+          (bbdb-vcard-elements-of-type
+           type one-is-enough-p split-value-at-semi-colon-p)))
 
-(defun bbdb-vcard-elements-of-type (type &optional one-is-enough-p)
+(defun bbdb-vcard-elements-of-type
+  (type &optional one-is-enough-p split-value-at-semi-colon-p)
   "From current buffer read and delete the vCard elements of TYPE.
 The current buffer is supposed to contain a single vCard.  If
-ONE-IS-ENOUGH-P is t, read and delete only the first element of TYPE.
-Return a list of alists, one per element.  Each alist has a cell with
-key \"value\" containing the element's value, and may have other
-elements of the form \(parameter-name . parameter-value)."
+ONE-IS-ENOUGH-P is non-nil, read and delete only the first element of
+TYPE.  Return a list of alists, one per element.  Each alist has a
+cell with key \"value\" containing the element's value, and may have
+other elements of the form \(parameter-name . parameter-value).  If
+SPLIT-VALUE-AT-SEMI-COLON-P is non-nil, split the value at key
+\"value\" at semi-colons into a list."
   (goto-char (point-min))
   (let (values parameters read-enough)
     (while
@@ -884,8 +845,11 @@ elements of the form \(parameter-name . parameter-value)."
           nil t))
       (goto-char (match-end 2))
       (setq parameters nil)
-      (push (cons "value" (bbdb-vcard-split-structured-text
-                           (match-string 4) ";")) parameters)
+      (push (cons "value" (if split-value-at-semi-colon-p
+                              (bbdb-vcard-split-structured-text
+                               (match-string 4) ";")
+                            (match-string 4)))
+            parameters)
       (while (re-search-forward "\\([^;:=]+\\)=\\([^;:]+\\)"
                                 (line-end-position) t)
         (let* ((parameter-key (downcase (match-string 1)))
