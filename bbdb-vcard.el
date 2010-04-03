@@ -476,7 +476,7 @@ When VCARDS is nil, return nil.  Otherwise, return t."
       (let ((vcard (match-string 0)))
         (if (string= "3.0" (bbdb-vcard-version-of vcard))
             (funcall vcard-processor vcard)
-          (funcall vcard-processor      ; probably a v2.1 vcard
+          (funcall vcard-processor      ; probably a v2.1 vCard
                    (bbdb-vcard-unfold-lines
                     (bbdb-vcard-convert-to-3.0 vcard))))))))
 
@@ -788,19 +788,21 @@ Extend existing BBDB records where possible."
   "Convert VCARD from v2.1 to v3.0.
 Return a version 3.0 vCard as a string.  Don't bother about the vCard
 v3.0 mandatory elements N and FN."
-  (with-temp-buffer
-    (bbdb-vcard-insert-vcard-element "BEGIN" "VCARD")
-    (bbdb-vcard-insert-vcard-element "VERSION" "3.0")
-    (dolist (element (remove*
-                      "VERSION" (vcard-parse-string vcard)
-                      :key (lambda (x) (upcase (caar x))) :test 'string=))
-      (bbdb-vcard-insert-vcard-element
-       (concat (caar element)
-               (mapconcat 'bbdb-vcard-parameter-pair (cdar element) ""))
-       (bbdb-join (bbdb-vcard-escape-strings (cdr element)) ";")))
-    (bbdb-vcard-insert-vcard-element "END" "VCARD")
-    (bbdb-vcard-insert-vcard-element nil)
-    (buffer-string)))
+  ;; Prevent customization of vcard.el's from being changed behind our back:
+  (let ((vcard-standard-filters '(vcard-filter-html)))
+    (with-temp-buffer
+      (bbdb-vcard-insert-vcard-element "BEGIN" "VCARD")
+      (bbdb-vcard-insert-vcard-element "VERSION" "3.0")
+      (dolist (element (remove*
+                        "VERSION" (vcard-parse-string vcard)
+                        :key (lambda (x) (upcase (caar x))) :test 'string=))
+        (bbdb-vcard-insert-vcard-element
+         (concat (caar element)
+                 (mapconcat 'bbdb-vcard-parameter-pair (cdar element) ""))
+         (bbdb-join (bbdb-vcard-escape-strings (cdr element)) ";")))
+      (bbdb-vcard-insert-vcard-element "END" "VCARD")
+      (bbdb-vcard-insert-vcard-element nil)
+      (buffer-string))))
 
 (defun bbdb-vcard-parameter-pair (input)
   "Return \"parameter=value\" made from INPUT.
@@ -918,7 +920,7 @@ ESCAPED-STRINGS may be a string or a sequence of strings."
 (defun bbdb-vcard-escape-strings (unescaped-strings )
   "Escape `;', `,', `\\', and newlines in UNESCAPED-STRINGS.
 UNESCAPED-STRINGS may be a string or a sequence of strings."
-  (flet ((escape (x) (replace-regexp-in-string ; from 2.1 conversion
+  (flet ((escape (x) (replace-regexp-in-string ; from 2.1 conversion:
                       "\r" "" (replace-regexp-in-string
                                "\n" "\\\\n" (replace-regexp-in-string
                                              "\\(\\)[,;\\]" "\\\\" (or x "")

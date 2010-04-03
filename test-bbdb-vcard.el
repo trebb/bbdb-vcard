@@ -1479,8 +1479,8 @@ END:VCARD
  ["Fred" "Friday"
   nil
   nil
-  (["Office" "+1 213 555 1234"]
-   ["Office" "+1 213 555 5678"])
+  (["Office" "+1-213-555-1234"]
+   ["Office" "+1-213-555-5678"])
   nil
   nil
   ((creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
@@ -1502,8 +1502,8 @@ end:VCARD
  ["Tom" "Thursday"
   nil
   nil
-  (["Office" "+1 213 555 1234"]
-   ["Office" "+1 213 555 5678"])
+  (["Office" "+1-213-555-1234"]
+   ["Office" "+1-213-555-5678"])
   nil
   nil
   ((creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
@@ -1526,9 +1526,9 @@ END:VCARD
  ["Mr. John M." "Smith Esq."
   nil
   nil
-  (["Office" "+1 (919) 555 1234"]
-   ["Mobile" "+1 (919) 554 6758"]
-   ["Office" "+1 (919) 555 9876"])
+  (["Office" "+1 (919) 555-1234"]
+   ["Mobile" "+1 (919) 554-6758"]
+   ["Office" "+1 (919) 555-9876"])
   (["Office" ("Suite 101" "1 Central St." "AnyTown") "NC" "27654" "" ""])
   nil
   ((creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
@@ -1567,10 +1567,10 @@ END:VCARD
   nil
   "Doe Company, The
 "
-  (["Office" "+1 987 123 4567"]
-   ["Home" "+1 987 765 4321"]
-   ["Mobile" "+1 987 135 8642"]
-   ["Office" "+1 987 246 1357"])
+  (["Office" "(987) 123-4567"]
+   ["Home" "(987) 765-4321"]
+   ["Mobile" "(987) 135-8642"]
+   ["Office" "(987) 246-1357"])
   (["Office" ("1234 North Street") "Anytown" "TX 751234" "" "United States of America"])
   ("jdoe@nowhere.com")
   ((label\;type=work . "1234 North Street
@@ -1632,7 +1632,7 @@ END:VCARD
  ["Innerfirst2A" "Innerlast2A"
   nil
   nil
-  (["Office" "+1 919 555 1234"])
+  (["Office" "+1-919-555-1234"])
   nil
   ("InnerA@hostA.com")
   ((creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
