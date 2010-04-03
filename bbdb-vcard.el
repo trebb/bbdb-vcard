@@ -464,14 +464,14 @@ When VCARDS is nil, return nil.  Otherwise, return t."
   (with-temp-buffer
     (insert vcards)
     (goto-char (point-min))
-    ;; Change CR into CRLF if necessary, dealing with inconsistent line
+    ;; Change CRLF into CR if necessary, dealing with inconsistent line
     ;; endings.
-    (while (re-search-forward "[^\r]\\(\n\\)" nil t)
-      (replace-match "\r\n" nil nil nil 1))
+    (while (re-search-forward "\r\n" nil t)
+      (replace-match "\n" nil nil nil 1))
     (setf (buffer-string) (bbdb-vcard-unfold-lines (buffer-string)))
     (goto-char (point-min))
     (while (re-search-forward
-            "^\\([[:alnum:]-]*\\.\\)?*BEGIN:VCARD[\r\n[:print:][:cntrl:]]*?\\(^\\([[:alnum:]-]*\\.\\)?END:VCARD\\)"
+            "^\\([[:alnum:]-]*\\.\\)?*BEGIN:VCARD[\n[:print:][:cntrl:]]*?\\(^\\([[:alnum:]-]*\\.\\)?END:VCARD\\)"
             nil t)
       (let ((vcard (match-string 0)))
         (if (string= "3.0" (bbdb-vcard-version-of vcard))
@@ -800,7 +800,7 @@ v3.0 mandatory elements N and FN."
        (bbdb-join (bbdb-vcard-escape-strings (cdr element)) ";")))
     (bbdb-vcard-insert-vcard-element "END" "VCARD")
     (bbdb-vcard-insert-vcard-element nil)
-    (replace-regexp-in-string "\n" "\r\n" (buffer-string))))
+    (buffer-string)))
 
 (defun bbdb-vcard-parameter-pair (input)
   "Return \"parameter=value\" made from INPUT.
@@ -841,7 +841,7 @@ SPLIT-VALUE-AT-SEMI-COLON-P is non-nil, split the value at key
          (not read-enough)
          (re-search-forward
           (concat
-           "^\\([[:alnum:]-]*\\.\\)?\\(" type "\\)\\(;.*\\)?:\\(.*\\)\r$")
+           "^\\([[:alnum:]-]*\\.\\)?\\(" type "\\)\\(;.*\\)?:\\(.*\\)$")
           nil t))
       (goto-char (match-end 2))
       (setq parameters nil)
@@ -871,7 +871,7 @@ SPLIT-VALUE-AT-SEMI-COLON-P is non-nil, split the value at key
   "From current buffer read and delete the topmost vCard element.
 Buffer is supposed to contain a single vCard.  Return (TYPE . VALUE)."
   (goto-char (point-min))
-  (when (re-search-forward "^\\([[:graph:]]*?\\):\\(.*\\)\r$" nil t)
+  (when (re-search-forward "^\\([[:graph:]]*?\\):\\(.*\\)$" nil t)
     (let ((type (match-string 1))
           (value (match-string 2)))
       (delete-region (match-beginning 0) (match-end 0))
@@ -894,7 +894,7 @@ newline if TYPE is nil."
 
 (defun bbdb-vcard-unfold-lines (vcards)
   "Return folded vCard lines from VCARDS unfolded."
-  (replace-regexp-in-string  "\r\n\\( \\|\t\\)" "" vcards))
+  (replace-regexp-in-string  "\n\\( \\|\t\\)" "" vcards))
 
 (defun bbdb-vcard-fold-line (long-line)
   "Insert after every 75th position in LONG-LINE a newline and a space."
@@ -918,8 +918,8 @@ ESCAPED-STRINGS may be a string or a sequence of strings."
 (defun bbdb-vcard-escape-strings (unescaped-strings )
   "Escape `;', `,', `\\', and newlines in UNESCAPED-STRINGS.
 UNESCAPED-STRINGS may be a string or a sequence of strings."
-  (flet ((escape (x) (replace-regexp-in-string
-                      "\r" "" (replace-regexp-in-string ; from 2.1 conversion
+  (flet ((escape (x) (replace-regexp-in-string ; from 2.1 conversion
+                      "\r" "" (replace-regexp-in-string
                                "\n" "\\\\n" (replace-regexp-in-string
                                              "\\(\\)[,;\\]" "\\\\" (or x "")
                                              nil nil 1)))))
