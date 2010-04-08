@@ -254,6 +254,7 @@
 (require 'cl)
 (require 'bbdb)
 (require 'vcard)
+(require 'bbdb-com)
 
 (defconst bbdb-vcard-version "0.2"
   "Version of the vCard importer/exporter.
