@@ -550,7 +550,8 @@ Extend existing BBDB records where possible."
                     (bbdb-vcard-elements-of-type "ADR" nil t)))
            (vcard-url (car (bbdb-vcard-values-of-type "URL" "value" t)))
            (vcard-notes (bbdb-vcard-values-of-type "NOTE" "value"))
-           (raw-bday (car (bbdb-vcard-values-of-type "BDAY" "value" t)))
+           (raw-bday (bbdb-vcard-unvcardize-date-time
+                      (car (bbdb-vcard-values-of-type "BDAY" "value" t))))
            ;; Birthday suitable for storing in BBDB (usable by org-mode):
            (vcard-bday (when raw-bday (concat raw-bday " birthday")))
            ;; Birthday to search for in BBDB now:
@@ -999,6 +1000,24 @@ COUNTRY)."
             (or (elt non-streets 1) "")    ; State
             (or (elt non-streets 2) "")    ; Zip
             (or (elt non-streets 3) "")))) ; Country
+
+(defun bbdb-vcard-unvcardize-date-time (date-time)
+  "If necessary, make DATE-TIME usable for storage in BBDB.
+Convert yyyymmdd or yyyymmddThhmmss into yyyy-mm-dd or
+yyyy-mm-ddThh:mm:ss respectively.  Discard fractions of a second and
+time zone information.  Return anything else unchanged."
+  (if (and (stringp date-time)
+           (string-match
+            "\\([0-9]\\{4\\}\\)-?\\([0-2][0-9]\\)-?\\([0-3][0-9]\\)\\(?:t\\([0-5][0-9]\\):?\\([0-5][0-9]\\):?\\([0-5][0-9]\\)\\)?"
+            date-time))
+      (concat
+       (match-string 1 date-time) "-"
+       (match-string 2 date-time) "-" (match-string 3 date-time)
+       (when (match-string 6 date-time)   ; seconds part of time
+         (concat
+          "T" (match-string 4 date-time) ":"
+          (match-string 5 date-time) ":" (match-string 6 date-time))))
+    date-time))
 
 (defun bbdb-vcard-vcardize-address-element (address-element)
   "Replace escaped newlines in ADDRESS-ELEMENT by commas."

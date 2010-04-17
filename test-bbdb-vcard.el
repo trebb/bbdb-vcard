@@ -1246,10 +1246,75 @@ END:VCARD
  "CompanyK1")
 
 
+(bbdb-vcard-import-test
+ "
+*** Known person due to matching BDAY (albeit in another date format). Different ORG, again.
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyK;FirstK
+ORG:CompanyK3
+BDAY:19270327
+END:VCARD
+"
+ ["FirstK" "FamilyK"
+  nil
+  "CompanyK3"
+  nil
+  nil
+  nil
+  ((anniversary . "1927-03-27 birthday")
+   (creation-date . "2010-03-04") (timestamp . "2010-03-04")) ]
+ "FirstK FamilyK"
+ "CompanyK3")
+
+
 
 (bbdb-vcard-import-test
  "
 *** Anniversaries
+** Birthdays include time.
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyP;FirstP
+BDAY:1927-03-27T23:44:54Z
+END:VCARD
+"
+ ["FirstP" "FamilyP"
+  nil
+  nil
+  nil
+  nil
+  nil
+  ((anniversary . "1927-03-27T23:44:54 birthday")
+   (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
+ "FirstP FamilyP")
+
+
+(bbdb-vcard-import-test
+ "
+** Birthdays include time (half-obsolete format).
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyQ;FirstQ
+BDAY:19580327T234454
+END:VCARD
+"
+ ["FirstQ" "FamilyQ"
+  nil
+  nil
+  nil
+  nil
+  nil
+  ((anniversary . "1958-03-27T23:44:54 birthday")
+   (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
+ "FirstQ FamilyQ")
+
+
+(bbdb-vcard-import-test
+ "
 ** Non-birthday anniversaries
 ------------------------------------------------------------
 BEGIN:VCARD
@@ -1474,6 +1539,7 @@ VERSION:2.1
 N:Friday;Fred
 TEL;WORK;VOICE:+1-213-555-1234
 TEL;WORK;FAX:+1-213-555-5678
+BDAY:19661221t173745
 END:VCARD
 "
  ["Fred" "Friday"
@@ -1483,7 +1549,7 @@ END:VCARD
    ["Office" "+1-213-555-5678"])
   nil
   nil
-  ((creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
+  ((anniversary . "1966-12-21T17:37:45 birthday") (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
  "Fred Friday")
 
 
