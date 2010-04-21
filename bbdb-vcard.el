@@ -5,7 +5,7 @@
 ;; Author: Bert Burgemeister <trebbu@googlemail.com>
 ;; Keywords: data calendar mail news
 ;; URL: http://github.com/trebb/bbdb-vcard
-;; Version: 0.2
+;; Version: 0.3
 
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
@@ -258,7 +258,7 @@
 (require 'vcard)
 (require 'bbdb-com)
 
-(defconst bbdb-vcard-version "0.2"
+(defconst bbdb-vcard-version "0.3"
   "Version of the vCard importer/exporter.
 The major part increases on user-visible changes.")
 
