@@ -155,7 +155,7 @@ Subunit1"
    (anniversary . "1999-12-05 birthday")
    (notes . "This vcard uses every type defined in rfc2426.")
    (www . "http://first1.host1.org")
-   (creation-date . "1995-10-31") (timestamp . "2010-03-04"))]
+   (creation-date . "1995-10-31T22:27:10Z") (timestamp . "2010-03-04"))]
  "First1 Last1"
  nil nil t)
 
@@ -224,7 +224,7 @@ Subunit1"
    (anniversary . "1999-12-05 birthday")
    (notes . "This isn't a decent vCard. It shouldn't render our bbdb unusable. We don't expect it to re-import unchanged, though.")
    (www . "http://first1.host1.org; My home")
-   (creation-date . "1995-10-31") (timestamp . "2010-03-04"))]
+   (creation-date . "1995-10-31T22:27:10Z") (timestamp . "2010-03-04"))]
   "First2 Last2"
  nil nil t)
 
@@ -323,7 +323,7 @@ U.S.A.")
    (anniversary . "1996-04-15 birthday")
    (notes . "This fax number is operational 0800 to 1715 EST, Mon-Fri.")
    (www . "http://www.swbyps.restaurant.french/~chezchic.html")
-   (creation-date . "1995-10-31") (timestamp . "2010-03-04"))]
+   (creation-date . "1995-10-31T22:27:10Z") (timestamp . "2010-03-04"))]
  "John"
  nil nil t)
 
@@ -423,7 +423,7 @@ U.S.A.")
   (mail-alias . "TRAVEL AGENT")
   (anniversary . "1996-04-15 birthday")
   (notes . "This fax number is operational 0800 to 1715 EST, Mon-Fri.")
-  (creation-date . "1995-10-31") (timestamp . "2010-03-04"))]
+  (creation-date . "1995-10-31T22:27:10Z") (timestamp . "2010-03-04"))]
  "John"
  nil nil t)
 
@@ -1149,7 +1149,7 @@ END:VCARD
   nil
   nil
   nil
-  ((creation-date . "1997-03-27") (timestamp . "2010-03-04")) ]
+  ((creation-date . "1997-03-27T22:27:10Z") (timestamp . "2010-03-04")) ]
  "FirstJ FamilyJ"
  nil nil t)
 
@@ -1171,8 +1171,30 @@ END:VCARD
   nil
   nil
   nil
-  ((creation-date . "1997-03-27") (timestamp . "2010-03-04")) ]
+  ((creation-date . "1997-03-27T22:27:10Z") (timestamp . "2010-03-04")) ]
  "FirstJ FamilyJ"
+ nil nil t)
+
+
+(bbdb-vcard-import-test
+ "
+*** The same, but dashless REV
+------------------------------------------------------------
+BEGIN:VCARD
+VERSION:3.0
+N:FamilyR;FirstR
+ORG:OrgR
+REV:19771203T222710Z
+END:VCARD
+"
+ ["FirstR" "FamilyR"
+  nil
+  "OrgR"
+  nil
+  nil
+  nil
+  ((creation-date . "1977-12-03T22:27:10Z") (timestamp . "2010-03-04")) ]
+ "FirstR FamilyR"
  nil nil t)
 
 
@@ -1287,7 +1309,7 @@ END:VCARD
   nil
   nil
   nil
-  ((anniversary . "1927-03-27T23:44:54 birthday")
+  ((anniversary . "1927-03-27T23:44:54Z birthday")
    (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
  "FirstP FamilyP")
 
@@ -1646,8 +1668,9 @@ United States of America")
    (notes . "This is a note associated with this contact
 ")
    (www . "http://www.doeweb.com")
-   (creation-date . "2010-03-04") (timestamp . "2010-03-04"))]
- "John Doe")
+   (creation-date . "1998-01-14T17:05:59Z") (timestamp . "2010-03-04"))]
+ "John Doe"
+ nil nil t)
 
 
 

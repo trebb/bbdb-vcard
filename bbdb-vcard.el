@@ -113,7 +113,9 @@
 ;; `bbdb-vcard-import-translation-table'.
 ;; 
 ;; If there is a REV element, it is stored in BBDB's creation-date in
-;; newly created BBDB records, or discarded for existing ones.
+;; newly created BBDB records, or discarded for existing ones.  Time
+;; and time zone information from REV are stored there as well if
+;; there are any, but are ignored by BBDB (v2.36).
 ;;
 ;; VCard type prefixes (A.ADR:..., B.ADR:... etc.) are stripped off
 ;; and discarded from the following types: N, FN, NICKNAME, ORG (first
@@ -561,7 +563,8 @@ Extend existing BBDB records where possible."
             (bbdb-vcard-split-structured-text
              (car (bbdb-vcard-values-of-type "X-BBDB-ANNIVERSARY" "value"))
              "\\\\n" t))
-           (vcard-rev (car (bbdb-vcard-values-of-type "REV" "value")))
+           (vcard-rev (bbdb-vcard-unvcardize-date-time
+                       (car (bbdb-vcard-values-of-type "REV" "value"))))
            (vcard-categories (bbdb-vcard-values-of-type "CATEGORIES" "value"))
            ;; The BBDB record to change:
            (record-freshness-info "BBDB record changed:") ; default user info
@@ -599,10 +602,7 @@ Extend existing BBDB records where possible."
                                       (make-vector bbdb-cache-length nil))
                (if vcard-rev            ; For fresh records,
                    (bbdb-record-putprop ; set creation-date from vcard-rev
-                    fresh-record 'creation-date
-                    (replace-regexp-in-string
-                     "\\([0-9]\\{4\\}-[01][0-9]-[0-3][0-9]\\).*" "\\1"
-                     vcard-rev))
+                    fresh-record 'creation-date vcard-rev)
                  (bbdb-invoke-hook 'bbdb-create-hook fresh-record))
                (setq record-freshness-info "BBDB record added:") ; user info
                fresh-record)))
@@ -648,7 +648,9 @@ Extend existing BBDB records where possible."
                ";\n")))
       (when (or vcard-bday vcard-x-bbdb-anniversaries)
         ;; Put vCard BDAY and vCard X-BBDB-ANNIVERSARY's under key
-        ;; 'anniversary (append if necessary) where org-mode can find it.
+        ;; 'anniversary (append if necessary) where org-mode can find
+        ;; it.  Org-mode doesn't currently (v6.35) bother with time
+        ;; and time zone, though.
         (when vcard-bday (push vcard-bday vcard-x-bbdb-anniversaries))
         (unless (assq 'anniversary bbdb-raw-notes)
           (push (cons 'anniversary "") bbdb-raw-notes))
@@ -709,7 +711,7 @@ Extend existing BBDB records where possible."
            (raw-anniversaries (bbdb-vcard-split-structured-text
                                (bbdb-get-field record 'anniversary) "\n" t))
            (birthday-regexp
-            "\\([0-9]\\{4\\}-[01][0-9]-[0-3][0-9]\\)\\([[:blank:]]+birthday\\)?\\'")
+            "\\([0-9]\\{4\\}-[01][0-9]-[0-3][0-9][t:0-9]*[-+z:0-9]*\\)\\([[:blank:]]+birthday\\)?\\'")
            (birthday
             (car (bbdb-vcard-split-structured-text
                   (find-if (lambda (x) (string-match birthday-regexp x))
@@ -1003,20 +1005,26 @@ COUNTRY)."
 
 (defun bbdb-vcard-unvcardize-date-time (date-time)
   "If necessary, make DATE-TIME usable for storage in BBDB.
-Convert yyyymmdd or yyyymmddThhmmss into yyyy-mm-dd or
-yyyy-mm-ddThh:mm:ss respectively.  Discard fractions of a second and
-time zone information.  Return anything else unchanged."
+Convert yyyymmdd, yyyymmddThhmmss, or yyymmddThhmmssZhhmm into
+yyyy-mm-dd, yyyy-mm-ddThh:mm:ss, or yyy-mm-ddThh:mm:ssZhh:mm
+respectively.  Discard fractions of a second.  Return anything else
+unchanged."
   (if (and (stringp date-time)
            (string-match
-            "\\([0-9]\\{4\\}\\)-?\\([0-2][0-9]\\)-?\\([0-3][0-9]\\)\\(?:t\\([0-5][0-9]\\):?\\([0-5][0-9]\\):?\\([0-5][0-9]\\)\\)?"
+            "\\([0-9]\\{4\\}\\)-?\\([0-2][0-9]\\)-?\\([0-3][0-9]\\)\\(?:t\\([0-5][0-9]\\):?\\([0-5][0-9]\\):?\\([0-5][0-9]\\)\\(?:[,.0-9]*\\(\\([+-][0-5][0-9]\\):?\\([0-5][0-9]\\)?\\|z\\)\\)?\\)?"
             date-time))
       (concat
        (match-string 1 date-time) "-"
        (match-string 2 date-time) "-" (match-string 3 date-time)
-       (when (match-string 6 date-time)   ; seconds part of time
+       (when (match-string 6 date-time) ; seconds part of time
          (concat
           "T" (match-string 4 date-time) ":"
-          (match-string 5 date-time) ":" (match-string 6 date-time))))
+          (match-string 5 date-time) ":" (match-string 6 date-time)
+          (when (match-string 7 date-time) ; time zone
+            (if (match-string 9 date-time) ; time zone minute
+                  (concat (match-string 8 date-time) ; time zone hour
+                          ":" (match-string 9 date-time)) ; time zone minute
+              "Z")))))
     date-time))
 
 (defun bbdb-vcard-vcardize-address-element (address-element)
@@ -1124,3 +1132,5 @@ Make it unique against the list USED-UP-BASENAMES."
 (provide 'bbdb-vcard)
 
 ;;; bbdb-vcard.el ends here
+
+; LocalWords:  vcard firstname
